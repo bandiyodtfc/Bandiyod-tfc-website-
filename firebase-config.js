@@ -2,7 +2,7 @@
 export const firebaseConfig = {
   apiKey: "AIzaSyBWxmvZ4GG5d4p0ialMv-hXfXkhlk7k5eM",
   authDomain: "tfc-member-portal.firebaseapp.com",
-  databaseURL: "REPLACE_WITH_REALTIME_DATABASE_URL",
+  databaseURL: "https://tfc-member-portal-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "tfc-member-portal",
   storageBucket: "tfc-member-portal.firebasestorage.app",
   messagingSenderId: "106376557866",
