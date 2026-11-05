@@ -8,7 +8,19 @@ $('lang').onchange=()=>{document.querySelectorAll('[data-t]').forEach(e=>e.textC
 const notify=(s,err=false)=>{$('msg').textContent=s;$('msg').className=err?'error':'ok';};
 let auth,db,current,admin=false,memberList={};
 if(!firebaseConfig.databaseURL || firebaseConfig.databaseURL.startsWith('REPLACE_')){notify('Setup needed: add Firebase web configuration in firebase-config.js',true);$('signIn').disabled=true;}
-else {const app=initializeApp(firebaseConfig);auth=getAuth(app);db=getDatabase(app);getRedirectResult(auth).catch(e=>notify(e.message,true));onAuthStateChanged(auth,async user=>{current=user;show('login',!user);show('logout',!!user);show('pending',false);show('member',false);show('admin',false);if(!user)return;try{admin=(await get(ref(db,'admins/'+user.uid))).val()===true;if(admin){show('admin',true);loadAdmin();return;}const record=(await get(ref(db,'users/'+user.uid))).val();if(record?.status==='approved'&&record.memberNumber){const m=(await get(ref(db,'members/'+record.memberNumber))).val();if(m){show('member',true);renderMember(m);return;}}show('pending',true);$('claimNumber').value=record?.requestedNumber||'';}catch(e){notify(e.message,true);}});}
+else {const app=initializeApp(firebaseConfig);auth=getAuth(app);db=getDatabase(app);getRedirectResult(auth).catch(e=>notify(e.message,true));onAuthStateChanged(auth,async user=>{current=user;show('login',!user);show('logout',!!user);show('pending',false);show('member',false);show('admin',false);if(!user)return;try{
+const adminValue = (await get(ref(db, 'admins/' + user.uid))).val();
+
+admin = adminValue === true;
+
+if (!admin) {
+  notify(
+    'Admin check | UID: ' + user.uid +
+    ' | Value: ' + JSON.stringify(adminValue),
+    true
+  );
+}
+if(admin){show('admin',true);loadAdmin();return;}const record=(await get(ref(db,'users/'+user.uid))).val();if(record?.status==='approved'&&record.memberNumber){const m=(await get(ref(db,'members/'+record.memberNumber))).val();if(m){show('member',true);renderMember(m);return;}}show('pending',true);$('claimNumber').value=record?.requestedNumber||'';}catch(e){notify(e.message,true);}});}
 $('signIn').onclick=async()=>{try{await signInWithPopup(auth,new GoogleAuthProvider());}catch(e){if(e.code==='auth/popup-blocked')await signInWithRedirect(auth,new GoogleAuthProvider());else notify(e.message,true);}};
 $('logout').onclick=()=>signOut(auth);
 $('requestApproval').onclick=async()=>{let n=Number($('claimNumber').value);if(!Number.isInteger(n)||n<1)return notify('Enter valid member number',true);try{await set(ref(db,'requests/'+current.uid),{uid:current.uid,email:current.email||'',name:current.displayName||'',requestedNumber:n,createdAt:Date.now(),status:'pending'});notify('Approval request submitted.');}catch(e){notify(e.message,true);}};
