@@ -1,21 +1,330 @@
+
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>TFC Bandiyod | Member Portal</title>
+
 <style>
-:root{font-family:system-ui,-apple-system,sans-serif;color:#1b2330;background:#f6f7fa}*{box-sizing:border-box}body{margin:0}header{background:#f8ce23;padding:15px 5%;display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{display:flex;align-items:center;gap:12px;min-width:0}.brand-logo{width:65px;height:65px;object-fit:contain;flex-shrink:0}h1{font-size:24px;margin:0}h2{font-size:21px}small,.muted{color:#667085}.wrap{max-width:1050px;margin:28px auto;padding:0 16px}.panel{background:white;border-radius:16px;padding:22px;margin:15px 0;box-shadow:0 2px 12px #17233a10}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}.stat{background:#fff9d9;border-radius:12px;padding:16px}.stat strong{font-size:25px;display:block}button,.paylink{background:#f3c916;border:0;border-radius:9px;padding:12px 17px;font-weight:700;cursor:pointer;color:#1b2330;text-decoration:none;display:inline-block}button.secondary{background:#e8ebef}button:disabled{opacity:.5}input,select{padding:12px;border:1px solid #d1d5db;border-radius:8px;max-width:100%;width:100%}label{display:block;margin:10px 0 5px;font-size:14px}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:10px;border-bottom:1px solid #e7e7e7}.scroll{overflow:auto}.hide{display:none!important}.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.notice{background:#fff4d1;padding:12px;border-radius:8px}.ok{color:#187044}.error{color:#b42318}footer{text-align:center;color:#777;padding:30px}#msg{margin:10px 0}nav button{margin:3px}.paygrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.paygrid>div{min-width:0}.paygrid button{margin-top:12px}code{overflow-wrap:anywhere}@media(max-width:600px){header{padding:12px;gap:8px}.brand{gap:7px}.brand-logo{width:48px;height:48px}h1{font-size:17px}header small{font-size:10px}header select{max-width:100px;font-size:12px;padding:8px}header button{padding:9px;font-size:12px}}
+:root {
+  font-family:system-ui,-apple-system,sans-serif;
+  color:#1b2330;
+  background:#f6f7fa;
+}
+* {box-sizing:border-box}
+body {margin:0}
+header {
+  background:#f8ce23;
+  padding:15px 5%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.brand {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+.brand-logo {
+  width:65px;
+  height:65px;
+  object-fit:contain;
+  flex-shrink:0;
+}
+h1 {font-size:24px;margin:0}
+h2 {font-size:21px}
+small,.muted {color:#667085}
+.wrap {max-width:1050px;margin:28px auto;padding:0 16px}
+.panel {
+  background:white;
+  border-radius:16px;
+  padding:22px;
+  margin:15px 0;
+  box-shadow:0 2px 12px #17233a10;
+}
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:14px;
+}
+.stat {
+  background:#fff9d9;
+  border-radius:12px;
+  padding:16px;
+}
+.stat strong {font-size:25px;display:block}
+button,.paylink {
+  background:#f3c916;
+  border:0;
+  border-radius:9px;
+  padding:12px 17px;
+  font-weight:700;
+  cursor:pointer;
+  color:#1b2330;
+  text-decoration:none;
+  display:inline-block;
+}
+button.secondary {background:#e8ebef}
+button:disabled {opacity:.5}
+input,select {
+  padding:12px;
+  border:1px solid #d1d5db;
+  border-radius:8px;
+  max-width:100%;
+  width:100%;
+}
+label {display:block;margin:10px 0 5px;font-size:14px}
+table {width:100%;border-collapse:collapse}
+td,th {
+  text-align:left;
+  padding:10px;
+  border-bottom:1px solid #e7e7e7;
+}
+.scroll {overflow:auto}
+.hide {display:none!important}
+.flex {
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.notice {
+  background:#fff4d1;
+  padding:12px;
+  border-radius:8px;
+}
+.ok {color:#187044}
+.error {color:#b42318}
+footer {text-align:center;color:#777;padding:30px}
+#msg {margin:10px 0}
+nav button {margin:3px}
+.paygrid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:12px;
+}
+.paygrid>div {min-width:0}
+.paygrid button {margin-top:12px}
+code {overflow-wrap:anywhere}
+#adminMemberHistory {
+  margin-top:20px;
+  border:1px solid #e7e7e7;
+}
+#adminHistorySummary {
+  font-weight:600;
+  color:#344054;
+}
+.history-paid {
+  color:#187044;
+  font-weight:600;
+}
+.history-unverified {color:#667085}
+@media(max-width:600px) {
+  header {padding:12px;gap:8px}
+  .brand {gap:7px}
+  .brand-logo {width:48px;height:48px}
+  h1 {font-size:17px}
+  header small {font-size:10px}
+  header select {
+    max-width:100px;
+    font-size:12px;
+    padding:8px;
+  }
+  header button {padding:9px;font-size:12px}
+  .panel {padding:16px}
+  td,th {padding:8px;font-size:13px}
+}
 </style>
+
 <link rel="stylesheet" href="./login-theme.css">
 </head>
+
 <body>
-<header><div class="brand"><img src="./tfc-logo.jpeg" alt="TFC Bandiyod Logo" class="brand-logo"><div><h1>TFC BANDIYOD</h1><small>ONE TEAM ONE DREAM</small></div></div><div class="flex"><select id="lang" style="width:auto"><option value="en">English</option><option value="ml">മലയാളം</option></select><button id="logout" class="secondary hide">Sign out</button></div></header>
-<main class="wrap"><div id="msg" role="status"></div>
-<section id="login" class="panel"><h2 data-t="welcome">Welcome to TFC Bandiyod</h2><p data-t="loginText">Members can sign in with Google. New accounts require admin approval.</p><button id="signIn" data-t="signIn">Continue with Google</button></section>
-<section id="pending" class="panel hide"><h2 data-t="pending">Membership approval pending</h2><p data-t="pendingText">Your Google account needs approval from the TFC admin.</p><label data-t="memberNumber" for="claimNumber">Membership number</label><input id="claimNumber" type="number" min="1" placeholder="e.g. 25"><button id="requestApproval" data-t="request">Request approval</button></section>
-<section id="member" class="hide"><div class="panel"><h2 id="memberTitle"></h2><p id="memberMeta"></p></div><div class="grid"><div class="stat"><span data-t="due">Outstanding dues</span><strong id="dueAmount">—</strong></div><div class="stat"><span data-t="paid">Paid months</span><strong id="paidCount">—</strong></div><div class="stat"><span data-t="fee">Membership fee</span><strong>₹50 / ₹600</strong></div></div>
-<div class="panel"><h2 data-t="history">Payment history</h2><p class="muted">Historical payments are not verified yet. Only admin-confirmed payments are marked Paid.</p><div class="scroll"><table><thead><tr><th data-t="month">Month</th><th data-t="status">Status</th></tr></thead><tbody id="historyBody"></tbody></table></div></div>
-<div class="panel"><h2 data-t="pay">Pay membership fee</h2><p>UPI recipient: <strong>Waheed Wahi</strong> — <code>waheedwahi84-1@oksbi</code></p><p class="notice">Pay in your UPI app, then enter the transaction/reference ID below. Payment remains Pending until verified by the admin. Please avoid paying twice.</p><div class="paygrid"><div><label for="paymentPlan">Payment plan</label><select id="paymentPlan"><option value="monthly">Monthly — ₹50</option><option value="yearly">Yearly — ₹600</option></select></div><div><label for="paymentPeriod">Payment month / year</label><input id="paymentPeriod" type="month"></div></div><p><a id="upiPayLink" class="paylink" href="#" rel="noopener">Open UPI app — ₹50</a></p><label for="transactionId">UPI transaction / reference ID</label><input id="transactionId" maxlength="100" placeholder="Enter ID after payment" autocomplete="off"><p><button id="submitPayment">Submit payment for verification</button></p><h3>Your payment submissions</h3><div id="myPaymentList" class="scroll"></div></div></section>
-<section id="admin" class="hide"><div class="panel"><h2 data-t="admin">Admin dashboard</h2><div class="flex"><button id="tabRequests">Approval requests</button><button id="tabMembers" class="secondary">Members</button><button id="tabPayments" class="secondary">Payment verification</button></div></div><div id="requestsPanel" class="panel"><h2>Pending requests</h2><div id="requestsList"></div></div><div id="membersPanel" class="panel hide"><h2>Members</h2><input id="search" placeholder="Search name or member number"><div id="membersList" class="scroll"></div></div><div id="paymentsPanel" class="panel hide"><h2>Payment verification</h2><p class="notice">Check the recipient's bank/UPI statement before approving. Transaction ID alone is not proof of payment.</p><div id="adminPaymentList"></div></div></section>
-</main><footer>© TFC Bandiyod · Private Member Portal</footer><script type="module" src="./app.js"></script>
-</body></html>
+
+<header>
+  <div class="brand">
+    <img src="./tfc-logo.jpeg" alt="TFC Bandiyod Logo" class="brand-logo">
+    <div>
+      <h1>TFC BANDIYOD</h1>
+      <small>ONE TEAM ONE DREAM</small>
+    </div>
+  </div>
+
+  <div class="flex">
+    <select id="lang" style="width:auto">
+      <option value="en">English</option>
+      <option value="ml">മലയാളം</option>
+    </select>
+    <button id="logout" class="secondary hide">Sign out</button>
+  </div>
+</header>
+
+<main class="wrap">
+
+<div id="msg" role="status"></div>
+
+<!-- LOGIN -->
+<section id="login" class="panel">
+  <h2 data-t="welcome">Welcome to TFC Bandiyod</h2>
+  <p data-t="loginText">
+    Members can sign in with Google. New accounts require admin approval.
+  </p>
+  <button id="signIn" data-t="signIn">Continue with Google</button>
+</section>
+
+<!-- APPROVAL PENDING -->
+<section id="pending" class="panel hide">
+  <h2 data-t="pending">Membership approval pending</h2>
+  <p data-t="pendingText">
+    Your Google account needs approval from the TFC admin.
+  </p>
+  <label data-t="memberNumber" for="claimNumber">Membership number</label>
+  <input id="claimNumber" type="number" min="1" placeholder="e.g. 25">
+  <button id="requestApproval" data-t="request">Request approval</button>
+</section>
+
+<!-- MEMBER DASHBOARD -->
+<section id="member" class="hide">
+
+  <div class="panel">
+    <h2 id="memberTitle"></h2>
+    <p id="memberMeta"></p>
+  </div>
+
+  <div class="grid">
+    <div class="stat">
+      <span data-t="due">Outstanding dues</span>
+      <strong id="dueAmount">—</strong>
+    </div>
+    <div class="stat">
+      <span data-t="paid">Paid months</span>
+      <strong id="paidCount">—</strong>
+    </div>
+    <div class="stat">
+      <span data-t="fee">Membership fee</span>
+      <strong>₹50 / ₹600</strong>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2 data-t="history">Payment history</h2>
+    <p class="muted">
+      Historical payments are based on recorded membership card marks.
+      Unmarked months are not automatically treated as outstanding dues.
+    </p>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th data-t="month">Month</th>
+            <th data-t="status">Status</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2 data-t="pay">Pay membership fee</h2>
+
+    <p>
+      UPI recipient: <strong>Waheed Wahi</strong> —
+      <code>waheedwahi84-1@oksbi</code>
+    </p>
+
+    <p class="notice">
+      Pay in your UPI app, then enter the transaction/reference ID below.
+      Payment remains Pending until verified by the admin.
+      Please avoid paying twice.
+    </p>
+
+    <div class="paygrid">
+      <div>
+        <label for="paymentPlan">Payment plan</label>
+        <select id="paymentPlan">
+          <option value="monthly">Monthly — ₹50</option>
+          <option value="yearly">Yearly — ₹600</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="paymentPeriod">Payment month / year</label>
+        <input id="paymentPeriod" type="month">
+      </div>
+    </div>
+
+    <p>
+      <a id="upiPayLink" class="paylink" href="#" rel="noopener">
+        Open UPI app — ₹50
+      </a>
+    </p>
+
+    <label for="transactionId">UPI transaction / reference ID</label>
+    <input id="transactionId" maxlength="100"
+      placeholder="Enter ID after payment" autocomplete="off">
+
+    <p>
+      <button id="submitPayment">Submit payment for verification</button>
+    </p>
+
+    <h3>Your payment submissions</h3>
+    <div id="myPaymentList" class="scroll"></div>
+  </div>
+
+</section>
+
+<!-- ADMIN DASHBOARD -->
+<section id="admin" class="hide">
+
+  <div class="panel">
+    <h2 data-t="admin">Admin dashboard</h2>
+    <div class="flex">
+      <button id="tabRequests">Approval requests</button>
+      <button id="tabMembers" class="secondary">Members</button>
+      <button id="tabPayments" class="secondary">Payment verification</button>
+    </div>
+  </div>
+
+  <div id="requestsPanel" class="panel">
+    <h2>Pending requests</h2>
+    <div id="requestsList"></div>
+  </div>
+
+  <div id="membersPanel" class="panel hide">
+    <h2>Members</h2>
+    <input id="search" placeholder="Search name or member number">
+
+    <div id="membersList" class="scroll"></div>
+
+    <!-- NEW ADMIN PAYMENT HISTORY VIEW -->
+    <div id="adminMemberHistory" class="panel hide">
+      <h3 id="adminHistoryTitle">Member Payment History</h3>
+      <p id="adminHistorySummary"></p>
+      <div id="adminHistoryTable" class="scroll"></div>
+    </div>
+  </div>
+
+  <div id="paymentsPanel" class="panel hide">
+    <h2>Payment verification</h2>
+    <p class="notice">
+      Check the recipient's bank/UPI statement before approving.
+      Transaction ID alone is not proof of payment.
+    </p>
+    <div id="adminPaymentList"></div>
+  </div>
+
+</section>
+
+</main>
+
+<footer>© TFC Bandiyod · Private Member Portal</footer>
+
+<script type="module" src="./app.js"></script>
+
+</body>
+</html>
