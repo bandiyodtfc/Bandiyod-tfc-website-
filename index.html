@@ -12,24 +12,49 @@
       color: #1b2330;
       background: #f6f7fa;
     }
+
     * { box-sizing: border-box; }
+
     body { margin: 0; }
+
     header {
       background: #f8ce23;
-      padding: 18px 5%;
+      padding: 15px 5%;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
     }
-    h1 { font-size: 24px; margin: 0; }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-logo {
+      width: 65px;
+      height: 65px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin: 0;
+    }
+
     h2 { font-size: 21px; }
+
     small,.muted { color: #667085; }
+
     .wrap {
       max-width: 1050px;
       margin: 28px auto;
       padding: 0 16px;
     }
+
     .panel {
       background: white;
       border-radius: 16px;
@@ -37,17 +62,24 @@
       margin: 15px 0;
       box-shadow: 0 2px 12px #17233a10;
     }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
       gap: 14px;
     }
+
     .stat {
       background: #fff9d9;
       border-radius: 12px;
       padding: 16px;
     }
-    .stat strong { font-size: 25px; display: block; }
+
+    .stat strong {
+      font-size: 25px;
+      display: block;
+    }
+
     button {
       background: #f3c916;
       border: 0;
@@ -56,8 +88,10 @@
       font-weight: 700;
       cursor: pointer;
     }
+
     button.secondary { background: #e8ebef; }
     button:disabled { opacity: .5; }
+
     input,select {
       padding: 12px;
       border: 1px solid #d1d5db;
@@ -65,101 +99,196 @@
       max-width: 100%;
       width: 100%;
     }
+
     label {
       display: block;
       margin: 10px 0 5px;
       font-size: 14px;
     }
-    table { width: 100%; border-collapse: collapse; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
     td,th {
       text-align: left;
       padding: 10px;
       border-bottom: 1px solid #e7e7e7;
     }
+
     .scroll { overflow: auto; }
     .hide { display: none; }
+
     .flex {
       display: flex;
       gap: 10px;
       align-items: center;
       flex-wrap: wrap;
     }
+
     .notice {
       background: #fff4d1;
       padding: 12px;
       border-radius: 8px;
     }
+
     .ok { color: #187044; }
     .error { color: #b42318; }
+
     footer {
       text-align: center;
       color: #777;
       padding: 30px;
     }
+
     #msg { margin: 10px 0; }
+
     nav button { margin: 3px; }
+
+    @media (max-width: 600px) {
+      header {
+        padding: 12px;
+        gap: 8px;
+      }
+
+      .brand {
+        gap: 7px;
+      }
+
+      .brand-logo {
+        width: 48px;
+        height: 48px;
+      }
+
+      h1 { font-size: 17px; }
+
+      header small { font-size: 10px; }
+
+      header select {
+        max-width: 100px;
+        font-size: 12px;
+        padding: 8px;
+      }
+
+      header button {
+        padding: 9px;
+        font-size: 12px;
+      }
+    }
   </style>
 
   <link rel="stylesheet" href="./login-theme.css">
 </head>
 
 <body>
+
   <header>
-    <div>
-      <h1>TFC BANDIYOD</h1>
-      <small>ONE TEAM ONE DREAM</small>
+    <div class="brand">
+      <img
+        src="./tfc-logo.jpeg"
+        alt="TFC Bandiyod Logo"
+        class="brand-logo"
+      >
+      <div>
+        <h1>TFC BANDIYOD</h1>
+        <small>ONE TEAM ONE DREAM</small>
+      </div>
     </div>
+
     <div class="flex">
       <select id="lang" style="width:auto">
         <option value="en">English</option>
         <option value="ml">മലയാളം</option>
       </select>
-      <button id="logout" class="secondary hide">Sign out</button>
+
+      <button id="logout" class="secondary hide">
+        Sign out
+      </button>
     </div>
   </header>
 
   <main class="wrap">
+
     <div id="msg"></div>
 
     <section id="login" class="panel">
-      <h2 data-t="welcome">Welcome to TFC Bandiyod</h2>
+      <h2 data-t="welcome">
+        Welcome to TFC Bandiyod
+      </h2>
+
       <p data-t="loginText">
-        Members can sign in with Google. New accounts require admin approval.
+        Members can sign in with Google.
+        New accounts require admin approval.
       </p>
-      <button id="signIn" data-t="signIn">Continue with Google</button>
+
+      <button id="signIn" data-t="signIn">
+        Continue with Google
+      </button>
     </section>
 
     <section id="pending" class="panel hide">
-      <h2 data-t="pending">Membership approval pending</h2>
+      <h2 data-t="pending">
+        Membership approval pending
+      </h2>
+
       <p data-t="pendingText">
         Your Google account needs approval from the TFC admin.
       </p>
-      <label data-t="memberNumber">Membership number</label>
-      <input id="claimNumber" type="number" min="1" placeholder="e.g. 25">
-      <button id="requestApproval" data-t="request">Request approval</button>
+
+      <label data-t="memberNumber">
+        Membership number
+      </label>
+
+      <input
+        id="claimNumber"
+        type="number"
+        min="1"
+        placeholder="e.g. 25"
+      >
+
+      <button id="requestApproval" data-t="request">
+        Request approval
+      </button>
     </section>
 
     <section id="member" class="hide">
+
       <div class="panel">
         <h2 id="memberTitle"></h2>
         <p id="memberMeta"></p>
       </div>
+
       <div class="grid">
+
         <div class="stat">
-          <span data-t="due">Outstanding dues</span>
+          <span data-t="due">
+            Outstanding dues
+          </span>
           <strong id="dueAmount">—</strong>
         </div>
+
         <div class="stat">
-          <span data-t="paid">Paid months</span>
+          <span data-t="paid">
+            Paid months
+          </span>
           <strong id="paidCount">—</strong>
         </div>
+
         <div class="stat">
-          <span data-t="fee">Membership fee</span>
+          <span data-t="fee">
+            Membership fee
+          </span>
           <strong>₹50 / ₹600</strong>
         </div>
+
       </div>
+
       <div class="panel">
-        <h2 data-t="history">Payment history</h2>
+        <h2 data-t="history">
+          Payment history
+        </h2>
+
         <div class="scroll">
           <table>
             <thead>
@@ -168,28 +297,50 @@
                 <th data-t="status">Status</th>
               </tr>
             </thead>
+
             <tbody id="historyBody"></tbody>
           </table>
         </div>
       </div>
+
       <div class="panel">
-        <h2 data-t="pay">Pay membership fee</h2>
+        <h2 data-t="pay">
+          Pay membership fee
+        </h2>
+
         <p class="notice" data-t="upiLater">
-          UPI ID will be added by the administrator. Payments cannot be initiated yet.
+          UPI ID will be added by the administrator.
+          Payments cannot be initiated yet.
         </p>
-        <button disabled data-t="payNow">Pay with UPI (coming soon)</button>
+
+        <button disabled data-t="payNow">
+          Pay with UPI (coming soon)
+        </button>
       </div>
+
     </section>
 
     <section id="admin" class="hide">
+
       <div class="panel">
-        <h2 data-t="admin">Admin dashboard</h2>
+        <h2 data-t="admin">
+          Admin dashboard
+        </h2>
+
         <p class="notice">
-          Private import: use the Firebase database console to import members-import.json members into /members. Do not upload the JSON to public hosting.
+          Private import: use the Firebase database console
+          to import members-import.json members into /members.
+          Do not upload the JSON to public hosting.
         </p>
+
         <div class="flex">
-          <button id="tabRequests">Approval requests</button>
-          <button id="tabMembers" class="secondary">Members</button>
+          <button id="tabRequests">
+            Approval requests
+          </button>
+
+          <button id="tabMembers" class="secondary">
+            Members
+          </button>
         </div>
       </div>
 
@@ -200,13 +351,24 @@
 
       <div id="membersPanel" class="panel hide">
         <h2>Members</h2>
-        <input id="search" placeholder="Search name or member number">
+
+        <input
+          id="search"
+          placeholder="Search name or member number"
+        >
+
         <div id="membersList" class="scroll"></div>
       </div>
+
     </section>
+
   </main>
 
-  <footer>© TFC Bandiyod · Private Member Portal</footer>
+  <footer>
+    © TFC Bandiyod · Private Member Portal
+  </footer>
+
   <script type="module" src="./app.js"></script>
+
 </body>
 </html>
