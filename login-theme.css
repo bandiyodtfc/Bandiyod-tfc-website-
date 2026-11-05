@@ -1,0 +1,39 @@
+/* TFC Bandiyod — Login-only background enhancement.
+   Does not modify Firebase authentication or member/admin dashboards. */
+body:has(#login:not(.hide)) {
+  background: #fff9df;
+}
+body:has(#login:not(.hide))::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, rgba(16,17,24,.70), rgba(16,17,24,.18)), url('./tfc-login-bg.jpg') center center / cover no-repeat;
+}
+body:has(#login:not(.hide)) #login {
+  background: rgba(255,255,255,.95);
+  color: #191919;
+  border: 1px solid rgba(255,211,36,.55);
+  border-radius: 22px;
+  box-shadow: 0 16px 48px rgba(0,0,0,.22);
+  max-width: 480px;
+  margin: clamp(32px, 8vh, 100px) auto;
+  padding: clamp(24px, 5vw, 38px);
+  backdrop-filter: blur(7px);
+}
+body:has(#login:not(.hide)) #signIn {
+  background: #ffd322;
+  color: #171717;
+  border: 0;
+  border-radius: 12px;
+  padding: 14px 22px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body:has(#login:not(.hide)) #signIn:hover { background: #ffca00; }
+@media (max-width: 600px) {
+  body:has(#login:not(.hide))::before {
+    background: linear-gradient(180deg, rgba(16,17,24,.45), rgba(16,17,24,.38)), url('./tfc-login-bg.jpg') center center / cover no-repeat;
+  }
+  body:has(#login:not(.hide)) #login { margin: 38px 16px; }
+}
