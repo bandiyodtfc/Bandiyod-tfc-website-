@@ -1,4 +1,3 @@
-
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 import {
   getAuth, GoogleAuthProvider, signInWithPopup,
@@ -6,15 +5,17 @@ import {
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import {
   getDatabase, ref, get, set, update, onValue,
-  push, query, orderByChild, equalTo
+  push, query, orderByChild, equalTo, runTransaction
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js';
 import { firebaseConfig } from './firebase-config.js';
 
 const $ = id => document.getElementById(id);
+
 const show = (id, yes) => {
   const element = $(id);
   if (element) element.classList.toggle('hide', !yes);
 };
+
 const escapeHTML = value => String(value ?? '').replace(
   /[&<>"']/g,
   c => ({
@@ -22,6 +23,7 @@ const escapeHTML = value => String(value ?? '').replace(
     '"':'&quot;', "'":'&#39;'
   }[c])
 );
+
 const notify = (message, error = false) => {
   $('msg').textContent = message;
   $('msg').className = error ? 'error' : 'ok';
@@ -194,7 +196,9 @@ if (!firebaseConfig.databaseURL ||
           await get(ref(db,`members/${number}`))
         ).val();
 
-        if (member) {
+        if (member && member.uid === user.uid &&
+            member.status !== 'suspended' &&
+            member.status !== 'inactive') {
           memberNumber = Number(number);
           currentMemberData = member;
 
@@ -203,10 +207,17 @@ if (!firebaseConfig.databaseURL ||
 
           unsubscribers.push(
             onValue(ref(db,`members/${number}`),s => {
-              if (s.exists()) {
-                currentMemberData = s.val();
-                renderMember(currentMemberData);
+              const updated = s.val();
+              if (updated?.uid !== user.uid ||
+                  updated.status === 'suspended' ||
+                  updated.status === 'inactive') {
+                show('member',false);
+                show('pending',true);
+                notify('Membership access is not active.',true);
+                return;
               }
+              currentMemberData = updated;
+              renderMember(currentMemberData);
             },e => notify(e.message,true))
           );
 
@@ -266,7 +277,7 @@ $('logout').onclick = () => signOut(auth);
 $('requestApproval').onclick = async () => {
   const n = Number($('claimNumber').value);
 
-  if (!Number.isInteger(n) || n < 1) {
+  if (!Number.isSafeInteger(n) || n < 1) {
     return notify('Enter valid member number',true);
   }
 
@@ -300,10 +311,18 @@ function renderMember(m) {
   const rows = [];
   const end = new Date();
 
-  for (let year = 2024; year <= end.getFullYear(); year++) {
+  const startYear = m.joiningDate
+    ? Math.max(2024,Number(m.joiningDate.slice(0,4)) || 2024)
+    : 2024;
+
+  for (let year = startYear; year <= end.getFullYear(); year++) {
     for (let month = 1; month <= 12; month++) {
       if (year === end.getFullYear() &&
           month > end.getMonth()+1) continue;
+
+      if (m.joiningDate &&
+          `${year}-${String(month).padStart(2,'0')}` <
+          m.joiningDate.slice(0,7)) continue;
 
       const period =
         `${year}-${String(month).padStart(2,'0')}`;
@@ -402,8 +421,9 @@ async function approve(uid,r) {
     return notify('Member not found',true);
   }
 
-  if (m.status === 'suspended') {
-    return notify('Suspended member',true);
+  if (m.status === 'suspended' ||
+      m.status === 'inactive') {
+    return notify('Member is not active',true);
   }
 
   if (m.uid && m.uid !== uid) {
@@ -547,13 +567,20 @@ function renderAdminPaymentHistory(number) {
 
   const end = new Date();
 
-  for (let year = 2024; year <= end.getFullYear(); year++) {
+  const startYear = member.joiningDate
+    ? Math.max(2024,Number(member.joiningDate.slice(0,4)) || 2024)
+    : 2024;
+
+  for (let year = startYear; year <= end.getFullYear(); year++) {
     for (let month = 1; month <= 12; month++) {
       if (year === end.getFullYear() &&
           month > end.getMonth()+1) continue;
 
       const period =
         `${year}-${String(month).padStart(2,'0')}`;
+
+      if (member.joiningDate &&
+          period < member.joiningDate.slice(0,7)) continue;
 
       const paid = paidSet.has(period);
 
@@ -585,8 +612,9 @@ function renderAdminPaymentHistory(number) {
 
 $('search').oninput = renderAdminMembers;
 
+// ADMIN TABS
 function tab(which) {
-  ['requests','members','payments'].forEach(
+  ['requests','members','payments','addMember'].forEach(
     x => show(x+'Panel',x===which)
   );
 }
@@ -594,8 +622,107 @@ function tab(which) {
 $('tabRequests').onclick = () => tab('requests');
 $('tabMembers').onclick = () => tab('members');
 $('tabPayments').onclick = () => tab('payments');
+$('tabAddMember').onclick = () => tab('addMember');
 
-// Existing UPI recipient details.
+// ADD MEMBER
+function localDateString() {
+  const d = new Date();
+  return [
+    d.getFullYear(),
+    String(d.getMonth()+1).padStart(2,'0'),
+    String(d.getDate()).padStart(2,'0')
+  ].join('-');
+}
+
+$('newMemberDate').value = localDateString();
+
+$('addMemberForm').onsubmit = async event => {
+  event.preventDefault();
+
+  if (!isAdmin()) {
+    return notify('Admin access required.',true);
+  }
+
+  const number = Number($('newMemberNumber').value);
+  const name = $('newMemberName').value.trim();
+  const phone = $('newMemberPhone').value.trim();
+  const joiningDate = $('newMemberDate').value;
+  const status = $('newMemberStatus').value;
+
+  if (!Number.isSafeInteger(number) || number < 1) {
+    return notify('Invalid member number.',true);
+  }
+
+  if (!name || name.length > 100) {
+    return notify('Enter a valid member name.',true);
+  }
+
+  if (phone && !/^[0-9+\s()-]{7,15}$/.test(phone)) {
+    return notify('Invalid phone number.',true);
+  }
+
+  const date = new Date(joiningDate+'T00:00:00');
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(joiningDate) ||
+      Number.isNaN(date.getTime()) ||
+      date.getFullYear() !== Number(joiningDate.slice(0,4)) ||
+      date.getMonth()+1 !== Number(joiningDate.slice(5,7)) ||
+      date.getDate() !== Number(joiningDate.slice(8,10))) {
+    return notify('Invalid joining date.',true);
+  }
+
+  if (!['active','inactive'].includes(status)) {
+    return notify('Invalid membership status.',true);
+  }
+
+  const button = $('saveNewMember');
+  button.disabled = true;
+
+  try {
+    // Existing member records must never be overwritten.
+    const memberRef = ref(db,`members/${number}`);
+
+    const result = await runTransaction(
+      memberRef,
+      existing => {
+        if (existing !== null) return;
+
+        return {
+          number,
+          name,
+          phone,
+          joiningDate,
+          status,
+          createdAt:Date.now(),
+          createdBy:current.uid,
+          payments:{}
+        };
+      },
+      {applyLocally:false}
+    );
+
+    if (!result.committed) {
+      return notify(
+        'Member number already exists. ' +
+        'Archive the former member safely before reuse.',
+        true
+      );
+    }
+
+    $('addMemberForm').reset();
+    $('newMemberDate').value = localDateString();
+
+    notify(`Member #${number} added successfully.`);
+    tab('members');
+
+  } catch(e) {
+    notify('Save failed: '+e.message,true);
+  } finally {
+    button.disabled = false;
+  }
+};
+
+// UPI
 const UPI_ID = 'waheedwahi84-1@oksbi';
 const UPI_NAME = 'Waheed Wahi';
 
@@ -764,6 +891,15 @@ async function verifyPayment(id,p,accept) {
 
     if (!member) {
       return notify('Member not found',true);
+    }
+
+    if (member.uid !== p.uid ||
+        member.status === 'inactive' ||
+        member.status === 'suspended') {
+      return notify(
+        'Member account mismatch or inactive. Review request.',
+        true
+      );
     }
 
     const start = new Date(
