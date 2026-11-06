@@ -69,7 +69,11 @@ button,.paylink {
   display:inline-block;
 }
 button.secondary {background:#e8ebef}
-button:disabled {opacity:.5}
+button.danger {
+  background:#b42318;
+  color:white;
+}
+button:disabled {opacity:.5;cursor:not-allowed}
 input,select {
   padding:12px;
   border:1px solid #d1d5db;
@@ -123,7 +127,28 @@ code {overflow-wrap:anywhere}
   font-weight:600;
 }
 .history-unverified {color:#667085}
-
+.form-actions {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:18px;
+}
+.archive-warning {
+  background:#fff1f0;
+  border:1px solid #f3b4ae;
+  border-radius:10px;
+  padding:14px;
+}
+.archive-warning strong {color:#b42318}
+#editMemberPanel,
+#archiveMemberPanel,
+#archivedMembersPanel {
+  border:1px solid #e7e7e7;
+}
+#archivedMembersList,
+#archivedMemberHistory {
+  margin-top:14px;
+}
 @media(max-width:600px) {
   header {padding:12px;gap:8px}
   .brand {gap:7px}
@@ -289,14 +314,17 @@ code {overflow-wrap:anywhere}
       <button id="tabMembers" class="secondary">Members</button>
       <button id="tabPayments" class="secondary">Payment verification</button>
       <button id="tabAddMember" class="secondary">+ Add Member</button>
+      <button id="tabArchivedMembers" class="secondary">Archived Members</button>
     </div>
   </div>
 
+  <!-- APPROVAL REQUESTS -->
   <div id="requestsPanel" class="panel">
     <h2>Pending requests</h2>
     <div id="requestsList"></div>
   </div>
 
+  <!-- MEMBERS LIST -->
   <div id="membersPanel" class="panel hide">
     <h2>Members</h2>
     <input id="search" placeholder="Search name or member number">
@@ -309,8 +337,102 @@ code {overflow-wrap:anywhere}
       <p id="adminHistorySummary"></p>
       <div id="adminHistoryTable" class="scroll"></div>
     </div>
+
+    <!-- EDIT MEMBER PANEL -->
+    <div id="editMemberPanel" class="panel hide">
+      <h3>Edit Member</h3>
+      <p class="muted">
+        Update member details without changing the membership number
+        or existing payment history.
+      </p>
+
+      <form id="editMemberForm">
+        <label for="editMemberNumber">Member Number</label>
+        <input id="editMemberNumber" type="number" readonly required>
+
+        <label for="editMemberName">Full Name</label>
+        <input id="editMemberName" type="text" maxlength="100" required>
+
+        <label for="editMemberPhone">Mobile Number</label>
+        <input id="editMemberPhone" type="tel" maxlength="15">
+
+        <label for="editMemberDate">Joining Date</label>
+        <input id="editMemberDate" type="date" required>
+
+        <label for="editMemberStatus">Membership Status</label>
+        <select id="editMemberStatus">
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+
+        <div class="form-actions">
+          <button id="saveEditMember" type="submit">Save Changes</button>
+          <button id="cancelEditMember" type="button" class="secondary">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ARCHIVE MEMBER PANEL -->
+    <div id="archiveMemberPanel" class="panel hide">
+      <h3>Archive Member</h3>
+
+      <div class="archive-warning">
+        <strong>Important: Archive is not permanent deletion.</strong>
+        <p>
+          The member record and associated payment history must be
+          preserved in the admin-only archive before the membership
+          number can be reused.
+        </p>
+        <p>
+          Old Google login access and pending payment requests must
+          also be handled safely.
+        </p>
+      </div>
+
+      <p id="archiveMemberSummary"></p>
+
+      <form id="archiveMemberForm">
+        <label for="archiveMemberNumber">Member Number</label>
+        <input id="archiveMemberNumber" type="number" readonly required>
+
+        <label for="archiveMemberReason">Reason for Archiving</label>
+        <select id="archiveMemberReason" required>
+          <option value="">Select reason</option>
+          <option value="resigned">Resigned</option>
+          <option value="inactive">Inactive Membership</option>
+          <option value="deceased">Deceased</option>
+          <option value="duplicate">Duplicate Record</option>
+          <option value="other">Other</option>
+        </select>
+
+        <label for="archiveMemberNotes">Notes (Optional)</label>
+        <input id="archiveMemberNotes" type="text" maxlength="250"
+          placeholder="Additional details">
+
+        <label class="flex">
+          <input id="archiveMemberConfirm" type="checkbox"
+            style="width:auto" required>
+          I understand that this member will be moved to the
+          admin-only archive.
+        </label>
+
+        <div class="form-actions">
+          <button id="confirmArchiveMember" type="submit"
+            class="danger" disabled>
+            Confirm Archive
+          </button>
+          <button id="cancelArchiveMember" type="button"
+            class="secondary">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 
+  <!-- PAYMENT VERIFICATION -->
   <div id="paymentsPanel" class="panel hide">
     <h2>Payment verification</h2>
     <p class="notice">
@@ -331,7 +453,6 @@ code {overflow-wrap:anywhere}
     </p>
 
     <form id="addMemberForm">
-
       <label for="newMemberNumber">Member Number</label>
       <input id="newMemberNumber" type="number"
         min="1" step="1" required>
@@ -358,8 +479,30 @@ code {overflow-wrap:anywhere}
           Save Member
         </button>
       </p>
-
     </form>
+  </div>
+
+  <!-- ARCHIVED MEMBERS PANEL -->
+  <div id="archivedMembersPanel" class="panel hide">
+    <h2>Archived Members</h2>
+
+    <p class="notice">
+      Admin Only. Former member records and payment history
+      are retained here. Archived records must remain
+      separate from newly assigned member numbers.
+    </p>
+
+    <label for="archivedMembersSearch">Search Archived Members</label>
+    <input id="archivedMembersSearch" type="search"
+      placeholder="Search name, old member number or archive ID">
+
+    <div id="archivedMembersList" class="scroll"></div>
+
+    <div id="archivedMemberHistory" class="panel hide">
+      <h3 id="archivedHistoryTitle">Archived Payment History</h3>
+      <p id="archivedHistorySummary"></p>
+      <div id="archivedHistoryTable" class="scroll"></div>
+    </div>
   </div>
 
 </section>
