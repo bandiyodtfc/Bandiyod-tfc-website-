@@ -24,46 +24,87 @@ import {
 
 import { firebaseConfig } from './firebase-config.js';
 
+// ===================================================
 // TFC BANDIYOD MEMBER PORTAL
-// STEP 72.8P
-// COMPLETE APP.JS
+// VERSION 73.2
+// ===================================================
 //
-// IMPORTANT:
-// Archive write remains disabled until
-// compatible Firebase Rules are deployed
-// and concurrency testing is completed.
+// Google Login
+// Admin Approval
+// Member Management
+// Historical Payment Records
+// UPI Payment Submission
+// Payment Verification & Recovery Checks
+// Archived Member Register
+// Archive Pre-check
 //
-// Existing historical records are preserved.
-// Archived member numbers are never reused.
+// FINAL ARCHIVE WRITE IS DISABLED.
+// Do not enable until database rules,
+// concurrency and recovery are tested.
+//
+// ===================================================
 
 const ARCHIVE_WRITE_ENABLED = false;
 
+const MONTHLY_FEE = 50;
+const YEARLY_FEE = 600;
+
+const UPI_ID = 'waheedwahi84-1@oksbi';
+const UPI_NAME = 'Waheed Wahi';
+
 const $ = id => document.getElementById(id);
 
-const show = (id, yes) => {
-  const el = $(id);
-  if (el) el.classList.toggle('hide', !yes);
-};
+function show(id, visible) {
+  const element = $(id);
+  if (element) {
+    element.classList.toggle('hide', !visible);
+  }
+}
 
-const escapeHTML = value =>
-  String(value ?? '').replace(
+function notify(message, error = false) {
+  const element = $('msg');
+
+  if (!element) return;
+
+  element.textContent = message;
+  element.className = error ? 'error' : 'ok';
+}
+
+function escapeHTML(value) {
+  return String(value ?? '').replace(
     /[&<>"']/g,
-    c => ({
+    character => ({
       '&': '&amp;',
       '<': '&lt;',
       '>': '&gt;',
       '"': '&quot;',
       "'": '&#39;'
-    }[c])
+    }[character])
   );
+}
 
-const notify = (message, error = false) => {
-  const el = $('msg');
-  if (!el) return;
+function makeButton(label, handler, css = '') {
+  const button = document.createElement('button');
 
-  el.textContent = message;
-  el.className = error ? 'error' : 'ok';
-};
+  button.type = 'button';
+  button.textContent = label;
+
+  if (css) button.className = css;
+
+  button.onclick = handler;
+
+  return button;
+}
+
+function requireElement(id) {
+  const element = $(id);
+
+  if (!element) {
+    throw new Error(`Missing HTML element: ${id}`);
+  }
+
+  return element;
+}
 
 const dict = {
   en: {
@@ -85,6 +126,7 @@ const dict = {
     pay: 'Pay membership fee',
     admin: 'Admin dashboard'
   },
+
   ml: {
     welcome: 'TFC ബണ്ടിയോടിലേക്ക് സ്വാഗതം',
     loginText:
@@ -108,44 +150,60 @@ const dict = {
 
 if ($('lang')) {
   $('lang').onchange = () => {
-    document.querySelectorAll('[data-t]').forEach(e => {
-      e.textContent =
-        dict[$('lang').value]?.[e.dataset.t] ??
-        e.textContent;
-    });
+    const language = $('lang').value;
+
+    document.querySelectorAll('[data-t]').forEach(
+      element => {
+        const translated =
+          dict[language]?.[element.dataset.t];
+
+        if (translated) {
+          element.textContent = translated;
+        }
+      }
+    );
   };
 }
 
+// ===================================================
+// APPLICATION STATE
+// ===================================================
+
 let auth;
 let db;
+
 let current = null;
 let admin = false;
-
 let memberNumber = null;
+
 let memberList = {};
 let payments = {};
 let historicalPayments = {};
 let currentMemberData = null;
 
-let unsubscribers = [];
+let archivedMembers = {};
+
+let adminHistoryCache = {};
 
 let historyLoaded = false;
 let historyError = false;
 
-let adminHistoryCache = {};
+let membersLoaded = false;
 let adminHistoryLoaded = false;
+let paymentRequestsLoaded = false;
+let archiveLoaded = false;
+
 let selectedAdminMember = null;
 
-let archivedMembers = {};
-let selectedArchiveId = null;
-
-let paymentRequestsLoaded = false;
-let membersLoaded = false;
-let archiveLoaded = false;
 let archiveBusy = false;
 let paymentBusy = false;
+let approvalBusy = false;
 
-const isAdmin = () => !!current && admin;
+let unsubscribers = [];
+
+function isAdmin() {
+  return !!current && admin;
+}
 
 function isActiveMember(member) {
   return !!member &&
@@ -159,50 +217,17 @@ function isActiveMember(member) {
 
 function canEditMember(member) {
   return !!member &&
-    !['archiving', 'archived']
-      .includes(member.status);
-}
-
-function localDateString() {
-  const d = new Date();
-
-  return [
-    d.getFullYear(),
-    String(d.getMonth() + 1).padStart(2, '0'),
-    String(d.getDate()).padStart(2, '0')
-  ].join('-');
-}
-
-function validDate(value) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return false;
-  }
-
-  const d = new Date(value + 'T00:00:00');
-
-  return !Number.isNaN(d.getTime()) &&
-    d.getFullYear() === Number(value.slice(0, 4)) &&
-    d.getMonth() + 1 === Number(value.slice(5, 7)) &&
-    d.getDate() === Number(value.slice(8, 10));
-}
-
-function validPhone(value) {
-  return !value ||
-    /^[0-9+\s()-]{7,15}$/.test(value);
-}
-
-function validPeriod(value) {
-  return /^\d{4}-(0[1-9]|1[0-2])$/.test(
-    String(value || '')
-  );
+    !['archiving', 'archived'].includes(
+      member.status
+    );
 }
 
 function stopListeners() {
-  unsubscribers.forEach(unsubscribe => {
+  for (const unsubscribe of unsubscribers) {
     try {
       unsubscribe();
     } catch (_) {}
-  });
+  }
 
   unsubscribers = [];
 
@@ -211,24 +236,75 @@ function stopListeners() {
   historicalPayments = {};
   currentMemberData = null;
 
+  archivedMembers = {};
+  adminHistoryCache = {};
+
   historyLoaded = false;
   historyError = false;
 
-  adminHistoryCache = {};
+  membersLoaded = false;
   adminHistoryLoaded = false;
+  paymentRequestsLoaded = false;
+  archiveLoaded = false;
+
   selectedAdminMember = null;
 
-  archivedMembers = {};
-  selectedArchiveId = null;
-
-  paymentRequestsLoaded = false;
-  membersLoaded = false;
-  archiveLoaded = false;
   archiveBusy = false;
   paymentBusy = false;
+  approvalBusy = false;
 }
 
+// ===================================================
+// DATE AND VALIDATION HELPERS
+// ===================================================
+
+function localDateString() {
+  const date = new Date();
+
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0')
+  ].join('-');
+}
+
+function currentPeriod() {
+  return localDateString().slice(0, 7);
+}
+
+function validPeriod(value) {
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(
+    String(value || '')
+  );
+}
+
+function validDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+
+  const date = new Date(`${value}T00:00:00`);
+
+  return !Number.isNaN(date.getTime()) &&
+    date.getFullYear() === Number(value.slice(0, 4)) &&
+    date.getMonth() + 1 === Number(value.slice(5, 7)) &&
+    date.getDate() === Number(value.slice(8, 10));
+}
+
+function validPhone(value) {
+  return !value ||
+    /^[0-9+\s()-]{7,15}$/.test(value);
+}
+
+function validMemberNumber(number) {
+  return Number.isSafeInteger(Number(number)) &&
+    Number(number) >= 1 &&
+    Number(number) <= 99999;
+}
+
+// ===================================================
 // HISTORICAL PAYMENTS
+// ===================================================
 
 function isHistoricalPaid(history, year, month) {
   if (year < 2024) return false;
@@ -287,12 +363,7 @@ function collectPaidMonths(member, history) {
 }
 
 function historyPeriods(member, paidMonths) {
-  const now = new Date();
-
-  const last =
-    `${now.getFullYear()}-${String(
-      now.getMonth() + 1
-    ).padStart(2, '0')}`;
+  const last = currentPeriod();
 
   let first =
     member?.joiningDate?.slice(0, 7) ||
@@ -310,11 +381,10 @@ function historyPeriods(member, paidMonths) {
 
   const result = [];
 
-  for (
-    let year = Number(first.slice(0, 4));
-    year <= now.getFullYear();
-    year++
-  ) {
+  const startYear = Number(first.slice(0, 4));
+  const endYear = Number(last.slice(0, 4));
+
+  for (let year = startYear; year <= endYear; year++) {
     for (let month = 1; month <= 12; month++) {
       const period =
         `${year}-${String(month).padStart(2, '0')}`;
@@ -328,30 +398,27 @@ function historyPeriods(member, paidMonths) {
   return result;
 }
 
-function renderHistoryTable(
-  member,
-  oldHistory,
-  target
-) {
+function renderHistoryTable(member, history, target) {
   const paidMonths = collectPaidMonths(
     member,
-    oldHistory
+    history
   );
 
   const paidSet = new Set(paidMonths);
 
   const table = document.createElement('table');
+
   const thead = document.createElement('thead');
   const header = document.createElement('tr');
 
-  ['Month', 'Status'].forEach(value => {
+  ['Month', 'Status'].forEach(label => {
     const th = document.createElement('th');
-    th.textContent = value;
-    header.appendChild(th);
+    th.textContent = label;
+    header.append(th);
   });
 
-  thead.appendChild(header);
-  table.appendChild(thead);
+  thead.append(header);
+  table.append(thead);
 
   const tbody = document.createElement('tbody');
 
@@ -359,32 +426,31 @@ function renderHistoryTable(
     member,
     paidMonths
   )) {
-    const tr = document.createElement('tr');
+    const row = document.createElement('tr');
 
-    const tdMonth = document.createElement('td');
-    const tdStatus = document.createElement('td');
+    const monthCell = document.createElement('td');
+    const statusCell = document.createElement('td');
+
+    monthCell.textContent = period;
 
     const paid = paidSet.has(period);
 
-    tdMonth.textContent = period;
-
-    tdStatus.textContent = paid
+    statusCell.textContent = paid
       ? 'Paid'
-      : member?.payments?.[period]?.status === 'pending'
-        ? 'Pending'
-        : 'Not verified';
+      : 'Not verified';
 
-    tdStatus.className = paid
+    statusCell.className = paid
       ? 'history-paid'
       : 'history-unverified';
 
-    tr.append(tdMonth, tdStatus);
-    tbody.appendChild(tr);
+    row.append(monthCell, statusCell);
+    tbody.append(row);
   }
 
-  table.appendChild(tbody);
+  table.append(tbody);
 
   const container = $(target);
+
   if (container) {
     container.replaceChildren(table);
   }
@@ -392,29 +458,27 @@ function renderHistoryTable(
   return paidMonths.length;
 }
 
-// INITIAL VALUES
+// ===================================================
+// INITIAL FORM VALUES
+// ===================================================
 
 if ($('paymentPeriod')) {
-  $('paymentPeriod').value =
-    `${new Date().getFullYear()}-${String(
-      new Date().getMonth() + 1
-    ).padStart(2, '0')}`;
+  $('paymentPeriod').value = currentPeriod();
 }
 
 if ($('newMemberDate')) {
   $('newMemberDate').value = localDateString();
 }
 
-// FIREBASE
+// ===================================================
+// FIREBASE INITIALIZATION
+// ===================================================
 
 if (
   !firebaseConfig.databaseURL ||
   firebaseConfig.databaseURL.startsWith('REPLACE_')
 ) {
-  notify(
-    'Firebase configuration missing.',
-    true
-  );
+  notify('Firebase configuration missing.', true);
 
   if ($('signIn')) {
     $('signIn').disabled = true;
@@ -425,172 +489,101 @@ if (
   auth = getAuth(app);
   db = getDatabase(app);
 
-  onAuthStateChanged(auth, async user => {
-    stopListeners();
+  onAuthStateChanged(auth, handleAuthChange);
+}
 
-    current = user;
-    admin = false;
-    memberNumber = null;
+// ===================================================
+// AUTHENTICATION
+// ===================================================
 
-    show('login', !user);
-    show('logout', !!user);
+async function handleAuthChange(user) {
+  stopListeners();
 
-    ['pending', 'member', 'admin'].forEach(
-      id => show(id, false)
+  current = user;
+  admin = false;
+  memberNumber = null;
+
+  show('login', !user);
+  show('logout', !!user);
+
+  ['pending', 'member', 'admin'].forEach(
+    id => show(id, false)
+  );
+
+  if (!user) return;
+
+  try {
+    const adminSnapshot = await get(
+      ref(db, `admins/${user.uid}`)
     );
 
-    if (!user) return;
+    if (auth.currentUser?.uid !== user.uid) {
+      return;
+    }
 
-    try {
-      const adminSnapshot = await get(
-        ref(db, `admins/${user.uid}`)
+    admin = adminSnapshot.val() === true;
+
+    if (admin) {
+      show('admin', true);
+      loadAdmin();
+      return;
+    }
+
+    const userSnapshot = await get(
+      ref(db, `users/${user.uid}`)
+    );
+
+    const record = userSnapshot.val();
+
+    if (
+      record?.status === 'approved' &&
+      record.memberNumber
+    ) {
+      const number = String(record.memberNumber);
+
+      const memberSnapshot = await get(
+        ref(db, `members/${number}`)
       );
+
+      const member = memberSnapshot.val();
 
       if (auth.currentUser?.uid !== user.uid) {
         return;
       }
 
-      admin = adminSnapshot.val() === true;
+      if (
+        isActiveMember(member) &&
+        member.uid === user.uid
+      ) {
+        memberNumber = Number(number);
+        currentMemberData = member;
 
-      if (admin) {
-        show('admin', true);
-        loadAdmin();
+        show('member', true);
+        renderMember(member);
+
+        loadMemberListeners(number, user.uid);
+        updateUpiLink();
+
         return;
       }
+    }
 
-      const userSnapshot = await get(
-        ref(db, `users/${user.uid}`)
-      );
+    show('pending', true);
 
-      const record = userSnapshot.val();
-
-      if (
-        record?.status === 'approved' &&
-        record.memberNumber
-      ) {
-        const number = String(
-          record.memberNumber
-        );
-
-        const memberSnapshot = await get(
-          ref(db, `members/${number}`)
-        );
-
-        const member = memberSnapshot.val();
-
-        if (auth.currentUser?.uid !== user.uid) {
-          return;
-        }
-
-        if (
-          isActiveMember(member) &&
-          member.uid === user.uid
-        ) {
-          memberNumber = Number(number);
-          currentMemberData = member;
-
-          show('member', true);
-          renderMember(member);
-
-          unsubscribers.push(
-            onValue(
-              ref(db, `members/${number}`),
-              snapshot => {
-                const updated = snapshot.val();
-
-                if (
-                  !isActiveMember(updated) ||
-                  updated.uid !== user.uid
-                ) {
-                  currentMemberData = null;
-                  show('member', false);
-                  show('pending', true);
-
-                  notify(
-                    'Membership access is not active.',
-                    true
-                  );
-                  return;
-                }
-
-                currentMemberData = updated;
-                renderMember(updated);
-              },
-              error => notify(
-                error.message,
-                true
-              )
-            )
-          );
-
-          unsubscribers.push(
-            onValue(
-              ref(db, `paymentHistory/${number}`),
-              snapshot => {
-                historicalPayments =
-                  snapshot.val() || {};
-
-                historyLoaded = true;
-                historyError = false;
-
-                renderMember(currentMemberData);
-              },
-              error => {
-                historyLoaded = true;
-                historyError = true;
-
-                notify(
-                  'Historical payment error: ' +
-                  error.message,
-                  true
-                );
-
-                renderMember(currentMemberData);
-              }
-            )
-          );
-
-          unsubscribers.push(
-            onValue(
-              query(
-                ref(db, 'paymentRequests'),
-                orderByChild('uid'),
-                equalTo(user.uid)
-              ),
-              snapshot => {
-                renderMyPayments(
-                  snapshot.val() || {}
-                );
-              },
-              error => notify(
-                error.message,
-                true
-              )
-            )
-          );
-
-          updateUpiLink();
-          return;
-        }
-      }
-
-      show('pending', true);
-
+    if ($('claimNumber')) {
       $('claimNumber').value =
         record?.requestedNumber || '';
-
-    } catch (error) {
-      notify(
-        'Database error: ' + error.message,
-        true
-      );
     }
-  });
+
+  } catch (error) {
+    notify(
+      'Database error: ' + error.message,
+      true
+    );
+  }
 }
 
-// LOGIN
-
-$('signIn').onclick = async () => {
+async function loginWithGoogle() {
   try {
     await signInWithPopup(
       auth,
@@ -602,23 +595,22 @@ $('signIn').onclick = async () => {
       true
     );
   }
-};
+}
+
+$('signIn').onclick = loginWithGoogle;
 
 $('logout').onclick = () => signOut(auth);
 
+// ===================================================
 // MEMBER APPROVAL REQUEST
+// ===================================================
 
 $('requestApproval').onclick = async () => {
   if (!current || admin) return;
 
-  const number = Number(
-    $('claimNumber').value
-  );
+  const number = Number($('claimNumber').value);
 
-  if (
-    !Number.isSafeInteger(number) ||
-    number < 1
-  ) {
+  if (!validMemberNumber(number)) {
     return notify(
       'Enter valid member number.',
       true
@@ -639,12 +631,95 @@ $('requestApproval').onclick = async () => {
     );
 
     notify('Approval request submitted.');
+
   } catch (error) {
     notify(error.message, true);
   }
 };
 
+// ===================================================
+// MEMBER REALTIME LISTENERS
+// ===================================================
+
+function loadMemberListeners(number, uid) {
+  unsubscribers.push(
+    onValue(
+      ref(db, `members/${number}`),
+      snapshot => {
+        const member = snapshot.val();
+
+        if (
+          !isActiveMember(member) ||
+          member.uid !== uid
+        ) {
+          currentMemberData = null;
+
+          show('member', false);
+          show('pending', true);
+
+          notify(
+            'Membership access is not active.',
+            true
+          );
+
+          return;
+        }
+
+        currentMemberData = member;
+        renderMember(member);
+      },
+      error => {
+        show('member', false);
+        notify(error.message, true);
+      }
+    )
+  );
+
+  unsubscribers.push(
+    onValue(
+      ref(db, `paymentHistory/${number}`),
+      snapshot => {
+        historicalPayments =
+          snapshot.val() || {};
+
+        historyLoaded = true;
+        historyError = false;
+
+        renderMember(currentMemberData);
+      },
+      error => {
+        historyLoaded = true;
+        historyError = true;
+
+        notify(
+          'Historical payment error: ' +
+          error.message,
+          true
+        );
+
+        renderMember(currentMemberData);
+      }
+    )
+  );
+
+  unsubscribers.push(
+    onValue(
+      query(
+        ref(db, 'paymentRequests'),
+        orderByChild('uid'),
+        equalTo(uid)
+      ),
+      snapshot => {
+        renderMyPayments(snapshot.val() || {});
+      },
+      error => notify(error.message, true)
+    )
+  );
+}
+
+// ===================================================
 // MEMBER DASHBOARD
+// ===================================================
 
 function renderMember(member) {
   if (!member) return;
@@ -653,8 +728,7 @@ function renderMember(member) {
     member.name || 'Member';
 
   $('memberMeta').textContent =
-    'Member #' +
-    (member.number || memberNumber);
+    'Member #' + (member.number || memberNumber);
 
   const paid = collectPaidMonths(
     member,
@@ -662,39 +736,27 @@ function renderMember(member) {
   );
 
   const paidSet = new Set(paid);
+
   const rows = [];
 
-  for (const period of historyPeriods(
-    member,
-    paid
-  )) {
-    const year = Number(
-      period.slice(0, 4)
-    );
+  for (const period of historyPeriods(member, paid)) {
+    const year = Number(period.slice(0, 4));
 
     let status = 'Not verified';
 
     if (paidSet.has(period)) {
       status = 'Paid';
-    } else if (
-      member.payments?.[period]?.status === 'pending'
-    ) {
-      status = 'Pending';
-    } else if (
-      !historyLoaded &&
-      year <= 2027
-    ) {
+    } else if (!historyLoaded && year <= 2027) {
       status = 'Loading';
-    } else if (
-      historyError &&
-      year <= 2027
-    ) {
+    } else if (historyError && year <= 2027) {
       status = 'History unavailable';
     }
 
     rows.push(
-      `<tr><td>${escapeHTML(period)}</td>` +
-      `<td>${escapeHTML(status)}</td></tr>`
+      `<tr>
+        <td>${escapeHTML(period)}</td>
+        <td>${escapeHTML(status)}</td>
+      </tr>`
     );
   }
 
@@ -705,86 +767,26 @@ function renderMember(member) {
         ? 'Unavailable'
         : String(paid.length);
 
-  // Outstanding dues require verified
-  // historical membership start dates.
+  // Do not calculate dues from an unverified
+  // imported joining date.
 
-  $('dueAmount').textContent =
-    'Not verified';
+  $('dueAmount').textContent = 'Not verified';
 
-  $('historyBody').innerHTML =
-    rows.join('');
+  $('historyBody').innerHTML = rows.join('');
 }
 
-// BUTTON HELPER
-
-function makeButton(text, handler, css = '') {
-  const button =
-    document.createElement('button');
-
-  button.textContent = text;
-
-  if (css) button.className = css;
-
-  button.onclick = handler;
-
-  return button;
-}
-
+// ===================================================
 // ADMIN LISTENERS
+// ===================================================
 
 function loadAdmin() {
   unsubscribers.push(
     onValue(
       ref(db, 'requests'),
       snapshot => {
-        const data = snapshot.val() || {};
-
-        $('requestsList').replaceChildren();
-
-        let count = 0;
-
-        for (const [uid, request] of Object.entries(
-          data
-        )) {
-          if (request.status !== 'pending') {
-            continue;
-          }
-
-          count++;
-
-          const box =
-            document.createElement('div');
-
-          box.className = 'panel';
-
-          const p =
-            document.createElement('p');
-
-          p.textContent =
-            `${request.name || ''} ` +
-            `(${request.email || ''}) — ` +
-            `requested #${request.requestedNumber}`;
-
-          box.append(
-            p,
-            makeButton(
-              'Approve',
-              () => approve(uid, request)
-            )
-          );
-
-          $('requestsList').append(box);
-        }
-
-        if (!count) {
-          $('requestsList').textContent =
-            'No pending approval requests.';
-        }
+        renderApprovalRequests(snapshot.val() || {});
       },
-      error => notify(
-        error.message,
-        true
-      )
+      error => notify(error.message, true)
     )
   );
 
@@ -835,9 +837,7 @@ function loadAdmin() {
     onValue(
       ref(db, 'paymentHistory'),
       snapshot => {
-        adminHistoryCache =
-          snapshot.val() || {};
-
+        adminHistoryCache = snapshot.val() || {};
         adminHistoryLoaded = true;
 
         renderAdminMembers();
@@ -852,13 +852,7 @@ function loadAdmin() {
       },
       error => {
         adminHistoryLoaded = false;
-
-        notify(
-          'Admin history error: ' +
-          error.message,
-          true
-        );
-
+        notify(error.message, true);
         updateArchiveButton();
       }
     )
@@ -868,9 +862,7 @@ function loadAdmin() {
     onValue(
       ref(db, 'archivedMembers'),
       snapshot => {
-        archivedMembers =
-          snapshot.val() || {};
-
+        archivedMembers = snapshot.val() || {};
         archiveLoaded = true;
 
         renderArchivedMembers();
@@ -878,41 +870,66 @@ function loadAdmin() {
       },
       error => {
         archiveLoaded = false;
-
-        notify(
-          'Archive loading error: ' +
-          error.message,
-          true
-        );
-
+        notify(error.message, true);
         updateArchiveButton();
       }
     )
   );
 }
 
-// APPROVE MEMBER
+// ===================================================
+// APPROVAL REQUESTS
+// ===================================================
+
+function renderApprovalRequests(data) {
+  const container = $('requestsList');
+  container.replaceChildren();
+
+  let count = 0;
+
+  for (const [uid, request] of Object.entries(data)) {
+    if (request.status !== 'pending') continue;
+
+    count++;
+
+    const box = document.createElement('div');
+    box.className = 'panel';
+
+    const info = document.createElement('p');
+
+    info.textContent =
+      `${request.name || ''} ` +
+      `(${request.email || ''}) — ` +
+      `requested #${request.requestedNumber}`;
+
+    box.append(
+      info,
+      makeButton(
+        'Approve',
+        () => approve(uid, request)
+      )
+    );
+
+    container.append(box);
+  }
+
+  if (!count) {
+    container.textContent =
+      'No pending approval requests.';
+  }
+}
 
 async function approve(uid, request) {
-  if (!isAdmin()) return;
+  if (!isAdmin() || approvalBusy) return;
 
-  const number = String(
-    request.requestedNumber
-  );
-
+  const number = String(request.requestedNumber);
   const member = memberList[number];
 
   if (!isActiveMember(member)) {
-    return notify(
-      'Member is not active.',
-      true
-    );
+    return notify('Member is not active.', true);
   }
 
-  if (
-    member.uid &&
-    member.uid !== uid
-  ) {
+  if (member.uid && member.uid !== uid) {
     return notify(
       'Already linked to another account.',
       true
@@ -920,43 +937,43 @@ async function approve(uid, request) {
   }
 
   if (!confirm(
-    `Approve ${request.email} as ` +
-    `member #${number} (${member.name})?`
+    `Approve ${request.email} as member ` +
+    `#${number} (${member.name})?`
   )) return;
 
+  approvalBusy = true;
+
   try {
-    // Recheck the member before linking.
-    // The final security boundary must also
-    // be enforced by Firebase Rules.
-
-    const freshMember = (
-      await get(ref(db, `members/${number}`))
-    ).val();
-
-    if (
-      !isActiveMember(freshMember) ||
-      (
-        freshMember.uid &&
-        freshMember.uid !== uid
-      )
-    ) {
-      throw new Error(
-        'Member status or account changed.'
-      );
-    }
+    const memberRef = ref(db, `members/${number}`);
 
     const freshRequest = (
       await get(ref(db, `requests/${uid}`))
     ).val();
 
     if (
-      freshRequest?.status !== 'pending' ||
+      !freshRequest ||
+      freshRequest.status !== 'pending' ||
       String(freshRequest.requestedNumber) !== number
     ) {
+      throw new Error('Approval request changed.');
+    }
+
+    const freshMember = (
+      await get(memberRef)
+    ).val();
+
+    if (
+      !isActiveMember(freshMember) ||
+      (freshMember.uid && freshMember.uid !== uid)
+    ) {
       throw new Error(
-        'Approval request changed.'
+        'Member is inactive, locked or already linked.'
       );
     }
+
+    // Current approval uses a multi-location write.
+    // Archive remains disabled until all cross-path
+    // concurrency rules have been tested.
 
     await update(ref(db), {
       [`members/${number}/uid`]: uid,
@@ -968,43 +985,38 @@ async function approve(uid, request) {
       [`requests/${uid}/status`]: 'approved'
     });
 
-    notify('Approved.');
+    notify('Member approved.');
 
   } catch (error) {
     notify(error.message, true);
+  } finally {
+    approvalBusy = false;
   }
 }
 
-// ADMIN MEMBERS TABLE
+// ===================================================
+// ADMIN MEMBERS
+// ===================================================
 
 function renderAdminMembers() {
   const container = $('membersList');
   container.replaceChildren();
 
-  const searchText =
-    ($('search').value || '')
-      .toLowerCase();
+  const search =
+    ($('search').value || '').toLowerCase();
 
   const entries = Object.entries(memberList)
     .filter(([id, member]) =>
       `${id} ${member?.name || ''}`
         .toLowerCase()
-        .includes(searchText)
+        .includes(search)
     )
-    .sort(
-      (a, b) =>
-        Number(a[0]) - Number(b[0])
-    )
+    .sort((a, b) => Number(a[0]) - Number(b[0]))
     .slice(0, 300);
 
-  const table =
-    document.createElement('table');
-
-  const thead =
-    document.createElement('thead');
-
-  const header =
-    document.createElement('tr');
+  const table = document.createElement('table');
+  const thead = document.createElement('thead');
+  const header = document.createElement('tr');
 
   [
     '#',
@@ -1017,64 +1029,51 @@ function renderAdminMembers() {
   ].forEach(label => {
     const th = document.createElement('th');
     th.textContent = label;
-    header.appendChild(th);
+    header.append(th);
   });
 
-  thead.appendChild(header);
-  table.appendChild(thead);
+  thead.append(header);
+  table.append(thead);
 
-  const tbody =
-    document.createElement('tbody');
+  const tbody = document.createElement('tbody');
 
   for (const [number, member] of entries) {
-    const tr =
-      document.createElement('tr');
+    const row = document.createElement('tr');
 
-    const paidMonths = adminHistoryLoaded
+    const paid = adminHistoryLoaded
       ? collectPaidMonths(
           member,
           adminHistoryCache[number] || {}
         )
       : [];
 
-    const cells = [
+    const values = [
       number,
       member?.name || '',
-      member?.uid
-        ? 'Linked'
-        : 'Not linked',
+      member?.uid ? 'Linked' : 'Not linked',
       member?.status || 'active',
       adminHistoryLoaded
-        ? String(paidMonths.length)
+        ? String(paid.length)
         : 'Loading',
       adminHistoryLoaded
-        ? `₹${paidMonths.length * 50}`
+        ? `₹${paid.length * MONTHLY_FEE}`
         : 'Loading'
     ];
 
-    for (const value of cells) {
-      const td =
-        document.createElement('td');
-
+    for (const value of values) {
+      const td = document.createElement('td');
       td.textContent = value;
-      tr.appendChild(td);
+      row.append(td);
     }
 
-    const actions =
-      document.createElement('td');
+    const actions = document.createElement('td');
 
     const historyButton = makeButton(
       'View History',
       () => renderAdminPaymentHistory(number)
     );
 
-    historyButton.disabled =
-      !adminHistoryLoaded;
-
-    actions.append(historyButton);
-    actions.append(
-      document.createTextNode(' ')
-    );
+    historyButton.disabled = !adminHistoryLoaded;
 
     const editButton = makeButton(
       'Edit',
@@ -1082,16 +1081,10 @@ function renderAdminMembers() {
       'secondary'
     );
 
-    editButton.disabled =
-      !canEditMember(member);
-
-    actions.append(editButton);
-    actions.append(
-      document.createTextNode(' ')
-    );
+    editButton.disabled = !canEditMember(member);
 
     const archiveButton = makeButton(
-      member?.status === 'archived'
+      member.status === 'archived'
         ? 'Archived'
         : 'Archive',
       () => openArchiveMember(number),
@@ -1101,37 +1094,36 @@ function renderAdminMembers() {
     archiveButton.disabled =
       !canEditMember(member);
 
-    actions.append(archiveButton);
+    actions.append(
+      historyButton,
+      document.createTextNode(' '),
+      editButton,
+      document.createTextNode(' '),
+      archiveButton
+    );
 
-    tr.append(actions);
-    tbody.append(tr);
+    row.append(actions);
+    tbody.append(row);
   }
 
   table.append(tbody);
   container.append(table);
 }
 
-// ADMIN PAYMENT HISTORY
-
 function renderAdminPaymentHistory(number) {
-  if (!isAdmin() || !adminHistoryLoaded) {
-    return;
-  }
+  if (!isAdmin() || !adminHistoryLoaded) return;
 
-  const member =
-    memberList[String(number)];
+  const member = memberList[String(number)];
 
   if (!member) return;
 
-  selectedAdminMember =
-    String(number);
+  selectedAdminMember = String(number);
 
   const history =
     adminHistoryCache[String(number)] || {};
 
   $('adminHistoryTitle').textContent =
-    `#${number} — ` +
-    `${member.name || 'Member'}`;
+    `#${number} — ${member.name || 'Member'}`;
 
   const count = renderHistoryTable(
     member,
@@ -1141,15 +1133,16 @@ function renderAdminPaymentHistory(number) {
 
   $('adminHistorySummary').textContent =
     `Paid months: ${count} | ` +
-    `Recorded paid amount: ₹${count * 50}`;
+    `Recorded paid amount: ₹${count * MONTHLY_FEE}`;
 
   show('adminMemberHistory', true);
 }
 
-$('search').oninput =
-  renderAdminMembers;
+$('search').oninput = renderAdminMembers;
 
+// ===================================================
 // ADMIN TABS
+// ===================================================
 
 function tab(which) {
   [
@@ -1159,10 +1152,7 @@ function tab(which) {
     'addMember',
     'archivedMembers'
   ].forEach(name => {
-    show(
-      name + 'Panel',
-      name === which
-    );
+    show(`${name}Panel`, name === which);
   });
 }
 
@@ -1183,16 +1173,15 @@ $('tabArchivedMembers').onclick = () => {
   renderArchivedMembers();
 };
 
+// ===================================================
 // ADD MEMBER
+// ===================================================
 
 $('addMemberForm').onsubmit = async event => {
   event.preventDefault();
 
   if (!isAdmin()) {
-    return notify(
-      'Admin access required.',
-      true
-    );
+    return notify('Admin access required.', true);
   }
 
   const number = Number(
@@ -1211,50 +1200,42 @@ $('addMemberForm').onsubmit = async event => {
   const status =
     $('newMemberStatus').value;
 
-  if (
-    !Number.isSafeInteger(number) ||
-    number < 1
-  ) {
-    return notify(
-      'Invalid member number.',
-      true
-    );
+  if (!validMemberNumber(number)) {
+    return notify('Invalid member number.', true);
   }
 
   if (!name || name.length > 100) {
-    return notify(
-      'Invalid member name.',
-      true
-    );
+    return notify('Invalid member name.', true);
   }
 
   if (!validPhone(phone)) {
-    return notify(
-      'Invalid phone number.',
-      true
-    );
+    return notify('Invalid phone number.', true);
   }
 
   if (!validDate(joiningDate)) {
-    return notify(
-      'Invalid joining date.',
-      true
-    );
+    return notify('Invalid joining date.', true);
   }
 
   if (!['active', 'inactive'].includes(status)) {
-    return notify(
-      'Invalid membership status.',
-      true
-    );
+    return notify('Invalid status.', true);
   }
 
   const button = $('saveNewMember');
   button.disabled = true;
 
   try {
-    // A number is permanently reserved
-    // when its member record exists.
+    // Check archived register as well as
+    // existing member records.
+
+    const archiveSnapshot = await get(
+      ref(db, `archivedMembers/${number}`)
+    );
+
+    if (archiveSnapshot.exists()) {
+      throw new Error(
+        'Member number is reserved in archive.'
+      );
+    }
 
     const result = await runTransaction(
       ref(db, `members/${number}`),
@@ -1277,15 +1258,12 @@ $('addMemberForm').onsubmit = async event => {
 
     if (!result.committed) {
       throw new Error(
-        'Member number already exists. ' +
-        'It cannot be reused.'
+        'Member number already exists.'
       );
     }
 
     $('addMemberForm').reset();
-
-    $('newMemberDate').value =
-      localDateString();
+    $('newMemberDate').value = localDateString();
 
     notify(
       `Member #${number} added successfully.`
@@ -1294,22 +1272,20 @@ $('addMemberForm').onsubmit = async event => {
     tab('members');
 
   } catch (error) {
-    notify(
-      'Save failed: ' + error.message,
-      true
-    );
+    notify('Save failed: ' + error.message, true);
   } finally {
     button.disabled = false;
   }
 };
 
+// ===================================================
 // EDIT MEMBER
+// ===================================================
 
 function openEditMember(number) {
   if (!isAdmin()) return;
 
-  const member =
-    memberList[String(number)];
+  const member = memberList[String(number)];
 
   if (!canEditMember(member)) {
     return notify(
@@ -1321,18 +1297,12 @@ function openEditMember(number) {
   show('archiveMemberPanel', false);
   show('adminMemberHistory', false);
 
-  $('editMemberNumber').value =
-    number;
-
-  $('editMemberName').value =
-    member.name || '';
-
-  $('editMemberPhone').value =
-    member.phone || '';
+  $('editMemberNumber').value = number;
+  $('editMemberName').value = member.name || '';
+  $('editMemberPhone').value = member.phone || '';
 
   $('editMemberDate').value =
-    member.joiningDate ||
-    localDateString();
+    member.joiningDate || localDateString();
 
   $('editMemberStatus').value =
     member.status === 'inactive'
@@ -1355,14 +1325,12 @@ $('editMemberForm').onsubmit = async event => {
   event.preventDefault();
 
   if (!isAdmin()) {
-    return notify(
-      'Admin access required.',
-      true
-    );
+    return notify('Admin access required.', true);
   }
 
-  const number =
-    $('editMemberNumber').value;
+  const number = String(
+    $('editMemberNumber').value
+  );
 
   const name =
     $('editMemberName').value.trim();
@@ -1381,38 +1349,25 @@ $('editMemberForm').onsubmit = async event => {
   }
 
   if (!validPhone(phone)) {
-    return notify(
-      'Invalid phone number.',
-      true
-    );
+    return notify('Invalid phone number.', true);
   }
 
   if (!validDate(joiningDate)) {
-    return notify(
-      'Invalid joining date.',
-      true
-    );
+    return notify('Invalid joining date.', true);
   }
 
   if (!['active', 'inactive'].includes(status)) {
-    return notify(
-      'Invalid status.',
-      true
-    );
+    return notify('Invalid status.', true);
   }
 
-  const button =
-    $('saveEditMember');
-
+  const button = $('saveEditMember');
   button.disabled = true;
 
   try {
     const result = await runTransaction(
       ref(db, `members/${number}`),
       member => {
-        if (!canEditMember(member)) {
-          return;
-        }
+        if (!canEditMember(member)) return;
 
         return {
           ...member,
@@ -1440,34 +1395,20 @@ $('editMemberForm').onsubmit = async event => {
     );
 
   } catch (error) {
-    notify(
-      'Edit failed: ' + error.message,
-      true
-    );
+    notify('Edit failed: ' + error.message, true);
   } finally {
     button.disabled = false;
   }
 };
 
-// ARCHIVE MEMBER
-//
-// Non-destructive design:
-// 1. Verify records.
-// 2. Reject unresolved payments.
-// 3. Lock member via transaction.
-// 4. Recheck payment requests.
-// 5. Preserve archived snapshot.
-// 6. Finalize archived status.
-//
-// The write feature remains disabled
-// until Firebase Rules and race conditions
-// have been verified.
+// ===================================================
+// ARCHIVE SAFETY
+// ===================================================
 
 function openArchiveMember(number) {
   if (!isAdmin()) return;
 
-  const member =
-    memberList[String(number)];
+  const member = memberList[String(number)];
 
   if (!canEditMember(member)) {
     return notify(
@@ -1479,12 +1420,10 @@ function openArchiveMember(number) {
   show('editMemberPanel', false);
   show('adminMemberHistory', false);
 
-  $('archiveMemberNumber').value =
-    number;
+  $('archiveMemberNumber').value = number;
 
   $('archiveMemberSummary').textContent =
-    `#${number} — ` +
-    `${member.name || 'Member'}`;
+    `#${number} — ${member.name || 'Member'}`;
 
   $('archiveMemberReason').value = '';
   $('archiveMemberNotes').value = '';
@@ -1504,20 +1443,56 @@ $('cancelArchiveMember').onclick = () => {
   show('archiveMemberPanel', false);
 };
 
-function archiveRequestsFor(number, data) {
-  return Object.entries(data || {})
-    .filter(([, request]) =>
+function requestsForMember(number, data) {
+  return Object.entries(data || {}).filter(
+    ([, request]) =>
       String(request.memberNumber) ===
       String(number)
-    );
+  );
 }
 
-function unresolvedArchiveRequests(number, data) {
-  return archiveRequestsFor(number, data)
-    .filter(([, request]) =>
-      !['approved', 'rejected']
-        .includes(request.status)
+function unresolvedRequests(number, data) {
+  return requestsForMember(number, data).filter(
+    ([, request]) =>
+      !['approved', 'rejected'].includes(
+        request.status
+      )
+  );
+}
+
+// Detect requests that have payment records
+// but are not marked approved.
+
+function findPartialPaymentRequests(
+  number,
+  member,
+  requests
+) {
+  const partial = [];
+
+  for (const [id, request] of requestsForMember(
+    number,
+    requests
+  )) {
+    const paidRecords = Object.values(
+      member?.payments || {}
     );
+
+    const found = paidRecords.some(
+      payment =>
+        payment?.requestId === id &&
+        payment?.status === 'paid'
+    );
+
+    if (
+      found &&
+      request.status !== 'approved'
+    ) {
+      partial.push(id);
+    }
+  }
+
+  return partial;
 }
 
 async function archiveMemberSafely(event) {
@@ -1535,7 +1510,7 @@ async function archiveMemberSafely(event) {
   const notes =
     $('archiveMemberNotes').value.trim();
 
-  if (!/^[1-9]\d*$/.test(number)) {
+  if (!validMemberNumber(number)) {
     return notify(
       'Invalid member number.',
       true
@@ -1569,7 +1544,7 @@ async function archiveMemberSafely(event) {
     !archiveLoaded
   ) {
     return notify(
-      'Wait until all records finish loading.',
+      'Wait until database loading completes.',
       true
     );
   }
@@ -1578,11 +1553,8 @@ async function archiveMemberSafely(event) {
   updateArchiveButton();
 
   try {
-    const memberRef =
-      ref(db, `members/${number}`);
-
     const member = (
-      await get(memberRef)
+      await get(ref(db, `members/${number}`))
     ).val();
 
     if (!canEditMember(member)) {
@@ -1598,190 +1570,76 @@ async function archiveMemberSafely(event) {
     ).val() || {};
 
     const requests = (
-      await get(
-        ref(db, 'paymentRequests')
-      )
+      await get(ref(db, 'paymentRequests'))
     ).val() || {};
 
-    const unresolved =
-      unresolvedArchiveRequests(
-        number,
-        requests
-      );
+    const unresolved = unresolvedRequests(
+      number,
+      requests
+    );
 
     if (unresolved.length) {
       throw new Error(
         `${unresolved.length} unresolved payment ` +
-        'request(s). Review them first.'
+        'request(s). Review before archive.'
       );
     }
 
-    const existingArchive = (
+    const partial = findPartialPaymentRequests(
+      number,
+      member,
+      requests
+    );
+
+    if (partial.length) {
+      throw new Error(
+        'Partial payment approval detected. ' +
+        'Reconcile before archive.'
+      );
+    }
+
+    const archive = (
       await get(
         ref(db, `archivedMembers/${number}`)
       )
     ).val();
 
-    if (existingArchive) {
+    if (archive) {
       throw new Error(
-        'Archive record already exists. ' +
-        'Manual review required.'
+        'Archive record already exists.'
       );
     }
 
-    const paidCount =
-      collectPaidMonths(
-        member,
-        history
-      ).length;
-
-    // Archive pre-check can be used now.
-    // No database write occurs while locked.
+    const paidCount = collectPaidMonths(
+      member,
+      history
+    ).length;
 
     if (!ARCHIVE_WRITE_ENABLED) {
       notify(
         `Archive pre-check passed for ` +
         `#${number}. ${paidCount} paid months. ` +
         `No unresolved payment requests. ` +
-        `Final Archive remains LOCKED ` +
-        `until Firebase Rules are updated.`,
-        true
+        `Final Archive is LOCKED pending ` +
+        `server-side safety validation.`,
+        false
       );
       return;
     }
 
-    const confirmed = confirm(
-      `ARCHIVE MEMBER\n\n` +
-      `#${number} — ${member.name || ''}\n` +
-      `Paid months: ${paidCount}\n` +
-      `Reason: ${reason}\n\n` +
-      `Historical records will be preserved.\n` +
-      `Member number cannot be reused.\n\n` +
-      `Continue?`
-    );
+    // Intentionally no final write in this version.
+    // A safe archive requires an atomic,
+    // server-authorized operation that also
+    // coordinates payment approvals and requests.
 
-    if (!confirmed) return;
-
-    const lockedAt = Date.now();
-
-    const lockResult = await runTransaction(
-      memberRef,
-      existing => {
-        if (!canEditMember(existing)) {
-          return;
-        }
-
-        return {
-          ...existing,
-          status: 'archiving',
-          archiveLockAt: lockedAt,
-          archiveLockBy: current.uid
-        };
-      },
-      { applyLocally: false }
-    );
-
-    if (!lockResult.committed) {
-      throw new Error(
-        'Archive lock failed.'
-      );
-    }
-
-    // Read the committed member state.
-
-    const lockedMember = (
-      await get(memberRef)
-    ).val();
-
-    if (
-      !lockedMember ||
-      lockedMember.status !== 'archiving' ||
-      lockedMember.archiveLockAt !== lockedAt ||
-      lockedMember.archiveLockBy !== current.uid
-    ) {
-      throw new Error(
-        'Archive lock verification failed. ' +
-        'Manual review required.'
-      );
-    }
-
-    const latestRequests = (
-      await get(
-        ref(db, 'paymentRequests')
-      )
-    ).val() || {};
-
-    const remaining =
-      unresolvedArchiveRequests(
-        number,
-        latestRequests
-      );
-
-    if (remaining.length) {
-      throw new Error(
-        'Payment request changed during archive. ' +
-        'Member remains locked. ' +
-        'Manual review required.'
-      );
-    }
-
-    const latestHistory = (
-      await get(
-        ref(db, `paymentHistory/${number}`)
-      )
-    ).val() || {};
-
-    const archivedAt = Date.now();
-
-    const archiveRecord = {
-      originalNumber: Number(number),
-      member: {
-        ...lockedMember,
-        status: 'archived',
-        archivedAt,
-        archivedBy: current.uid
-      },
-      paymentHistory: latestHistory,
-      reason,
-      notes,
-      archivedAt,
-      archivedBy: current.uid,
-      paidMonthsAtArchive:
-        collectPaidMonths(
-          lockedMember,
-          latestHistory
-        ).length
-    };
-
-    // Multi-location update:
-    // Original records are not deleted.
-
-    await update(ref(db), {
-      [`archivedMembers/${number}`]:
-        archiveRecord,
-
-      [`members/${number}/status`]:
-        'archived',
-
-      [`members/${number}/archivedAt`]:
-        archivedAt,
-
-      [`members/${number}/archivedBy`]:
-        current.uid
-    });
-
-    show('archiveMemberPanel', false);
-
-    notify(
-      `Member #${number} archived. ` +
-      'Historical records preserved.'
+    throw new Error(
+      'Final Archive requires the secure ' +
+      'server-side workflow.'
     );
 
   } catch (error) {
     notify(
-      'Archive stopped: ' +
-      error.message +
-      ' Check member status before retrying.',
+      'Archive stopped: ' + error.message,
       true
     );
   } finally {
@@ -1794,8 +1652,7 @@ $('archiveMemberForm').onsubmit =
   archiveMemberSafely;
 
 function updateArchiveButton() {
-  const button =
-    $('confirmArchiveMember');
+  const button = $('confirmArchiveMember');
 
   if (!button) return;
 
@@ -1812,46 +1669,32 @@ function updateArchiveButton() {
 $('archiveMemberConfirm').onchange =
   updateArchiveButton;
 
-new MutationObserver(
-  updateArchiveButton
-).observe(
-  $('archiveMemberPanel'),
-  {
-    attributes: true,
-    attributeFilter: ['class']
-  }
-);
-
-// ARCHIVED MEMBERS
+// ===================================================
+// ARCHIVED MEMBERS REGISTER
+// ===================================================
 
 function renderArchivedMembers() {
-  const container =
-    $('archivedMembersList');
-
+  const container = $('archivedMembersList');
   container.replaceChildren();
 
   const search =
     ($('archivedMembersSearch').value || '')
       .toLowerCase();
 
-  const entries =
-    Object.entries(archivedMembers)
-      .filter(([id, record]) =>
-        [
-          id,
-          record.originalNumber,
-          record.member?.name,
-          record.reason
-        ]
-          .join(' ')
-          .toLowerCase()
-          .includes(search)
-      )
-      .sort(
-        (a, b) =>
-          (b[1].archivedAt || 0) -
-          (a[1].archivedAt || 0)
-      );
+  const entries = Object.entries(archivedMembers)
+    .filter(([id, record]) =>
+      [
+        id,
+        record.originalNumber,
+        record.member?.name,
+        record.reason
+      ].join(' ').toLowerCase().includes(search)
+    )
+    .sort(
+      (a, b) =>
+        (b[1].archivedAt || 0) -
+        (a[1].archivedAt || 0)
+    );
 
   if (!entries.length) {
     container.textContent =
@@ -1859,14 +1702,9 @@ function renderArchivedMembers() {
     return;
   }
 
-  const table =
-    document.createElement('table');
-
-  const thead =
-    document.createElement('thead');
-
-  const header =
-    document.createElement('tr');
+  const table = document.createElement('table');
+  const thead = document.createElement('thead');
+  const header = document.createElement('tr');
 
   [
     'Old #',
@@ -1877,18 +1715,16 @@ function renderArchivedMembers() {
   ].forEach(label => {
     const th = document.createElement('th');
     th.textContent = label;
-    header.appendChild(th);
+    header.append(th);
   });
 
-  thead.appendChild(header);
-  table.appendChild(thead);
+  thead.append(header);
+  table.append(thead);
 
-  const tbody =
-    document.createElement('tbody');
+  const tbody = document.createElement('tbody');
 
   for (const [id, record] of entries) {
-    const tr =
-      document.createElement('tr');
+    const row = document.createElement('tr');
 
     const values = [
       record.originalNumber,
@@ -1902,25 +1738,22 @@ function renderArchivedMembers() {
     ];
 
     for (const value of values) {
-      const td =
-        document.createElement('td');
-
+      const td = document.createElement('td');
       td.textContent = value;
-      tr.appendChild(td);
+      row.append(td);
     }
 
-    const actions =
-      document.createElement('td');
+    const actions = document.createElement('td');
 
-    actions.appendChild(
+    actions.append(
       makeButton(
         'View History',
         () => renderArchivedHistory(id)
       )
     );
 
-    tr.append(actions);
-    tbody.append(tr);
+    row.append(actions);
+    tbody.append(row);
   }
 
   table.append(tbody);
@@ -1930,18 +1763,11 @@ function renderArchivedMembers() {
 function renderArchivedHistory(id) {
   if (!isAdmin()) return;
 
-  const record =
-    archivedMembers[id];
-
+  const record = archivedMembers[id];
   if (!record) return;
 
-  selectedArchiveId = id;
-
-  const member =
-    record.member || {};
-
-  const history =
-    record.paymentHistory || {};
+  const member = record.member || {};
+  const history = record.paymentHistory || {};
 
   $('archivedHistoryTitle').textContent =
     `#${record.originalNumber} — ` +
@@ -1955,7 +1781,7 @@ function renderArchivedHistory(id) {
 
   $('archivedHistorySummary').textContent =
     `Paid months: ${count} | ` +
-    `Recorded paid amount: ₹${count * 50} | ` +
+    `Recorded paid amount: ₹${count * MONTHLY_FEE} | ` +
     `Reason: ${record.reason || 'Not specified'} | ` +
     'Member number reserved';
 
@@ -1970,46 +1796,35 @@ function renderArchivedHistory(id) {
 $('archivedMembersSearch').oninput =
   renderArchivedMembers;
 
+// ===================================================
 // UPI PAYMENT
-
-const UPI_ID =
-  'waheedwahi84-1@oksbi';
-
-const UPI_NAME =
-  'Waheed Wahi';
+// ===================================================
 
 function planDetails() {
-  const plan =
-    $('paymentPlan').value;
+  const plan = $('paymentPlan').value;
 
   return {
     plan,
     amount:
       plan === 'yearly'
-        ? 600
-        : 50,
-    period:
-      $('paymentPeriod').value
+        ? YEARLY_FEE
+        : MONTHLY_FEE,
+    period: $('paymentPeriod').value
   };
 }
 
 function updateUpiLink() {
-  const {
-    plan,
-    amount,
-    period
-  } = planDetails();
+  const { plan, amount, period } = planDetails();
 
-  const params =
-    new URLSearchParams({
-      pa: UPI_ID,
-      pn: UPI_NAME,
-      am: String(amount),
-      cu: 'INR',
-      tn:
-        `TFC ${memberNumber || ''} ` +
-        `${plan} ${period}`
-    });
+  const params = new URLSearchParams({
+    pa: UPI_ID,
+    pn: UPI_NAME,
+    am: String(amount),
+    cu: 'INR',
+    tn:
+      `TFC ${memberNumber || ''} ` +
+      `${plan} ${period}`
+  });
 
   $('upiPayLink').href =
     `upi://pay?${params.toString()}`;
@@ -2018,49 +1833,34 @@ function updateUpiLink() {
     `Open UPI app — ₹${amount}`;
 }
 
-$('paymentPlan').onchange =
-  updateUpiLink;
-
-$('paymentPeriod').onchange =
-  updateUpiLink;
+$('paymentPlan').onchange = updateUpiLink;
+$('paymentPeriod').onchange = updateUpiLink;
 
 updateUpiLink();
 
+// ===================================================
 // MEMBER PAYMENT SUBMISSION
+// ===================================================
 
 $('submitPayment').onclick = async () => {
-  if (
-    !current ||
-    !memberNumber ||
-    admin
-  ) {
+  if (!current || !memberNumber || admin) {
     return notify(
       'Member login required.',
       true
     );
   }
 
-  const {
-    plan,
-    amount,
-    period
-  } = planDetails();
+  const { plan, amount, period } = planDetails();
 
   const transactionId =
     $('transactionId').value.trim();
 
   if (!['monthly', 'yearly'].includes(plan)) {
-    return notify(
-      'Invalid payment plan.',
-      true
-    );
+    return notify('Invalid payment plan.', true);
   }
 
   if (!validPeriod(period)) {
-    return notify(
-      'Select valid payment period.',
-      true
-    );
+    return notify('Invalid payment period.', true);
   }
 
   if (
@@ -2075,7 +1875,7 @@ $('submitPayment').onclick = async () => {
 
   if (!confirm(
     `Submit ₹${amount} for ${period} ` +
-    `as Pending? Submit only after paying.`
+    'as Pending? Submit only after paying.'
   )) return;
 
   const button = $('submitPayment');
@@ -2097,24 +1897,20 @@ $('submitPayment').onclick = async () => {
       );
     }
 
-    const id =
-      push(
-        ref(db, 'paymentRequests')
-      ).key;
-
-    await set(
-      ref(db, `paymentRequests/${id}`),
-      {
-        uid: current.uid,
-        memberNumber,
-        plan,
-        amount,
-        period,
-        transactionId,
-        status: 'pending',
-        createdAt: Date.now()
-      }
+    const requestRef = push(
+      ref(db, 'paymentRequests')
     );
+
+    await set(requestRef, {
+      uid: current.uid,
+      memberNumber,
+      plan,
+      amount,
+      period,
+      transactionId,
+      status: 'pending',
+      createdAt: Date.now()
+    });
 
     $('transactionId').value = '';
 
@@ -2124,8 +1920,7 @@ $('submitPayment').onclick = async () => {
 
   } catch (error) {
     notify(
-      'Submission failed: ' +
-      error.message,
+      'Submission failed: ' + error.message,
       true
     );
   } finally {
@@ -2133,24 +1928,23 @@ $('submitPayment').onclick = async () => {
   }
 };
 
+// ===================================================
 // ADMIN PAYMENT REQUESTS
+// ===================================================
 
 function renderAdminPayments() {
-  const container =
-    $('adminPaymentList');
-
+  const container = $('adminPaymentList');
   container.replaceChildren();
 
-  const pending =
-    Object.entries(payments)
-      .filter(([, request]) =>
-        request.status === 'pending'
-      )
-      .sort(
-        (a, b) =>
-          (a[1].createdAt || 0) -
-          (b[1].createdAt || 0)
-      );
+  const pending = Object.entries(payments)
+    .filter(([, request]) =>
+      request.status === 'pending'
+    )
+    .sort(
+      (a, b) =>
+        (a[1].createdAt || 0) -
+        (b[1].createdAt || 0)
+    );
 
   if (!pending.length) {
     container.textContent =
@@ -2159,93 +1953,66 @@ function renderAdminPayments() {
   }
 
   for (const [id, request] of pending) {
-    const box =
-      document.createElement('div');
-
+    const box = document.createElement('div');
     box.className = 'panel';
 
-    const info =
-      document.createElement('p');
+    const info = document.createElement('p');
 
     info.textContent =
       `#${request.memberNumber} — ` +
-      `${
-        memberList[request.memberNumber]?.name ||
-        ''
-      } | ₹${request.amount}` +
+      `${memberList[request.memberNumber]?.name || ''}` +
+      ` | ₹${request.amount}` +
       ` | ${request.plan} ${request.period}` +
       ` | UPI Ref: ${request.transactionId}`;
 
-    const approveButton = makeButton(
-      'Approve after bank verification',
-      () => verifyPayment(
-        id,
-        request,
-        true
-      )
-    );
-
-    const rejectButton = makeButton(
-      'Reject',
-      () => verifyPayment(
-        id,
-        request,
-        false
-      ),
-      'secondary'
-    );
-
     box.append(
       info,
-      approveButton,
+      makeButton(
+        'Approve after bank verification',
+        () => verifyPayment(id, request, true)
+      ),
       document.createTextNode(' '),
-      rejectButton
+      makeButton(
+        'Reject',
+        () => verifyPayment(id, request, false),
+        'secondary'
+      )
     );
 
     container.append(box);
   }
 }
 
-// PAYMENT VERIFICATION
-//
-// Member payment records use a transaction.
-// The request status update is separate.
-//
-// Therefore partial completion is possible.
-// Request IDs are stored in payment records
-// to help detect and recover from failures.
+// ===================================================
+// PAYMENT MONTH HELPERS
+// ===================================================
 
 function paymentMonthKeys(plan, period) {
   if (!validPeriod(period)) {
-    throw new Error(
-      'Invalid payment period.'
-    );
+    throw new Error('Invalid payment period.');
   }
 
   if (!['monthly', 'yearly'].includes(plan)) {
-    throw new Error(
-      'Invalid payment plan.'
-    );
+    throw new Error('Invalid payment plan.');
   }
 
   const [year, month] =
     period.split('-').map(Number);
 
-  const count =
-    plan === 'yearly' ? 12 : 1;
+  const count = plan === 'yearly' ? 12 : 1;
 
   const keys = [];
 
   for (let i = 0; i < count; i++) {
-    const d = new Date(
+    const date = new Date(
       year,
       month - 1 + i,
       1
     );
 
     keys.push(
-      `${d.getFullYear()}-${String(
-        d.getMonth() + 1
+      `${date.getFullYear()}-${String(
+        date.getMonth() + 1
       ).padStart(2, '0')}`
     );
   }
@@ -2253,24 +2020,59 @@ function paymentMonthKeys(plan, period) {
   return keys;
 }
 
+function recordedMonthsForRequest(member, id) {
+  return Object.entries(
+    member?.payments || {}
+  )
+    .filter(([, record]) =>
+      record?.requestId === id &&
+      record?.status === 'paid'
+    )
+    .map(([period]) => period)
+    .sort();
+}
+
+function samePeriods(a, b) {
+  if (a.length !== b.length) return false;
+
+  const x = [...a].sort();
+  const y = [...b].sort();
+
+  return x.every((value, index) =>
+    value === y[index]
+  );
+}
+
+// ===================================================
+// PAYMENT VERIFICATION
+// ===================================================
+//
+// IMPORTANT:
+// Member transaction and request status
+// are still separate Firebase writes.
+//
+// Recovery detection prevents blindly
+// recording the same request twice.
+//
+// This is not a substitute for an atomic
+// server-side payment approval workflow.
+// ===================================================
+
 async function verifyPayment(id, request, accept) {
   if (
     !isAdmin() ||
     request.status !== 'pending' ||
     paymentBusy
-  ) {
-    return;
-  }
+  ) return;
 
-  if (!confirm(
-    accept
-      ? `Have you verified ₹${request.amount} ` +
-        `in the bank statement? Approve ` +
-        `#${request.memberNumber}, ` +
-        `${request.period}?`
-      : `Reject payment request for ` +
-        `#${request.memberNumber}?`
-  )) return;
+  const question = accept
+    ? `Have you verified ₹${request.amount} ` +
+      `in the bank statement? Approve ` +
+      `#${request.memberNumber}, ${request.period}?`
+    : `Reject payment request for ` +
+      `#${request.memberNumber}?`;
+
+  if (!confirm(question)) return;
 
   paymentBusy = true;
 
@@ -2291,18 +2093,34 @@ async function verifyPayment(id, request, accept) {
       );
     }
 
-    // REJECTION
+    // -----------------------------------------------
+    // REJECT REQUEST
+    // -----------------------------------------------
 
     if (!accept) {
+      const number = String(fresh.memberNumber);
+
+      const member = (
+        await get(ref(db, `members/${number}`))
+      ).val();
+
+      const recorded =
+        recordedMonthsForRequest(member, id);
+
+      if (recorded.length) {
+        throw new Error(
+          'Payment is already recorded. ' +
+          'Do not reject. Manual reconciliation required.'
+        );
+      }
+
       const result = await runTransaction(
         requestRef,
         existing => {
           if (
             !existing ||
             existing.status !== 'pending'
-          ) {
-            return;
-          }
+          ) return;
 
           return {
             ...existing,
@@ -2324,19 +2142,26 @@ async function verifyPayment(id, request, accept) {
       return;
     }
 
+    // -----------------------------------------------
     // APPROVAL VALIDATION
+    // -----------------------------------------------
 
     if (
-      fresh.amount !== (
-        fresh.plan === 'yearly'
-          ? 600
-          : 50
-      ) ||
-      !['monthly', 'yearly']
-        .includes(fresh.plan)
+      !['monthly', 'yearly'].includes(
+        fresh.plan
+      )
     ) {
+      throw new Error('Invalid payment plan.');
+    }
+
+    const expectedAmount =
+      fresh.plan === 'yearly'
+        ? YEARLY_FEE
+        : MONTHLY_FEE;
+
+    if (fresh.amount !== expectedAmount) {
       throw new Error(
-        'Invalid payment amount or plan.'
+        'Invalid payment amount.'
       );
     }
 
@@ -2345,8 +2170,81 @@ async function verifyPayment(id, request, accept) {
       fresh.period
     );
 
-    const number =
-      String(fresh.memberNumber);
+    const number = String(fresh.memberNumber);
+
+    const memberRef =
+      ref(db, `members/${number}`);
+
+    const memberSnapshot = await get(memberRef);
+    const currentMember = memberSnapshot.val();
+
+    if (
+      !isActiveMember(currentMember) ||
+      currentMember.uid !== fresh.uid
+    ) {
+      throw new Error(
+        'Member inactive, locked, archived ' +
+        'or account mismatch.'
+      );
+    }
+
+    // -----------------------------------------------
+    // PARTIAL APPROVAL RECOVERY
+    // -----------------------------------------------
+
+    const alreadyRecorded =
+      recordedMonthsForRequest(
+        currentMember,
+        id
+      );
+
+    if (alreadyRecorded.length) {
+      if (!samePeriods(alreadyRecorded, keys)) {
+        throw new Error(
+          'Partial payment records do not match. ' +
+          'Manual reconciliation required.'
+        );
+      }
+
+      // All months are already recorded.
+      // Only finish the pending request status.
+
+      const recovery = await runTransaction(
+        requestRef,
+        existing => {
+          if (
+            !existing ||
+            existing.status !== 'pending'
+          ) return;
+
+          return {
+            ...existing,
+            status: 'approved',
+            reviewedAt: Date.now(),
+            reviewedBy: current.uid,
+            recovered: true
+          };
+        },
+        { applyLocally: false }
+      );
+
+      if (!recovery.committed) {
+        throw new Error(
+          'Recovery status changed. Review manually.'
+        );
+      }
+
+      notify(
+        'Existing paid months verified. ' +
+        'Pending request reconciled.'
+      );
+
+      return;
+    }
+
+    // -----------------------------------------------
+    // HISTORICAL PAYMENT CHECK
+    // -----------------------------------------------
 
     const oldHistory = (
       await get(
@@ -2354,13 +2252,12 @@ async function verifyPayment(id, request, accept) {
       )
     ).val() || {};
 
-    const memberRef =
-      ref(db, `members/${number}`);
-
     const verifiedAt = Date.now();
     const reviewer = current.uid;
 
-    // TRANSACTION GUARD
+    // -----------------------------------------------
+    // MEMBER TRANSACTION
+    // -----------------------------------------------
 
     const result = await runTransaction(
       memberRef,
@@ -2372,20 +2269,19 @@ async function verifyPayment(id, request, accept) {
           return;
         }
 
-        const alreadyPaid =
-          keys.some(key => {
-            const [year, month] =
-              key.split('-').map(Number);
+        const alreadyPaid = keys.some(key => {
+          const [year, month] =
+            key.split('-').map(Number);
 
-            return (
-              member.payments?.[key]?.status === 'paid' ||
-              isHistoricalPaid(
-                oldHistory,
-                year,
-                month
-              )
-            );
-          });
+          return (
+            member.payments?.[key]?.status === 'paid' ||
+            isHistoricalPaid(
+              oldHistory,
+              year,
+              month
+            )
+          );
+        });
 
         if (alreadyPaid) return;
 
@@ -2399,9 +2295,8 @@ async function verifyPayment(id, request, accept) {
         for (const key of keys) {
           updated.payments[key] = {
             status: 'paid',
-            amount: 50,
-            transactionId:
-              fresh.transactionId,
+            amount: MONTHLY_FEE,
+            transactionId: fresh.transactionId,
             requestId: id,
             verifiedAt,
             verifiedBy: reviewer
@@ -2416,27 +2311,44 @@ async function verifyPayment(id, request, accept) {
     if (!result.committed) {
       throw new Error(
         'Payment could not be recorded. ' +
-        'Member may be inactive, locked, ' +
-        'archived, or months already paid. ' +
-        'Review before retrying.'
+        'Check member status and paid months.'
       );
     }
 
-    // STATUS UPDATE
-    // Separate from the member transaction.
+    // -----------------------------------------------
+    // REQUEST STATUS UPDATE
+    // -----------------------------------------------
 
     try {
-      await update(requestRef, {
-        status: 'approved',
-        reviewedAt: verifiedAt,
-        reviewedBy: reviewer
-      });
+      const completion = await runTransaction(
+        requestRef,
+        existing => {
+          if (
+            !existing ||
+            existing.status !== 'pending'
+          ) return;
+
+          return {
+            ...existing,
+            status: 'approved',
+            reviewedAt: verifiedAt,
+            reviewedBy: reviewer
+          };
+        },
+        { applyLocally: false }
+      );
+
+      if (!completion.committed) {
+        throw new Error(
+          'Request status changed.'
+        );
+      }
+
     } catch (error) {
       throw new Error(
         'Paid months may already be recorded, ' +
-        'but request status update failed. ' +
-        'Do NOT approve again. ' +
-        `Check request ${id}. ` +
+        'but request status was not completed. ' +
+        'Review the same request before further action. ' +
         error.message
       );
     }
@@ -2456,36 +2368,48 @@ async function verifyPayment(id, request, accept) {
   }
 }
 
-// MEMBER PAYMENT REQUEST HISTORY
+// ===================================================
+// MEMBER PAYMENT HISTORY
+// ===================================================
 
 function renderMyPayments(data) {
-  const entries =
-    Object.values(data)
-      .sort(
-        (a, b) =>
-          (b.createdAt || 0) -
-          (a.createdAt || 0)
-      );
+  const entries = Object.values(data)
+    .sort(
+      (a, b) =>
+        (b.createdAt || 0) -
+        (a.createdAt || 0)
+    );
+
+  if (!entries.length) {
+    $('myPaymentList').textContent =
+      'No payment submissions yet.';
+    return;
+  }
 
   $('myPaymentList').innerHTML =
-    entries.length
-      ? `<table>
-          <thead>
-            <tr>
-              <th>Period</th>
-              <th>Amount</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${entries.map(p =>
-              `<tr>
-                <td>${escapeHTML(p.period)} (${escapeHTML(p.plan)})</td>
-                <td>₹${Number(p.amount) || 0}</td>
-                <td>${escapeHTML(p.status)}</td>
-              </tr>`
-            ).join('')}
-          </tbody>
-        </table>`
-      : 'No payment submissions yet.';
+    `<table>
+      <thead>
+        <tr>
+          <th>Period</th>
+          <th>Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${entries.map(payment =>
+          `<tr>
+            <td>
+              ${escapeHTML(payment.period)}
+              (${escapeHTML(payment.plan)})
+            </td>
+            <td>₹${Number(payment.amount) || 0}</td>
+            <td>${escapeHTML(payment.status)}</td>
+          </tr>`
+        ).join('')}
+      </tbody>
+    </table>`;
+
+// ===================================================
+// END OF TFC APP.JS VERSION 73.2
+// ===================================================
 }
