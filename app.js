@@ -27,7 +27,7 @@ import { firebaseConfig } from './firebase-config.js';
 
 // ===================================================
 // TFC BANDIYOD MEMBER PORTAL
-// VERSION 75.5
+// VERSION 75.6
 //
 // Existing 2024-2026 history preserved.
 // 2027 import is NOT performed by this file.
@@ -35,6 +35,7 @@ import { firebaseConfig } from './firebase-config.js';
 // Yearly payment = January to December.
 // Photo upload is disabled.
 // Final archive write is disabled.
+// UPI link simplified for testing.
 // ===================================================
 
 const ARCHIVE_WRITE_ENABLED = false;
@@ -1979,7 +1980,7 @@ $('archivedMembersSearch').oninput =
   renderArchivedMembers;
 
 // ===================================================
-// UPI PAYMENT
+// UPI PAYMENT - VERSION 75.6
 // ===================================================
 
 function planDetails() {
@@ -2019,22 +2020,17 @@ function paymentMonthKeys(plan, period) {
   );
 }
 
+// Simplified UPI link for Google Pay testing.
+// Transaction note is temporarily omitted.
+
 function updateUpiLink() {
-  const { plan, amount, period } = planDetails();
-
-  const year = periodYear(period);
-
-  const description = plan === 'yearly'
-    ? `Year ${year} Jan-Dec`
-    : `Month ${period}`;
+  const { amount } = planDetails();
 
   const params = new URLSearchParams({
     pa: UPI_ID,
     pn: UPI_NAME,
-    am: String(amount),
-    cu: 'INR',
-    tn:
-      `TFC ${memberNumber || ''} ${description}`
+    am: amount.toFixed(2),
+    cu: 'INR'
   });
 
   $('upiPayLink').href =
@@ -2620,5 +2616,5 @@ if ($('importStatusText')) {
 }
 
 // ===================================================
-// END OF TFC APP.JS VERSION 75.5
+// END OF TFC APP.JS VERSION 75.6
 // ===================================================
