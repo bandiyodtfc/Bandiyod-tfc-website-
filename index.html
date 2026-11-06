@@ -159,6 +159,42 @@ code {overflow-wrap:anywhere}
   max-width:220px;
   margin-bottom:14px;
 }
+
+/* VERSION 75.8 PAYMENT */
+.payment-box {
+  background:#fffbea;
+  border:1px solid #f2da75;
+  border-radius:12px;
+  padding:16px;
+  margin:16px 0;
+}
+.payment-actions {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:12px 0;
+}
+.payment-actions button {
+  flex:1;
+  min-width:150px;
+}
+.payment-id {
+  background:white;
+  border:1px solid #e4d9a3;
+  border-radius:8px;
+  padding:12px;
+  font-weight:600;
+  overflow-wrap:anywhere;
+}
+#copyStatus {
+  font-weight:600;
+  margin:8px 0;
+}
+.payment-instructions {
+  line-height:1.7;
+  padding-left:23px;
+}
+
 @media(max-width:600px) {
   header {padding:12px;gap:8px}
   .brand {gap:7px}
@@ -285,18 +321,14 @@ code {overflow-wrap:anywhere}
     </div>
   </div>
 
+  <!-- PAYMENT -->
   <div class="panel">
     <h2 data-t="pay">Pay membership fee</h2>
 
-    <p>
-      UPI recipient: <strong>Waheed Wahi</strong> —
-      <code>waheedwahi84-1@oksbi</code>
-    </p>
-
     <p class="notice">
-      Pay in your UPI app, then enter the transaction/reference ID below.
+      Pay using your UPI app, then enter the transaction/reference ID.
       Payment remains Pending until verified by the admin.
-      Please avoid paying twice.
+      Do not pay twice.
     </p>
 
     <div class="paygrid">
@@ -314,18 +346,68 @@ code {overflow-wrap:anywhere}
       </div>
     </div>
 
-    <p>
-      <a id="upiPayLink" class="paylink" href="#" rel="noopener">
-        Open UPI app — Enter ₹50
-      </a>
-    </p>
+    <div class="payment-box">
+      <h3>Pay with Google Pay / UPI</h3>
 
-    <label for="transactionId">UPI transaction / reference ID</label>
+      <p>UPI ID</p>
+      <div id="displayUpiId" class="payment-id">
+        waheedwahi84-1@oksbi
+      </div>
+
+      <p>
+        Bank account name:
+        <strong>MOOSA WAHEED M B</strong>
+      </p>
+
+      <p>
+        Amount to pay:
+        <strong id="displayPaymentAmount">₹50</strong>
+      </p>
+
+      <div class="payment-actions">
+        <button id="copyUpiId" type="button">
+          Copy UPI ID
+        </button>
+
+        <button id="openGooglePay" type="button" class="secondary">
+          Open Google Pay
+        </button>
+      </div>
+
+      <p id="copyStatus" role="status"></p>
+
+      <ol class="payment-instructions">
+        <li>Copy the UPI ID above.</li>
+        <li>Open Google Pay.</li>
+        <li>Select Pay UPI ID and paste the copied ID.</li>
+        <li>Verify the recipient name and enter the correct amount.</li>
+        <li>After successful payment, copy the UPI transaction ID.</li>
+      </ol>
+
+      <p class="muted">
+        Google Pay may need to be opened manually.
+        The website does not automatically transfer money.
+      </p>
+    </div>
+
+    <!-- Retained for app.js 75.7 compatibility -->
+    <a id="upiPayLink" class="hide"
+       href="#" rel="noopener" tabindex="-1"
+       aria-hidden="true">
+      UPI Payment Link
+    </a>
+
+    <label for="transactionId">
+      UPI transaction / reference ID
+    </label>
     <input id="transactionId" maxlength="100"
-      placeholder="Enter ID after payment" autocomplete="off">
+      placeholder="Enter ID after successful payment"
+      autocomplete="off">
 
     <p>
-      <button id="submitPayment">Submit payment for verification</button>
+      <button id="submitPayment">
+        Submit payment for verification
+      </button>
     </p>
 
     <h3>Your payment submissions</h3>
@@ -583,7 +665,83 @@ code {overflow-wrap:anywhere}
 
 <footer>© TFC Bandiyod · Private Member Portal</footer>
 
+<!-- Existing application unchanged -->
 <script type="module" src="./app.js?v=75.7"></script>
+
+<!-- PAYMENT UI VERSION 75.8 -->
+<script>
+(function () {
+  const UPI_ID = 'waheedwahi84-1@oksbi';
+
+  const copyButton =
+    document.getElementById('copyUpiId');
+
+  const openButton =
+    document.getElementById('openGooglePay');
+
+  const status =
+    document.getElementById('copyStatus');
+
+  const amountDisplay =
+    document.getElementById('displayPaymentAmount');
+
+  const planSelect =
+    document.getElementById('paymentPlan');
+
+  function refreshAmount() {
+    const amount =
+      planSelect.value === 'yearly' ? 600 : 50;
+
+    amountDisplay.textContent = '₹' + amount;
+  }
+
+  async function copyUpiId() {
+    try {
+      await navigator.clipboard.writeText(UPI_ID);
+
+      status.textContent =
+        'UPI ID copied! Open Google Pay and paste it.';
+      status.className = 'ok';
+
+    } catch (error) {
+      status.textContent =
+        'Could not copy automatically. ' +
+        'Long-press the UPI ID above to copy it.';
+      status.className = 'error';
+    }
+  }
+
+  copyButton.addEventListener('click', copyUpiId);
+
+  planSelect.addEventListener('change', refreshAmount);
+
+  refreshAmount();
+
+  openButton.addEventListener('click', function () {
+    status.textContent =
+      'Opening Google Pay. If it does not open, ' +
+      'open the Google Pay app manually and ' +
+      'select Pay UPI ID.';
+    status.className = '';
+
+    // Best-effort Android app launch.
+    // No payment deep link is used.
+    // Some browsers may block this.
+    if (/Android/i.test(navigator.userAgent)) {
+      window.location.href =
+        'intent://#Intent;' +
+        'action=android.intent.action.MAIN;' +
+        'category=android.intent.category.LAUNCHER;' +
+        'package=com.google.android.apps.nbu.paisa.user;' +
+        'end';
+    } else {
+      status.textContent =
+        'Open your Google Pay or UPI app manually. ' +
+        'Paste the copied UPI ID to pay.';
+    }
+  });
+})();
+</script>
 
 </body>
 </html>
