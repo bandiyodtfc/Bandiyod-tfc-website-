@@ -1,4 +1,3 @@
-
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 
 import {
@@ -27,7 +26,7 @@ import { firebaseConfig } from './firebase-config.js';
 
 // ===================================================
 // TFC BANDIYOD MEMBER PORTAL
-// VERSION 75.6
+// VERSION 75.7
 //
 // Existing 2024-2026 history preserved.
 // 2027 import is NOT performed by this file.
@@ -35,7 +34,7 @@ import { firebaseConfig } from './firebase-config.js';
 // Yearly payment = January to December.
 // Photo upload is disabled.
 // Final archive write is disabled.
-// UPI link simplified for testing.
+// UPI amount entered manually in payment app.
 // ===================================================
 
 const ARCHIVE_WRITE_ENABLED = false;
@@ -174,7 +173,7 @@ const dict = {
     due: 'കുടിശ്ശിക',
     paid: 'അടച്ച മാസങ്ങൾ',
     fee: 'അംഗത്വ ഫീസ്',
-    history: 'പേയ്മെന്റ് ചരിത്രം',
+    history: 'Payment history',
     month: 'മാസം',
     status: 'നില',
     pay: 'അംഗത്വ ഫീസ് അടയ്ക്കുക',
@@ -1980,7 +1979,7 @@ $('archivedMembersSearch').oninput =
   renderArchivedMembers;
 
 // ===================================================
-// UPI PAYMENT - VERSION 75.6
+// UPI PAYMENT - VERSION 75.7
 // ===================================================
 
 function planDetails() {
@@ -2020,8 +2019,8 @@ function paymentMonthKeys(plan, period) {
   );
 }
 
-// Simplified UPI link for Google Pay testing.
-// Transaction note is temporarily omitted.
+// Amount intentionally omitted from UPI link.
+// Members enter the amount manually in UPI app.
 
 function updateUpiLink() {
   const { amount } = planDetails();
@@ -2029,7 +2028,6 @@ function updateUpiLink() {
   const params = new URLSearchParams({
     pa: UPI_ID,
     pn: UPI_NAME,
-    am: amount.toFixed(2),
     cu: 'INR'
   });
 
@@ -2037,7 +2035,7 @@ function updateUpiLink() {
     `upi://pay?${params.toString()}`;
 
   $('upiPayLink').textContent =
-    `Open UPI app — ₹${amount}`;
+    `Open UPI app — Enter ₹${amount}`;
 }
 
 $('paymentPlan').onchange = updateUpiLink;
@@ -2616,5 +2614,5 @@ if ($('importStatusText')) {
 }
 
 // ===================================================
-// END OF TFC APP.JS VERSION 75.6
+// END OF TFC APP.JS VERSION 75.7
 // ===================================================
