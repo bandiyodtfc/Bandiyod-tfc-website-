@@ -123,6 +123,7 @@ code {overflow-wrap:anywhere}
   font-weight:600;
 }
 .history-unverified {color:#667085}
+
 @media(max-width:600px) {
   header {padding:12px;gap:8px}
   .brand {gap:7px}
@@ -287,6 +288,7 @@ code {overflow-wrap:anywhere}
       <button id="tabRequests">Approval requests</button>
       <button id="tabMembers" class="secondary">Members</button>
       <button id="tabPayments" class="secondary">Payment verification</button>
+      <button id="tabAddMember" class="secondary">+ Add Member</button>
     </div>
   </div>
 
@@ -301,7 +303,7 @@ code {overflow-wrap:anywhere}
 
     <div id="membersList" class="scroll"></div>
 
-    <!-- NEW ADMIN PAYMENT HISTORY VIEW -->
+    <!-- ADMIN PAYMENT HISTORY VIEW -->
     <div id="adminMemberHistory" class="panel hide">
       <h3 id="adminHistoryTitle">Member Payment History</h3>
       <p id="adminHistorySummary"></p>
@@ -316,6 +318,48 @@ code {overflow-wrap:anywhere}
       Transaction ID alone is not proof of payment.
     </p>
     <div id="adminPaymentList"></div>
+  </div>
+
+  <!-- ADD MEMBER PANEL -->
+  <div id="addMemberPanel" class="panel hide">
+    <h2>Add New Member</h2>
+
+    <p class="notice">
+      Admin only. Enter an available member number.
+      Previously used numbers require safe archival of
+      the former member's records before reuse.
+    </p>
+
+    <form id="addMemberForm">
+
+      <label for="newMemberNumber">Member Number</label>
+      <input id="newMemberNumber" type="number"
+        min="1" step="1" required>
+
+      <label for="newMemberName">Full Name</label>
+      <input id="newMemberName" type="text"
+        maxlength="100" required>
+
+      <label for="newMemberPhone">Mobile Number</label>
+      <input id="newMemberPhone" type="tel"
+        maxlength="15">
+
+      <label for="newMemberDate">Joining Date</label>
+      <input id="newMemberDate" type="date" required>
+
+      <label for="newMemberStatus">Membership Status</label>
+      <select id="newMemberStatus">
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+
+      <p>
+        <button id="saveNewMember" type="submit">
+          Save Member
+        </button>
+      </p>
+
+    </form>
   </div>
 
 </section>
