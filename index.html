@@ -149,6 +149,16 @@ code {overflow-wrap:anywhere}
 #archivedMemberHistory {
   margin-top:14px;
 }
+.feature-pending {
+  background:#f2f4f7;
+  border-radius:10px;
+  padding:14px;
+  margin-top:12px;
+}
+.year-select {
+  max-width:220px;
+  margin-bottom:14px;
+}
 @media(max-width:600px) {
   header {padding:12px;gap:8px}
   .brand {gap:7px}
@@ -221,6 +231,19 @@ code {overflow-wrap:anywhere}
     <p id="memberMeta"></p>
   </div>
 
+  <!-- MEMBER PHOTO MENU -->
+  <div class="panel">
+    <h2>My Profile Photo</h2>
+    <div class="feature-pending">
+      <p class="muted">
+        Profile photo upload will be available soon.
+      </p>
+      <button id="memberPhotoUpload" disabled>
+        Upload My Photo (Coming Soon)
+      </button>
+    </div>
+  </div>
+
   <div class="grid">
     <div class="stat">
       <span data-t="due">Outstanding dues</span>
@@ -238,10 +261,17 @@ code {overflow-wrap:anywhere}
 
   <div class="panel">
     <h2 data-t="history">Payment history</h2>
+
+    <label for="memberHistoryYear">Select Year</label>
+    <select id="memberHistoryYear" class="year-select">
+      <option value="all">All Years</option>
+    </select>
+
     <p class="muted">
       Historical payments are based on recorded membership card marks.
       Unmarked months are not automatically treated as outstanding dues.
     </p>
+
     <div class="scroll">
       <table>
         <thead>
@@ -315,6 +345,7 @@ code {overflow-wrap:anywhere}
       <button id="tabPayments" class="secondary">Payment verification</button>
       <button id="tabAddMember" class="secondary">+ Add Member</button>
       <button id="tabArchivedMembers" class="secondary">Archived Members</button>
+      <button id="tabMemberPhotos" class="secondary">Member Photos</button>
     </div>
   </div>
 
@@ -335,6 +366,12 @@ code {overflow-wrap:anywhere}
     <div id="adminMemberHistory" class="panel hide">
       <h3 id="adminHistoryTitle">Member Payment History</h3>
       <p id="adminHistorySummary"></p>
+
+      <label for="adminHistoryYear">Select Year</label>
+      <select id="adminHistoryYear" class="year-select">
+        <option value="all">All Years</option>
+      </select>
+
       <div id="adminHistoryTable" class="scroll"></div>
     </div>
 
@@ -503,6 +540,41 @@ code {overflow-wrap:anywhere}
       <p id="archivedHistorySummary"></p>
       <div id="archivedHistoryTable" class="scroll"></div>
     </div>
+  </div>
+
+  <!-- ADMIN PHOTO MENU -->
+  <div id="memberPhotosPanel" class="panel hide">
+    <h2>Member Profile Photos</h2>
+
+    <p class="muted">
+      Admin can upload or change member profile photos
+      when photo storage is configured.
+    </p>
+
+    <label for="photoMemberSearch">Search Member</label>
+    <input id="photoMemberSearch" type="search"
+      placeholder="Search member number or name">
+
+    <div id="photoMembersList" class="scroll"></div>
+
+    <div class="feature-pending">
+      <button id="adminPhotoUpload" disabled>
+        Upload Member Photo (Coming Soon)
+      </button>
+    </div>
+  </div>
+
+  <!-- 2027 IMPORT STATUS -->
+  <div id="importStatusPanel" class="panel hide">
+    <h2>2027 Payment Import</h2>
+    <p class="notice">
+      2027 membership card payments will be imported
+      after validation. Existing 2024–2026 records
+      will be preserved.
+    </p>
+    <p id="importStatusText">
+      Import not completed.
+    </p>
   </div>
 
 </section>
