@@ -13,6 +13,10 @@ import {
 
 import { firebaseConfig } from './firebase-config.js';
 
+// TFC BANDIYOD MEMBER PORTAL
+// STEP 72.8D - PAYMENT TRANSACTION GUARD
+// ARCHIVE FINAL WRITE REMAINS LOCKED
+
 const $ = id => document.getElementById(id);
 
 const show = (id, yes) => {
@@ -100,6 +104,7 @@ let selectedAdminMember = null;
 
 let archivedMembers = {};
 let selectedArchiveId = null;
+
 let paymentRequestsLoaded = false;
 let membersLoaded = false;
 let archiveLoaded = false;
@@ -112,6 +117,7 @@ const stopListeners = () => {
   payments = {};
   historicalPayments = {};
   currentMemberData = null;
+
   historyLoaded = false;
   historyError = false;
 
@@ -171,6 +177,8 @@ $('paymentPeriod').value =
   ).padStart(2, '0')}`;
 
 $('newMemberDate').value = localDateString();
+
+// HISTORICAL PAYMENTS
 
 function isHistoricalPaid(history, year, month) {
   if (year < 2024) return false;
@@ -401,7 +409,7 @@ if (
   });
 }
 
-// LOGIN AND APPROVAL
+// LOGIN
 
 $('signIn').onclick = async () => {
   try {
@@ -415,6 +423,8 @@ $('signIn').onclick = async () => {
 };
 
 $('logout').onclick = () => signOut(auth);
+
+// MEMBER APPROVAL REQUEST
 
 $('requestApproval').onclick = async () => {
   const n = Number($('claimNumber').value);
@@ -491,7 +501,7 @@ function renderMember(m) {
   $('historyBody').innerHTML = rows.join('');
 }
 
-// ADMIN DATA LISTENERS
+// ADMIN LISTENERS
 
 function loadAdmin() {
   unsubscribers.push(
@@ -512,6 +522,7 @@ function loadAdmin() {
           box.className = 'panel';
 
           const p = document.createElement('p');
+
           p.textContent =
             `${r.name || ''} (${r.email || ''}) — ` +
             `requested #${r.requestedNumber}`;
@@ -972,7 +983,7 @@ $('addMemberForm').onsubmit = async event => {
     if (!result.committed) {
       return notify(
         'Member number already exists. ' +
-        'It cannot be reused yet.',
+        'It cannot be reused.',
         true
       );
     }
@@ -1106,15 +1117,7 @@ $('editMemberForm').onsubmit = async event => {
 };
 
 // ARCHIVE MEMBER
-// STEP 72.8C
-//
-// Archive pre-check only.
-// Final archive database write is LOCKED.
-// Member numbers are permanently reserved.
-// No payment records are deleted.
-//
-// Step 72.8D must provide concurrency protection
-// before real archiving can be enabled.
+// PRE-CHECK ONLY - FINAL WRITE LOCKED
 
 function openArchiveMember(number) {
   if (!isAdmin()) return;
@@ -1213,23 +1216,19 @@ $('archiveMemberForm').onsubmit = async event => {
       );
     }
 
-    // Read historical payment records.
     const history = (
       await get(ref(db, `paymentHistory/${number}`))
     ).val() || {};
 
-    // Read all payment requests.
     const requests = (
       await get(ref(db, 'paymentRequests'))
     ).val() || {};
 
-    // Find requests belonging to this member.
     const related = Object.entries(requests)
       .filter(([, p]) =>
         String(p.memberNumber) === number
       );
 
-    // STEP 72.8C SAFETY CHECK
     const pending = related.filter(
       ([, p]) => p.status === 'pending'
     );
@@ -1248,16 +1247,16 @@ $('archiveMemberForm').onsubmit = async event => {
     ).length;
 
     // IMPORTANT:
-    // No database archive write is performed here.
-    // Concurrency-safe archive is not yet deployed.
+    // The archive operation is intentionally locked.
+    // No database records are modified here.
+    // A server-side atomic archive operation
+    // is required before unlocking it.
 
     notify(
-      `Archive pre-check passed for #${number}: ` +
-      `${count} paid months; ` +
-      `no pending requests. ` +
-      `Final archive is LOCKED until ` +
-      `Step 72.8D concurrency protection ` +
-      `is installed.`,
+      `Archive pre-check passed for #${number}. ` +
+      `${count} paid months recorded. ` +
+      `No pending payment requests. ` +
+      `Final Archive remains LOCKED.`,
       true
     );
 
@@ -1422,7 +1421,7 @@ function renderArchivedHistory(id) {
 $('archivedMembersSearch').oninput =
   renderArchivedMembers;
 
-// UPI PAYMENT
+// UPI
 
 const UPI_ID = 'waheedwahi84-1@oksbi';
 const UPI_NAME = 'Waheed Wahi';
@@ -1610,7 +1609,21 @@ function renderAdminPayments() {
   }
 }
 
-// ADMIN PAYMENT VERIFICATION
+// PAYMENT TRANSACTION GUARD
+// STEP 72.8D
+//
+// Member paid months are updated through
+// a transaction.
+//
+// Request status is updated afterward.
+// These two writes are NOT atomic together.
+//
+// If the second write fails, the request
+// may remain pending even though months
+// were recorded as paid.
+//
+// Such requests must be manually reviewed.
+// Do not approve them a second time.
 
 async function verifyPayment(id, p, accept) {
   if (!isAdmin() || p.status !== 'pending') {
@@ -1627,56 +1640,79 @@ async function verifyPayment(id, p, accept) {
   )) return;
 
   try {
+    const requestRef =
+      ref(db, `paymentRequests/${id}`);
+
     const fresh = (
-      await get(ref(db, `paymentRequests/${id}`))
+      await get(requestRef)
     ).val();
 
     if (!fresh || fresh.status !== 'pending') {
-      return notify(
-        'Request is no longer pending.',
-        true
+      throw new Error(
+        'Request is no longer pending.'
       );
     }
 
+    // REJECT REQUEST
+
     if (!accept) {
-      await update(
-        ref(db, `paymentRequests/${id}`),
-        {
-          status: 'rejected',
-          reviewedAt: Date.now(),
-          reviewedBy: current.uid
-        }
+      const result = await runTransaction(
+        requestRef,
+        existing => {
+          if (
+            !existing ||
+            existing.status !== 'pending'
+          ) {
+            return;
+          }
+
+          return {
+            ...existing,
+            status: 'rejected',
+            reviewedAt: Date.now(),
+            reviewedBy: current.uid
+          };
+        },
+        { applyLocally: false }
       );
+
+      if (!result.committed) {
+        throw new Error(
+          'Request already reviewed.'
+        );
+      }
 
       notify('Payment rejected.');
       return;
     }
 
-    const member = (
-      await get(
-        ref(db, `members/${fresh.memberNumber}`)
-      )
-    ).val();
+    // VALIDATE PAYMENT REQUEST
 
     if (
-      !isActiveMember(member) ||
-      member.uid !== fresh.uid
+      !['monthly', 'yearly'].includes(fresh.plan) ||
+      !/^\d{4}-(0[1-9]|1[0-2])$/.test(
+        fresh.period
+      ) ||
+      fresh.amount !== (
+        fresh.plan === 'yearly' ? 600 : 50
+      )
     ) {
-      return notify(
-        'Member account mismatch or inactive. ' +
-        'Review request.',
-        true
+      throw new Error(
+        'Invalid payment request.'
       );
     }
+
+    const number = String(
+      fresh.memberNumber
+    );
 
     const start = new Date(
       `${fresh.period}-01T00:00:00`
     );
 
     if (Number.isNaN(start.getTime())) {
-      return notify(
-        'Invalid payment period',
-        true
+      throw new Error(
+        'Invalid payment period.'
       );
     }
 
@@ -1700,74 +1736,107 @@ async function verifyPayment(id, p, accept) {
       );
     }
 
+    // LOAD HISTORICAL RECORDS
+
     const oldHistory = (
       await get(
-        ref(
-          db,
-          `paymentHistory/${fresh.memberNumber}`
-        )
+        ref(db, `paymentHistory/${number}`)
       )
     ).val() || {};
 
-    const duplicate = keys.some(key => {
-      const [year, month] =
-        key.split('-').map(Number);
+    const memberRef =
+      ref(db, `members/${number}`);
 
-      return (
-        member.payments?.[key]?.status === 'paid' ||
-        isHistoricalPaid(
-          oldHistory,
-          year,
-          month
-        )
-      );
-    });
-
-    if (duplicate) {
-      return notify(
-        'Some months are already paid. ' +
-        'Review historical records.',
-        true
-      );
-    }
-
-    const changes = {};
     const verifiedAt = Date.now();
+    const reviewer = current.uid;
 
-    for (const key of keys) {
-      changes[
-        `members/${fresh.memberNumber}/payments/${key}`
-      ] = {
-        status: 'paid',
-        amount: 50,
-        transactionId: fresh.transactionId,
-        requestId: id,
-        verifiedAt,
-        verifiedBy: current.uid
-      };
+    // MEMBER TRANSACTION
+
+    const result = await runTransaction(
+      memberRef,
+      member => {
+        if (
+          !isActiveMember(member) ||
+          member.uid !== fresh.uid
+        ) {
+          return;
+        }
+
+        const alreadyPaid = keys.some(key => {
+          const [year, month] =
+            key.split('-').map(Number);
+
+          return (
+            member.payments?.[key]?.status === 'paid' ||
+            isHistoricalPaid(
+              oldHistory,
+              year,
+              month
+            )
+          );
+        });
+
+        if (alreadyPaid) {
+          return;
+        }
+
+        const updated = {
+          ...member,
+          payments: {
+            ...(member.payments || {})
+          }
+        };
+
+        for (const key of keys) {
+          updated.payments[key] = {
+            status: 'paid',
+            amount: 50,
+            transactionId: fresh.transactionId,
+            requestId: id,
+            verifiedAt,
+            verifiedBy: reviewer
+          };
+        }
+
+        return updated;
+      },
+      { applyLocally: false }
+    );
+
+    if (!result.committed) {
+      throw new Error(
+        'Member inactive, archived, ' +
+        'or months already paid. ' +
+        'Review this request.'
+      );
     }
 
-    changes[
-      `paymentRequests/${id}/status`
-    ] = 'approved';
+    // FINAL REQUEST STATUS UPDATE
+    // NOT ATOMIC WITH MEMBER TRANSACTION
 
-    changes[
-      `paymentRequests/${id}/reviewedAt`
-    ] = verifiedAt;
-
-    changes[
-      `paymentRequests/${id}/reviewedBy`
-    ] = current.uid;
-
-    await update(ref(db), changes);
+    try {
+      await update(requestRef, {
+        status: 'approved',
+        reviewedAt: verifiedAt,
+        reviewedBy: reviewer
+      });
+    } catch (statusError) {
+      throw new Error(
+        'Paid months may already be recorded, ' +
+        'but request status update failed. ' +
+        'Do NOT approve again. Check member ' +
+        'history and request ID ' + id + '. ' +
+        statusError.message
+      );
+    }
 
     notify(
-      'Payment approved and months marked Paid.'
+      'Payment approved and recorded.'
     );
 
   } catch (e) {
     notify(
-      'Payment review failed: ' +
+      'Payment review needs attention: ' +
       e.message,
       true
     );
