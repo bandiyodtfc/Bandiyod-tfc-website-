@@ -1,3 +1,4 @@
+
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 
 import {
@@ -26,28 +27,20 @@ import { firebaseConfig } from './firebase-config.js';
 
 // ===================================================
 // TFC BANDIYOD MEMBER PORTAL
-// VERSION 73.2
-// ===================================================
+// VERSION 75.5
 //
-// Google Login
-// Admin Approval
-// Member Management
-// Historical Payment Records
-// UPI Payment Submission
-// Payment Verification & Recovery Checks
-// Archived Member Register
-// Archive Pre-check
-//
-// FINAL ARCHIVE WRITE IS DISABLED.
-// Do not enable until database rules,
-// concurrency and recovery are tested.
-//
+// Existing 2024-2026 history preserved.
+// 2027 import is NOT performed by this file.
+// Future years supported dynamically.
+// Yearly payment = January to December.
+// Photo upload is disabled.
+// Final archive write is disabled.
 // ===================================================
 
 const ARCHIVE_WRITE_ENABLED = false;
-
 const MONTHLY_FEE = 50;
 const YEARLY_FEE = 600;
+const FIRST_YEAR = 2024;
 
 const UPI_ID = 'waheedwahi84-1@oksbi';
 const UPI_NAME = 'Waheed Wahi';
@@ -63,7 +56,6 @@ function show(id, visible) {
 
 function notify(message, error = false) {
   const element = $('msg');
-
   if (!element) return;
 
   element.textContent = message;
@@ -85,26 +77,68 @@ function escapeHTML(value) {
 
 function makeButton(label, handler, css = '') {
   const button = document.createElement('button');
-
   button.type = 'button';
   button.textContent = label;
-
   if (css) button.className = css;
-
   button.onclick = handler;
-
   return button;
 }
 
-function requireElement(id) {
-  const element = $(id);
+function validMemberNumber(number) {
+  return Number.isSafeInteger(Number(number)) &&
+    Number(number) >= 1 &&
+    Number(number) <= 99999;
+}
 
-  if (!element) {
-    throw new Error(`Missing HTML element: ${id}`);
+function validPhone(value) {
+  return !value ||
+    /^[0-9+\s()-]{7,15}$/.test(value);
+}
+
+function validDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
   }
 
-  return element;
+  const date = new Date(`${value}T00:00:00`);
+
+  return !Number.isNaN(date.getTime()) &&
+    date.getFullYear() === Number(value.slice(0, 4)) &&
+    date.getMonth() + 1 === Number(value.slice(5, 7)) &&
+    date.getDate() === Number(value.slice(8, 10));
 }
+
+function localDateString() {
+  const date = new Date();
+
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0')
+  ].join('-');
+}
+
+function currentPeriod() {
+  return localDateString().slice(0, 7);
+}
+
+function validPeriod(value) {
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(
+    String(value || '')
+  );
+}
+
+function currentYear() {
+  return new Date().getFullYear();
+}
+
+function periodYear(period) {
+  return Number(String(period).slice(0, 4));
+}
+
+// ===================================================
+// LANGUAGE
+// ===================================================
 
 const dict = {
   en: {
@@ -126,7 +160,6 @@ const dict = {
     pay: 'Pay membership fee',
     admin: 'Admin dashboard'
   },
-
   ml: {
     welcome: 'TFC ബണ്ടിയോടിലേക്ക് സ്വാഗതം',
     loginText:
@@ -182,7 +215,6 @@ let historicalPayments = {};
 let currentMemberData = null;
 
 let archivedMembers = {};
-
 let adminHistoryCache = {};
 
 let historyLoaded = false;
@@ -255,59 +287,99 @@ function stopListeners() {
 }
 
 // ===================================================
-// DATE AND VALIDATION HELPERS
+// FUTURE YEAR SUPPORT
 // ===================================================
 
-function localDateString() {
-  const date = new Date();
+function availableYears(member = null, history = null) {
+  const years = new Set();
 
-  return [
-    date.getFullYear(),
-    String(date.getMonth() + 1).padStart(2, '0'),
-    String(date.getDate()).padStart(2, '0')
-  ].join('-');
-}
+  const latestYear = currentYear() + 1;
 
-function currentPeriod() {
-  return localDateString().slice(0, 7);
-}
-
-function validPeriod(value) {
-  return /^\d{4}-(0[1-9]|1[0-2])$/.test(
-    String(value || '')
-  );
-}
-
-function validDate(value) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return false;
+  for (
+    let year = FIRST_YEAR;
+    year <= latestYear;
+    year++
+  ) {
+    years.add(year);
   }
 
-  const date = new Date(`${value}T00:00:00`);
+  const joiningYear = Number(
+    member?.joiningDate?.slice(0, 4)
+  );
 
-  return !Number.isNaN(date.getTime()) &&
-    date.getFullYear() === Number(value.slice(0, 4)) &&
-    date.getMonth() + 1 === Number(value.slice(5, 7)) &&
-    date.getDate() === Number(value.slice(8, 10));
+  if (
+    Number.isInteger(joiningYear) &&
+    joiningYear >= 1900 &&
+    joiningYear <= 9999
+  ) {
+    years.add(joiningYear);
+  }
+
+  for (const year of Object.keys(
+    history?.months || {}
+  )) {
+    if (/^\d{4}$/.test(year)) {
+      years.add(Number(year));
+    }
+  }
+
+  for (const period of Object.keys(
+    member?.payments || {}
+  )) {
+    if (validPeriod(period)) {
+      years.add(periodYear(period));
+    }
+  }
+
+  return [...years].sort((a, b) => b - a);
 }
 
-function validPhone(value) {
-  return !value ||
-    /^[0-9+\s()-]{7,15}$/.test(value);
+function populateYearSelect(
+  id,
+  member = null,
+  history = null
+) {
+  const select = $(id);
+  if (!select) return;
+
+  const previous = select.value || 'all';
+
+  select.replaceChildren();
+
+  const allOption = document.createElement('option');
+  allOption.value = 'all';
+  allOption.textContent = 'All Years';
+  select.append(allOption);
+
+  for (const year of availableYears(member, history)) {
+    const option = document.createElement('option');
+    option.value = String(year);
+    option.textContent = String(year);
+    select.append(option);
+  }
+
+  const exists = [...select.options].some(
+    option => option.value === previous
+  );
+
+  select.value = exists ? previous : 'all';
 }
 
-function validMemberNumber(number) {
-  return Number.isSafeInteger(Number(number)) &&
-    Number(number) >= 1 &&
-    Number(number) <= 99999;
+function selectedYear(id) {
+  return $(id)?.value || 'all';
+}
+
+function matchesYear(period, year) {
+  return year === 'all' ||
+    String(period).startsWith(`${year}-`);
 }
 
 // ===================================================
-// HISTORICAL PAYMENTS
+// HISTORICAL PAYMENT HELPERS
 // ===================================================
 
 function isHistoricalPaid(history, year, month) {
-  if (year < 2024) return false;
+  if (year < FIRST_YEAR) return false;
 
   const value =
     history?.months?.[String(year)]?.[
@@ -377,19 +449,35 @@ function historyPeriods(member, paidMonths) {
     first = paidMonths[0];
   }
 
-  if (first > last) return [];
+  let lastPeriod = last;
+
+  if (
+    paidMonths.length &&
+    paidMonths[paidMonths.length - 1] > lastPeriod
+  ) {
+    lastPeriod = paidMonths[paidMonths.length - 1];
+  }
+
+  if (first > lastPeriod) return [];
 
   const result = [];
 
   const startYear = Number(first.slice(0, 4));
-  const endYear = Number(last.slice(0, 4));
+  const endYear = Number(lastPeriod.slice(0, 4));
 
-  for (let year = startYear; year <= endYear; year++) {
+  for (
+    let year = startYear;
+    year <= endYear;
+    year++
+  ) {
     for (let month = 1; month <= 12; month++) {
       const period =
         `${year}-${String(month).padStart(2, '0')}`;
 
-      if (period >= first && period <= last) {
+      if (
+        period >= first &&
+        period <= lastPeriod
+      ) {
         result.push(period);
       }
     }
@@ -398,7 +486,12 @@ function historyPeriods(member, paidMonths) {
   return result;
 }
 
-function renderHistoryTable(member, history, target) {
+function renderHistoryTable(
+  member,
+  history,
+  target,
+  year = 'all'
+) {
   const paidMonths = collectPaidMonths(
     member,
     history
@@ -407,7 +500,6 @@ function renderHistoryTable(member, history, target) {
   const paidSet = new Set(paidMonths);
 
   const table = document.createElement('table');
-
   const thead = document.createElement('thead');
   const header = document.createElement('tr');
 
@@ -426,6 +518,8 @@ function renderHistoryTable(member, history, target) {
     member,
     paidMonths
   )) {
+    if (!matchesYear(period, year)) continue;
+
     const row = document.createElement('tr');
 
     const monthCell = document.createElement('td');
@@ -455,11 +549,13 @@ function renderHistoryTable(member, history, target) {
     container.replaceChildren(table);
   }
 
-  return paidMonths.length;
+  return paidMonths.filter(
+    period => matchesYear(period, year)
+  ).length;
 }
 
 // ===================================================
-// INITIAL FORM VALUES
+// INITIAL VALUES
 // ===================================================
 
 if ($('paymentPeriod')) {
@@ -526,6 +622,7 @@ async function handleAuthChange(user) {
     if (admin) {
       show('admin', true);
       loadAdmin();
+      tab('requests');
       return;
     }
 
@@ -598,7 +695,6 @@ async function loginWithGoogle() {
 }
 
 $('signIn').onclick = loginWithGoogle;
-
 $('logout').onclick = () => signOut(auth);
 
 // ===================================================
@@ -730,25 +826,32 @@ function renderMember(member) {
   $('memberMeta').textContent =
     'Member #' + (member.number || memberNumber);
 
+  populateYearSelect(
+    'memberHistoryYear',
+    member,
+    historicalPayments
+  );
+
+  const selected = selectedYear('memberHistoryYear');
+
   const paid = collectPaidMonths(
     member,
     historicalPayments
   );
 
   const paidSet = new Set(paid);
-
   const rows = [];
 
   for (const period of historyPeriods(member, paid)) {
-    const year = Number(period.slice(0, 4));
+    if (!matchesYear(period, selected)) continue;
 
     let status = 'Not verified';
 
     if (paidSet.has(period)) {
       status = 'Paid';
-    } else if (!historyLoaded && year <= 2027) {
+    } else if (!historyLoaded) {
       status = 'Loading';
-    } else if (historyError && year <= 2027) {
+    } else if (historyError) {
       status = 'History unavailable';
     }
 
@@ -765,14 +868,24 @@ function renderMember(member) {
       ? 'Loading'
       : historyError
         ? 'Unavailable'
-        : String(paid.length);
+        : String(
+            paid.filter(
+              period => matchesYear(period, selected)
+            ).length
+          );
 
-  // Do not calculate dues from an unverified
-  // imported joining date.
+  // Dues must not be calculated from
+  // unverified historical joining dates.
 
   $('dueAmount').textContent = 'Not verified';
 
   $('historyBody').innerHTML = rows.join('');
+}
+
+if ($('memberHistoryYear')) {
+  $('memberHistoryYear').onchange = () => {
+    renderMember(currentMemberData);
+  };
 }
 
 // ===================================================
@@ -798,6 +911,7 @@ function loadAdmin() {
         membersLoaded = true;
 
         renderAdminMembers();
+        renderPhotoMembers();
 
         if (selectedAdminMember !== null) {
           renderAdminPaymentHistory(
@@ -971,10 +1085,6 @@ async function approve(uid, request) {
       );
     }
 
-    // Current approval uses a multi-location write.
-    // Archive remains disabled until all cross-path
-    // concurrency rules have been tested.
-
     await update(ref(db), {
       [`members/${number}/uid`]: uid,
       [`users/${uid}`]: {
@@ -1091,8 +1201,7 @@ function renderAdminMembers() {
       'danger'
     );
 
-    archiveButton.disabled =
-      !canEditMember(member);
+    archiveButton.disabled = !canEditMember(member);
 
     actions.append(
       historyButton,
@@ -1114,7 +1223,6 @@ function renderAdminPaymentHistory(number) {
   if (!isAdmin() || !adminHistoryLoaded) return;
 
   const member = memberList[String(number)];
-
   if (!member) return;
 
   selectedAdminMember = String(number);
@@ -1122,23 +1230,41 @@ function renderAdminPaymentHistory(number) {
   const history =
     adminHistoryCache[String(number)] || {};
 
+  populateYearSelect(
+    'adminHistoryYear',
+    member,
+    history
+  );
+
+  const year = selectedYear('adminHistoryYear');
+
   $('adminHistoryTitle').textContent =
     `#${number} — ${member.name || 'Member'}`;
 
   const count = renderHistoryTable(
     member,
     history,
-    'adminHistoryTable'
+    'adminHistoryTable',
+    year
   );
 
   $('adminHistorySummary').textContent =
+    `Year: ${year === 'all' ? 'All Years' : year} | ` +
     `Paid months: ${count} | ` +
-    `Recorded paid amount: ₹${count * MONTHLY_FEE}`;
+    `Recorded paid equivalent: ₹${count * MONTHLY_FEE}`;
 
   show('adminMemberHistory', true);
 }
 
 $('search').oninput = renderAdminMembers;
+
+if ($('adminHistoryYear')) {
+  $('adminHistoryYear').onchange = () => {
+    if (selectedAdminMember !== null) {
+      renderAdminPaymentHistory(selectedAdminMember);
+    }
+  };
+}
 
 // ===================================================
 // ADMIN TABS
@@ -1150,7 +1276,8 @@ function tab(which) {
     'members',
     'payments',
     'addMember',
-    'archivedMembers'
+    'archivedMembers',
+    'memberPhotos'
   ].forEach(name => {
     show(`${name}Panel`, name === which);
   });
@@ -1173,6 +1300,90 @@ $('tabArchivedMembers').onclick = () => {
   renderArchivedMembers();
 };
 
+if ($('tabMemberPhotos')) {
+  $('tabMemberPhotos').onclick = () => {
+    tab('memberPhotos');
+    renderPhotoMembers();
+  };
+}
+
+// ===================================================
+// PHOTO MENU - NO UPLOAD YET
+// ===================================================
+
+function renderPhotoMembers() {
+  const container = $('photoMembersList');
+  if (!container) return;
+
+  container.replaceChildren();
+
+  const search =
+    ($('photoMemberSearch')?.value || '')
+      .trim()
+      .toLowerCase();
+
+  const entries = Object.entries(memberList)
+    .filter(([number, member]) =>
+      `${number} ${member?.name || ''}`
+        .toLowerCase()
+        .includes(search)
+    )
+    .sort((a, b) => Number(a[0]) - Number(b[0]))
+    .slice(0, 300);
+
+  if (!entries.length) {
+    container.textContent = 'No members found.';
+    return;
+  }
+
+  const table = document.createElement('table');
+  const thead = document.createElement('thead');
+  const heading = document.createElement('tr');
+
+  ['Member #', 'Name', 'Photo'].forEach(label => {
+    const th = document.createElement('th');
+    th.textContent = label;
+    heading.append(th);
+  });
+
+  thead.append(heading);
+  table.append(thead);
+
+  const tbody = document.createElement('tbody');
+
+  for (const [number, member] of entries) {
+    const row = document.createElement('tr');
+
+    for (const value of [
+      number,
+      member?.name || '',
+      'Upload coming soon'
+    ]) {
+      const cell = document.createElement('td');
+      cell.textContent = value;
+      row.append(cell);
+    }
+
+    tbody.append(row);
+  }
+
+  table.append(tbody);
+  container.append(table);
+}
+
+if ($('photoMemberSearch')) {
+  $('photoMemberSearch').oninput =
+    renderPhotoMembers;
+}
+
+if ($('memberPhotoUpload')) {
+  $('memberPhotoUpload').disabled = true;
+}
+
+if ($('adminPhotoUpload')) {
+  $('adminPhotoUpload').disabled = true;
+}
+
 // ===================================================
 // ADD MEMBER
 // ===================================================
@@ -1188,17 +1399,10 @@ $('addMemberForm').onsubmit = async event => {
     $('newMemberNumber').value
   );
 
-  const name =
-    $('newMemberName').value.trim();
-
-  const phone =
-    $('newMemberPhone').value.trim();
-
-  const joiningDate =
-    $('newMemberDate').value;
-
-  const status =
-    $('newMemberStatus').value;
+  const name = $('newMemberName').value.trim();
+  const phone = $('newMemberPhone').value.trim();
+  const joiningDate = $('newMemberDate').value;
+  const status = $('newMemberStatus').value;
 
   if (!validMemberNumber(number)) {
     return notify('Invalid member number.', true);
@@ -1224,9 +1428,6 @@ $('addMemberForm').onsubmit = async event => {
   button.disabled = true;
 
   try {
-    // Check archived register as well as
-    // existing member records.
-
     const archiveSnapshot = await get(
       ref(db, `archivedMembers/${number}`)
     );
@@ -1332,17 +1533,10 @@ $('editMemberForm').onsubmit = async event => {
     $('editMemberNumber').value
   );
 
-  const name =
-    $('editMemberName').value.trim();
-
-  const phone =
-    $('editMemberPhone').value.trim();
-
-  const joiningDate =
-    $('editMemberDate').value;
-
-  const status =
-    $('editMemberStatus').value;
+  const name = $('editMemberName').value.trim();
+  const phone = $('editMemberPhone').value.trim();
+  const joiningDate = $('editMemberDate').value;
+  const status = $('editMemberStatus').value;
 
   if (!name || name.length > 100) {
     return notify('Invalid name.', true);
@@ -1403,6 +1597,7 @@ $('editMemberForm').onsubmit = async event => {
 
 // ===================================================
 // ARCHIVE SAFETY
+// FINAL ARCHIVE WRITE REMAINS DISABLED
 // ===================================================
 
 function openArchiveMember(number) {
@@ -1460,9 +1655,6 @@ function unresolvedRequests(number, data) {
   );
 }
 
-// Detect requests that have payment records
-// but are not marked approved.
-
 function findPartialPaymentRequests(
   number,
   member,
@@ -1504,11 +1696,7 @@ async function archiveMemberSafely(event) {
     $('archiveMemberNumber').value
   ).trim();
 
-  const reason =
-    $('archiveMemberReason').value;
-
-  const notes =
-    $('archiveMemberNotes').value.trim();
+  const reason = $('archiveMemberReason').value;
 
   if (!validMemberNumber(number)) {
     return notify(
@@ -1619,22 +1807,16 @@ async function archiveMemberSafely(event) {
       notify(
         `Archive pre-check passed for ` +
         `#${number}. ${paidCount} paid months. ` +
-        `No unresolved payment requests. ` +
-        `Final Archive is LOCKED pending ` +
-        `server-side safety validation.`,
+        `Final Archive is LOCKED.`,
         false
       );
       return;
     }
 
-    // Intentionally no final write in this version.
-    // A safe archive requires an atomic,
-    // server-authorized operation that also
-    // coordinates payment approvals and requests.
+    // No final archive write is implemented.
 
     throw new Error(
-      'Final Archive requires the secure ' +
-      'server-side workflow.'
+      'Final Archive requires secure server-side workflow.'
     );
 
   } catch (error) {
@@ -1781,7 +1963,7 @@ function renderArchivedHistory(id) {
 
   $('archivedHistorySummary').textContent =
     `Paid months: ${count} | ` +
-    `Recorded paid amount: ₹${count * MONTHLY_FEE} | ` +
+    `Recorded paid equivalent: ₹${count * MONTHLY_FEE} | ` +
     `Reason: ${record.reason || 'Not specified'} | ` +
     'Member number reserved';
 
@@ -1802,6 +1984,7 @@ $('archivedMembersSearch').oninput =
 
 function planDetails() {
   const plan = $('paymentPlan').value;
+  const period = $('paymentPeriod').value;
 
   return {
     plan,
@@ -1809,12 +1992,41 @@ function planDetails() {
       plan === 'yearly'
         ? YEARLY_FEE
         : MONTHLY_FEE,
-    period: $('paymentPeriod').value
+    period
   };
+}
+
+// Yearly payment always covers Jan-Dec
+// of the selected calendar year.
+
+function paymentMonthKeys(plan, period) {
+  if (!validPeriod(period)) {
+    throw new Error('Invalid payment period.');
+  }
+
+  if (!['monthly', 'yearly'].includes(plan)) {
+    throw new Error('Invalid payment plan.');
+  }
+
+  const [year] = period.split('-').map(Number);
+
+  if (plan === 'monthly') {
+    return [period];
+  }
+
+  return Array.from({ length: 12 }, (_, i) =>
+    `${year}-${String(i + 1).padStart(2, '0')}`
+  );
 }
 
 function updateUpiLink() {
   const { plan, amount, period } = planDetails();
+
+  const year = periodYear(period);
+
+  const description = plan === 'yearly'
+    ? `Year ${year} Jan-Dec`
+    : `Month ${period}`;
 
   const params = new URLSearchParams({
     pa: UPI_ID,
@@ -1822,8 +2034,7 @@ function updateUpiLink() {
     am: String(amount),
     cu: 'INR',
     tn:
-      `TFC ${memberNumber || ''} ` +
-      `${plan} ${period}`
+      `TFC ${memberNumber || ''} ${description}`
   });
 
   $('upiPayLink').href =
@@ -1873,8 +2084,44 @@ $('submitPayment').onclick = async () => {
     );
   }
 
+  const keys = paymentMonthKeys(plan, period);
+
+  if (!historyLoaded || historyError) {
+    return notify(
+      'Payment history is not ready. Try again later.',
+      true
+    );
+  }
+
+  const member = currentMemberData;
+
+  if (!isActiveMember(member)) {
+    return notify('Membership not active.', true);
+  }
+
+  const paidSet = new Set(
+    collectPaidMonths(member, historicalPayments)
+  );
+
+  const alreadyPaid = keys.filter(
+    key => paidSet.has(key)
+  );
+
+  if (alreadyPaid.length) {
+    return notify(
+      'Payment already recorded for: ' +
+      alreadyPaid.join(', ') +
+      '. Contact admin before paying again.',
+      true
+    );
+  }
+
+  const periodLabel = plan === 'yearly'
+    ? `${periodYear(period)} Jan-Dec`
+    : period;
+
   if (!confirm(
-    `Submit ₹${amount} for ${period} ` +
+    `Submit ₹${amount} for ${periodLabel} ` +
     'as Pending? Submit only after paying.'
   )) return;
 
@@ -1882,18 +2129,34 @@ $('submitPayment').onclick = async () => {
   button.disabled = true;
 
   try {
-    const member = (
+    const freshMember = (
       await get(
         ref(db, `members/${memberNumber}`)
       )
     ).val();
 
     if (
-      !isActiveMember(member) ||
-      member.uid !== current.uid
+      !isActiveMember(freshMember) ||
+      freshMember.uid !== current.uid
     ) {
       throw new Error(
         'Membership is no longer active.'
+      );
+    }
+
+    const freshHistory = (
+      await get(
+        ref(db, `paymentHistory/${memberNumber}`)
+      )
+    ).val() || {};
+
+    const freshPaid = new Set(
+      collectPaidMonths(freshMember, freshHistory)
+    );
+
+    if (keys.some(key => freshPaid.has(key))) {
+      throw new Error(
+        'Some months are already paid. Contact admin.'
       );
     }
 
@@ -1984,41 +2247,8 @@ function renderAdminPayments() {
 }
 
 // ===================================================
-// PAYMENT MONTH HELPERS
+// PAYMENT VERIFICATION HELPERS
 // ===================================================
-
-function paymentMonthKeys(plan, period) {
-  if (!validPeriod(period)) {
-    throw new Error('Invalid payment period.');
-  }
-
-  if (!['monthly', 'yearly'].includes(plan)) {
-    throw new Error('Invalid payment plan.');
-  }
-
-  const [year, month] =
-    period.split('-').map(Number);
-
-  const count = plan === 'yearly' ? 12 : 1;
-
-  const keys = [];
-
-  for (let i = 0; i < count; i++) {
-    const date = new Date(
-      year,
-      month - 1 + i,
-      1
-    );
-
-    keys.push(
-      `${date.getFullYear()}-${String(
-        date.getMonth() + 1
-      ).padStart(2, '0')}`
-    );
-  }
-
-  return keys;
-}
 
 function recordedMonthsForRequest(member, id) {
   return Object.entries(
@@ -2045,17 +2275,10 @@ function samePeriods(a, b) {
 
 // ===================================================
 // PAYMENT VERIFICATION
-// ===================================================
 //
-// IMPORTANT:
-// Member transaction and request status
-// are still separate Firebase writes.
-//
-// Recovery detection prevents blindly
-// recording the same request twice.
-//
-// This is not a substitute for an atomic
-// server-side payment approval workflow.
+// Existing two-stage approval is preserved.
+// Server-side atomic approval is still required
+// for stronger concurrency guarantees.
 // ===================================================
 
 async function verifyPayment(id, request, accept) {
@@ -2093,10 +2316,6 @@ async function verifyPayment(id, request, accept) {
       );
     }
 
-    // -----------------------------------------------
-    // REJECT REQUEST
-    // -----------------------------------------------
-
     if (!accept) {
       const number = String(fresh.memberNumber);
 
@@ -2110,7 +2329,7 @@ async function verifyPayment(id, request, accept) {
       if (recorded.length) {
         throw new Error(
           'Payment is already recorded. ' +
-          'Do not reject. Manual reconciliation required.'
+          'Manual reconciliation required.'
         );
       }
 
@@ -2141,10 +2360,6 @@ async function verifyPayment(id, request, accept) {
       notify('Payment rejected.');
       return;
     }
-
-    // -----------------------------------------------
-    // APPROVAL VALIDATION
-    // -----------------------------------------------
 
     if (
       !['monthly', 'yearly'].includes(
@@ -2188,10 +2403,6 @@ async function verifyPayment(id, request, accept) {
       );
     }
 
-    // -----------------------------------------------
-    // PARTIAL APPROVAL RECOVERY
-    // -----------------------------------------------
-
     const alreadyRecorded =
       recordedMonthsForRequest(
         currentMember,
@@ -2205,9 +2416,6 @@ async function verifyPayment(id, request, accept) {
           'Manual reconciliation required.'
         );
       }
-
-      // All months are already recorded.
-      // Only finish the pending request status.
 
       const recovery = await runTransaction(
         requestRef,
@@ -2242,10 +2450,6 @@ async function verifyPayment(id, request, accept) {
       return;
     }
 
-    // -----------------------------------------------
-    // HISTORICAL PAYMENT CHECK
-    // -----------------------------------------------
-
     const oldHistory = (
       await get(
         ref(db, `paymentHistory/${number}`)
@@ -2254,10 +2458,6 @@ async function verifyPayment(id, request, accept) {
 
     const verifiedAt = Date.now();
     const reviewer = current.uid;
-
-    // -----------------------------------------------
-    // MEMBER TRANSACTION
-    // -----------------------------------------------
 
     const result = await runTransaction(
       memberRef,
@@ -2315,10 +2515,6 @@ async function verifyPayment(id, request, accept) {
       );
     }
 
-    // -----------------------------------------------
-    // REQUEST STATUS UPDATE
-    // -----------------------------------------------
-
     try {
       const completion = await runTransaction(
         requestRef,
@@ -2369,7 +2565,7 @@ async function verifyPayment(id, request, accept) {
 }
 
 // ===================================================
-// MEMBER PAYMENT HISTORY
+// MEMBER PAYMENT SUBMISSION HISTORY
 // ===================================================
 
 function renderMyPayments(data) {
@@ -2408,8 +2604,21 @@ function renderMyPayments(data) {
         ).join('')}
       </tbody>
     </table>`;
+}
 
 // ===================================================
-// END OF TFC APP.JS VERSION 73.2
+// 2027 IMPORT STATUS
 // ===================================================
+
+// Import is deliberately not automatic.
+// PDF marks must be reviewed first.
+// Existing 2024-2026 records must remain intact.
+
+if ($('importStatusText')) {
+  $('importStatusText').textContent =
+    '2027 PDF import is pending validation.';
 }
+
+// ===================================================
+// END OF TFC APP.JS VERSION 75.5
+// ===================================================
