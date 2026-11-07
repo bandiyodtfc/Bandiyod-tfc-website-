@@ -1,15 +1,11 @@
-
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import { getDatabase, ref, get, set, update, onValue, push, query, orderByChild, equalTo, runTransaction } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js';
 import { firebaseConfig } from './firebase-config.js';
 
-// TFC BANDIYOD PORTAL VERSION 79.0
-// Google Login, Member Approval, Member Phone Profile
-// Admin Member Management, Historical Payment Records
-// UPI Payment Verification, Monthly/Yearly Cash Payment
-// Archive writes and photo uploads remain disabled.
-// Cash recording is locked pending financial security checks.
+// TFC BANDIYOD PORTAL VERSION 80.0
+// Duplicate Payment Warning Fix
+// Cash recording remains locked pending security checks.
 
 const ARCHIVE_WRITE_ENABLED = false;
 const CASH_WRITE_ENABLED = false;
@@ -2268,7 +2264,7 @@ function renderMyPayments(data) {
     }</tbody></table>`;
 }
 
-// VERSION 79.0 — ADMIN CASH PAYMENT
+// VERSION 80.0 — ADMIN CASH PAYMENT
 
 function setupCashPayments() {
   const tabs = $('tabMembers')?.parentElement;
@@ -2442,6 +2438,8 @@ function selectedCashPeriods() {
   ].map(el => `${year}-${el.value}`).sort();
 }
 
+// VERSION 80.0 — DUPLICATE WARNING PRIORITY FIX
+
 function refreshCashMember() {
   if (!$('cashPanel')) return;
 
@@ -2457,10 +2455,13 @@ function refreshCashMember() {
   show('cashMonthsBox', !yearly);
 
   let keys = [];
+  let periodError = '';
 
   try {
     keys = selectedCashPeriods();
-  } catch (_) {}
+  } catch (e) {
+    periodError = e.message;
+  }
 
   const amount = keys.length * MONTHLY_FEE;
 
@@ -2488,14 +2489,23 @@ function refreshCashMember() {
     }
   });
 
+  // Already Paid must be shown before Cash Locked.
+  // This is a display fix only; it does not enable cash writes.
+
   $('cashWarning').textContent =
-    !CASH_WRITE_ENABLED
-      ? 'Cash saving is locked until security verification is completed.'
-      : duplicates.length
-        ? `Already Paid: ${duplicates.join(', ')}`
-        : pending
-          ? 'A pending UPI request overlaps these months.'
-          : 'Selected months will be checked again before saving.';
+    periodError
+      ? periodError
+      : !membersLoaded ||
+        !adminHistoryLoaded ||
+        !paymentRequestsLoaded
+        ? 'Loading payment records. Please wait.'
+        : duplicates.length
+          ? `Already Paid: ${duplicates.join(', ')}`
+          : pending
+            ? 'A pending UPI request overlaps these months.'
+            : !CASH_WRITE_ENABLED
+              ? 'Cash saving is locked until security verification is completed.'
+              : 'Selected months will be checked again before saving.';
 
   $('saveCash').disabled =
     !CASH_WRITE_ENABLED ||
@@ -2507,9 +2517,12 @@ function refreshCashMember() {
     !member ||
     !active(member) ||
     !keys.length ||
+    !!periodError ||
     !!duplicates.length ||
     pending;
 }
+
+// CASH PAYMENT WRITE — STILL LOCKED
 
 async function saveCashPayment() {
   if (!CASH_WRITE_ENABLED) {
@@ -2695,4 +2708,4 @@ setupCashPayments();
 // Photo uploads disabled.
 // Cash writes disabled until financial security verification.
 
-// END OF TFC BANDIYOD PORTAL VERSION 79.0
+// END OF TFC BANDIYOD PORTAL VERSION 80.0
