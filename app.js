@@ -1,14 +1,16 @@
+
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import { getDatabase, ref, get, set, update, onValue, push, query, orderByChild, equalTo, runTransaction } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js';
 import { firebaseConfig } from './firebase-config.js';
 
-// TFC BANDIYOD PORTAL VERSION 80.0
-// Duplicate Payment Warning Fix
-// Cash recording remains locked pending security checks.
+// TFC BANDIYOD PORTAL VERSION 81.0
+// Admin Cash Payment Save enabled.
+// Cash audit details are stored inside each payment record.
+// Archive and photo uploads remain disabled.
 
 const ARCHIVE_WRITE_ENABLED = false;
-const CASH_WRITE_ENABLED = false;
+const CASH_WRITE_ENABLED = true;
 const MONTHLY_FEE = 50;
 const YEARLY_FEE = 600;
 const UPI_ID = 'waheedwahi84-1@oksbi';
@@ -2264,7 +2266,7 @@ function renderMyPayments(data) {
     }</tbody></table>`;
 }
 
-// VERSION 80.0 — ADMIN CASH PAYMENT
+// VERSION 81.0 — ADMIN CASH PAYMENT
 
 function setupCashPayments() {
   const tabs = $('tabMembers')?.parentElement;
@@ -2438,7 +2440,7 @@ function selectedCashPeriods() {
   ].map(el => `${year}-${el.value}`).sort();
 }
 
-// VERSION 80.0 — DUPLICATE WARNING PRIORITY FIX
+// DUPLICATE PAYMENT WARNING PRIORITY
 
 function refreshCashMember() {
   if (!$('cashPanel')) return;
@@ -2489,9 +2491,6 @@ function refreshCashMember() {
     }
   });
 
-  // Already Paid must be shown before Cash Locked.
-  // This is a display fix only; it does not enable cash writes.
-
   $('cashWarning').textContent =
     periodError
       ? periodError
@@ -2504,8 +2503,8 @@ function refreshCashMember() {
           : pending
             ? 'A pending UPI request overlaps these months.'
             : !CASH_WRITE_ENABLED
-              ? 'Cash saving is locked until security verification is completed.'
-              : 'Selected months will be checked again before saving.';
+              ? 'Cash saving is locked.'
+              : 'Ready to record cash payment. Verify cash was received before saving.';
 
   $('saveCash').disabled =
     !CASH_WRITE_ENABLED ||
@@ -2522,30 +2521,21 @@ function refreshCashMember() {
     pending;
 }
 
-// CASH PAYMENT WRITE — STILL LOCKED
+// VERSION 81.0 — CASH PAYMENT SAVE
 
 async function saveCashPayment() {
-  if (!CASH_WRITE_ENABLED) {
-    return notify(
-      'Cash recording is locked until Firebase security checks are completed.',
-      true
-    );
-  }
-
-  if (!isAdmin() || cashBusy) return;
+  if (!CASH_WRITE_ENABLED || !isAdmin() || cashBusy) return;
 
   const adminUid = current.uid;
   const number = String(+$('cashMemberNumber').value);
   const plan = $('cashPlan').value;
   const receivedDate = $('cashDate').value;
 
-  let keys;
-
   try {
-    keys = selectedCashPeriods();
+    const keys = selectedCashPeriods();
 
-    if (!keys.length) {
-      throw Error('Select at least one month.');
+    if (!validNumber(number) || !keys.length) {
+      throw Error('Select a valid member and month.');
     }
 
     if (!validDate(receivedDate)) {
@@ -2557,33 +2547,25 @@ async function saveCashPayment() {
       !adminHistoryLoaded ||
       !paymentRequestsLoaded
     ) {
-      throw Error(
-        'Wait for payment records to load.'
-      );
+      throw Error('Wait for database loading.');
     }
 
-    const freshMember = (
-      await get(ref(db, `members/${number}`))
-    ).val();
+    const memberRef = ref(db, `members/${number}`);
 
-    if (!active(freshMember)) {
-      throw Error(
-        'Member not active or not found.'
-      );
+    const freshMember = (await get(memberRef)).val();
+
+    if (!freshMember || freshMember.status !== 'active') {
+      throw Error('Active member required.');
     }
 
     const history = (
       await get(ref(db, `paymentHistory/${number}`))
     ).val() || {};
 
-    const paid = new Set(
-      paidMonths(freshMember, history)
-    );
+    const paid = new Set(paidMonths(freshMember, history));
 
     if (keys.some(k => paid.has(k))) {
-      throw Error(
-        'One or more months are already Paid.'
-      );
+      throw Error('Already Paid month selected.');
     }
 
     const requests = (
@@ -2597,10 +2579,8 @@ async function saveCashPayment() {
       ) return false;
 
       try {
-        return paymentMonthKeys(
-          r.plan,
-          r.period
-        ).some(k => keys.includes(k));
+        return paymentMonthKeys(r.plan, r.period)
+          .some(k => keys.includes(k));
       } catch {
         return true;
       }
@@ -2608,7 +2588,7 @@ async function saveCashPayment() {
 
     if (overlaps) {
       throw Error(
-        'A pending UPI request covers these months. Review it first.'
+        'Pending UPI request overlaps these months.'
       );
     }
 
@@ -2621,32 +2601,29 @@ async function saveCashPayment() {
       `Months: ${keys.join(', ')}\n` +
       `Amount: ₹${amount}\n` +
       `Received: ${receivedDate}\n\n` +
-      `This will mark selected months Paid.`
+      `Save and mark Paid?`
     )) return;
 
     cashBusy = true;
     refreshCashMember();
 
     const recordedAt = Date.now();
-    const memberRef = ref(db, `members/${number}`);
 
     const result = await runTransaction(
       memberRef,
       member => {
-        if (!active(member)) return;
+        if (!member || member.status !== 'active') return;
 
         const existing = member.payments || {};
 
-        if (
-          keys.some(k =>
-            existing[k]?.status === 'paid' ||
-            isHistoricalPaid(
-              history,
-              +k.slice(0, 4),
-              +k.slice(5, 7)
-            )
+        if (keys.some(k =>
+          existing[k] != null ||
+          isHistoricalPaid(
+            history,
+            +k.slice(0, 4),
+            +k.slice(5, 7)
           )
-        ) return;
+        )) return;
 
         const next = {
           ...member,
@@ -2661,7 +2638,14 @@ async function saveCashPayment() {
             plan,
             receivedDate,
             verifiedAt: recordedAt,
-            verifiedBy: adminUid
+            verifiedBy: adminUid,
+            audit: {
+              action: 'cash_payment_recorded',
+              recordedBy: adminUid,
+              recordedAt,
+              memberNumber: Number(number),
+              period
+            }
           };
         }
 
@@ -2677,7 +2661,7 @@ async function saveCashPayment() {
     }
 
     notify(
-      `Cash payment recorded for member #${number}: ₹${amount}.`
+      `Cash payment saved successfully: Member #${number}, ₹${amount}.`
     );
 
     document.querySelectorAll('.cash-month')
@@ -2702,10 +2686,12 @@ async function saveCashPayment() {
 setupMemberPhoneProfile();
 setupCashPayments();
 
-// Historical PDF import remains a separate reviewed operation.
 // Existing 2024–2027 historical data is not overwritten.
 // Archive writes disabled.
 // Photo uploads disabled.
-// Cash writes disabled until financial security verification.
+// Cash payments are recorded with embedded audit details.
+// Separate cashAudit records are not created.
+// Cross-path concurrent UPI and historical changes are not
+// transactionally locked; production reconciliation is required.
 
-// END OF TFC BANDIYOD PORTAL VERSION 80.0
+// END OF TFC BANDIYOD PORTAL VERSION 81.0
