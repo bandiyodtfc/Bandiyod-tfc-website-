@@ -160,39 +160,27 @@ code {overflow-wrap:anywhere}
   margin-bottom:14px;
 }
 
-/* VERSION 75.8 PAYMENT */
-.payment-box {
-  background:#fffbea;
+/* VERSION 75.9 PAYMENT RESET */
+.payment-reset {
+  background:#fff4d1;
   border:1px solid #f2da75;
   border-radius:12px;
-  padding:16px;
+  padding:18px;
   margin:16px 0;
+  text-align:center;
 }
-.payment-actions {
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin:12px 0;
+.payment-reset h3 {
+  margin-top:0;
+  color:#9a6700;
 }
-.payment-actions button {
-  flex:1;
-  min-width:150px;
-}
-.payment-id {
-  background:white;
-  border:1px solid #e4d9a3;
-  border-radius:8px;
-  padding:12px;
-  font-weight:600;
-  overflow-wrap:anywhere;
-}
-#copyStatus {
-  font-weight:600;
-  margin:8px 0;
-}
-.payment-instructions {
+.payment-reset p {
   line-height:1.7;
-  padding-left:23px;
+}
+.payment-reset button {
+  background:#d0d5dd;
+  color:#475467;
+  width:100%;
+  max-width:350px;
 }
 
 @media(max-width:600px) {
@@ -243,9 +231,12 @@ code {overflow-wrap:anywhere}
 <section id="login" class="panel">
   <h2 data-t="welcome">Welcome to TFC Bandiyod</h2>
   <p data-t="loginText">
-    Members can sign in with Google. New accounts require admin approval.
+    Members can sign in with Google.
+    New accounts require admin approval.
   </p>
-  <button id="signIn" data-t="signIn">Continue with Google</button>
+  <button id="signIn" data-t="signIn">
+    Continue with Google
+  </button>
 </section>
 
 <!-- APPROVAL PENDING -->
@@ -254,9 +245,14 @@ code {overflow-wrap:anywhere}
   <p data-t="pendingText">
     Your Google account needs approval from the TFC admin.
   </p>
-  <label data-t="memberNumber" for="claimNumber">Membership number</label>
-  <input id="claimNumber" type="number" min="1" placeholder="e.g. 25">
-  <button id="requestApproval" data-t="request">Request approval</button>
+  <label data-t="memberNumber" for="claimNumber">
+    Membership number
+  </label>
+  <input id="claimNumber" type="number" min="1"
+    placeholder="e.g. 25">
+  <button id="requestApproval" data-t="request">
+    Request approval
+  </button>
 </section>
 
 <!-- MEMBER DASHBOARD -->
@@ -304,8 +300,9 @@ code {overflow-wrap:anywhere}
     </select>
 
     <p class="muted">
-      Historical payments are based on recorded membership card marks.
-      Unmarked months are not automatically treated as outstanding dues.
+      Historical payments are based on recorded membership
+      card marks. Unmarked months are not automatically
+      treated as outstanding dues.
     </p>
 
     <div class="scroll">
@@ -321,96 +318,54 @@ code {overflow-wrap:anywhere}
     </div>
   </div>
 
-  <!-- PAYMENT -->
+  <!-- PAYMENT RESET VERSION 75.9 -->
   <div class="panel">
     <h2 data-t="pay">Pay membership fee</h2>
 
-    <p class="notice">
-      Pay using your UPI app, then enter the transaction/reference ID.
-      Payment remains Pending until verified by the admin.
-      Do not pay twice.
-    </p>
-
-    <div class="paygrid">
-      <div>
-        <label for="paymentPlan">Payment plan</label>
-        <select id="paymentPlan">
-          <option value="monthly">Monthly — ₹50</option>
-          <option value="yearly">Yearly — ₹600</option>
-        </select>
-      </div>
-
-      <div>
-        <label for="paymentPeriod">Payment month / year</label>
-        <input id="paymentPeriod" type="month">
-      </div>
-    </div>
-
-    <div class="payment-box">
-      <h3>Pay with Google Pay / UPI</h3>
-
-      <p>UPI ID</p>
-      <div id="displayUpiId" class="payment-id">
-        waheedwahi84-1@oksbi
-      </div>
+    <div class="payment-reset">
+      <h3>Payment Temporarily Unavailable</h3>
 
       <p>
-        Bank account name:
-        <strong>MOOSA WAHEED M B</strong>
+        TFC Bandiyod is upgrading the membership
+        payment system.
       </p>
 
       <p>
-        Amount to pay:
-        <strong id="displayPaymentAmount">₹50</strong>
+        Please do not make any UPI transfer until
+        the new payment system is activated.
       </p>
-
-      <div class="payment-actions">
-        <button id="copyUpiId" type="button">
-          Copy UPI ID
-        </button>
-
-        <button id="openGooglePay" type="button" class="secondary">
-          Open Google Pay
-        </button>
-      </div>
-
-      <p id="copyStatus" role="status"></p>
-
-      <ol class="payment-instructions">
-        <li>Copy the UPI ID above.</li>
-        <li>Open Google Pay.</li>
-        <li>Select Pay UPI ID and paste the copied ID.</li>
-        <li>Verify the recipient name and enter the correct amount.</li>
-        <li>After successful payment, copy the UPI transaction ID.</li>
-      </ol>
 
       <p class="muted">
-        Google Pay may need to be opened manually.
-        The website does not automatically transfer money.
+        Existing payment history and previously
+        submitted requests are preserved.
       </p>
+
+      <button type="button" disabled>
+        Payment Temporarily Unavailable
+      </button>
     </div>
 
-    <!-- Retained for app.js 75.7 compatibility -->
-    <a id="upiPayLink" class="hide"
-       href="#" rel="noopener" tabindex="-1"
-       aria-hidden="true">
-      UPI Payment Link
-    </a>
+    <!-- Hidden compatibility controls for app.js 75.7 -->
+    <div class="hide" aria-hidden="true">
+      <select id="paymentPlan" tabindex="-1">
+        <option value="monthly">Monthly</option>
+        <option value="yearly">Yearly</option>
+      </select>
 
-    <label for="transactionId">
-      UPI transaction / reference ID
-    </label>
-    <input id="transactionId" maxlength="100"
-      placeholder="Enter ID after successful payment"
-      autocomplete="off">
+      <input id="paymentPeriod" type="month" tabindex="-1">
 
-    <p>
-      <button id="submitPayment">
-        Submit payment for verification
+      <a id="upiPayLink" href="#"
+        tabindex="-1">UPI Payment</a>
+
+      <input id="transactionId" tabindex="-1">
+
+      <button id="submitPayment" type="button"
+        disabled tabindex="-1">
+        Payment Disabled
       </button>
-    </p>
+    </div>
 
-    <h3>Your payment submissions</h3>
+    <h3>Your previous payment submissions</h3>
     <div id="myPaymentList" class="scroll"></div>
   </div>
 
@@ -424,10 +379,18 @@ code {overflow-wrap:anywhere}
     <div class="flex">
       <button id="tabRequests">Approval requests</button>
       <button id="tabMembers" class="secondary">Members</button>
-      <button id="tabPayments" class="secondary">Payment verification</button>
-      <button id="tabAddMember" class="secondary">+ Add Member</button>
-      <button id="tabArchivedMembers" class="secondary">Archived Members</button>
-      <button id="tabMemberPhotos" class="secondary">Member Photos</button>
+      <button id="tabPayments" class="secondary">
+        Payment verification
+      </button>
+      <button id="tabAddMember" class="secondary">
+        + Add Member
+      </button>
+      <button id="tabArchivedMembers" class="secondary">
+        Archived Members
+      </button>
+      <button id="tabMemberPhotos" class="secondary">
+        Member Photos
+      </button>
     </div>
   </div>
 
@@ -440,13 +403,16 @@ code {overflow-wrap:anywhere}
   <!-- MEMBERS LIST -->
   <div id="membersPanel" class="panel hide">
     <h2>Members</h2>
-    <input id="search" placeholder="Search name or member number">
+    <input id="search"
+      placeholder="Search name or member number">
 
     <div id="membersList" class="scroll"></div>
 
     <!-- ADMIN PAYMENT HISTORY VIEW -->
     <div id="adminMemberHistory" class="panel hide">
-      <h3 id="adminHistoryTitle">Member Payment History</h3>
+      <h3 id="adminHistoryTitle">
+        Member Payment History
+      </h3>
       <p id="adminHistorySummary"></p>
 
       <label for="adminHistoryYear">Select Year</label>
@@ -461,32 +427,47 @@ code {overflow-wrap:anywhere}
     <div id="editMemberPanel" class="panel hide">
       <h3>Edit Member</h3>
       <p class="muted">
-        Update member details without changing the membership number
-        or existing payment history.
+        Update member details without changing the
+        membership number or existing payment history.
       </p>
 
       <form id="editMemberForm">
-        <label for="editMemberNumber">Member Number</label>
-        <input id="editMemberNumber" type="number" readonly required>
+        <label for="editMemberNumber">
+          Member Number
+        </label>
+        <input id="editMemberNumber"
+          type="number" readonly required>
 
         <label for="editMemberName">Full Name</label>
-        <input id="editMemberName" type="text" maxlength="100" required>
+        <input id="editMemberName"
+          type="text" maxlength="100" required>
 
-        <label for="editMemberPhone">Mobile Number</label>
-        <input id="editMemberPhone" type="tel" maxlength="15">
+        <label for="editMemberPhone">
+          Mobile Number
+        </label>
+        <input id="editMemberPhone"
+          type="tel" maxlength="15">
 
-        <label for="editMemberDate">Joining Date</label>
-        <input id="editMemberDate" type="date" required>
+        <label for="editMemberDate">
+          Joining Date
+        </label>
+        <input id="editMemberDate"
+          type="date" required>
 
-        <label for="editMemberStatus">Membership Status</label>
+        <label for="editMemberStatus">
+          Membership Status
+        </label>
         <select id="editMemberStatus">
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
         </select>
 
         <div class="form-actions">
-          <button id="saveEditMember" type="submit">Save Changes</button>
-          <button id="cancelEditMember" type="button" class="secondary">
+          <button id="saveEditMember" type="submit">
+            Save Changes
+          </button>
+          <button id="cancelEditMember"
+            type="button" class="secondary">
             Cancel
           </button>
         </div>
@@ -498,52 +479,68 @@ code {overflow-wrap:anywhere}
       <h3>Archive Member</h3>
 
       <div class="archive-warning">
-        <strong>Important: Archive is not permanent deletion.</strong>
+        <strong>
+          Important: Archive is not permanent deletion.
+        </strong>
         <p>
-          The member record and associated payment history must be
-          preserved in the admin-only archive before the membership
-          number can be reused.
+          The member record and associated payment
+          history must be preserved in the admin-only
+          archive before the membership number can
+          be reused.
         </p>
         <p>
-          Old Google login access and pending payment requests must
-          also be handled safely.
+          Old Google login access and pending payment
+          requests must also be handled safely.
         </p>
       </div>
 
       <p id="archiveMemberSummary"></p>
 
       <form id="archiveMemberForm">
-        <label for="archiveMemberNumber">Member Number</label>
-        <input id="archiveMemberNumber" type="number" readonly required>
+        <label for="archiveMemberNumber">
+          Member Number
+        </label>
+        <input id="archiveMemberNumber"
+          type="number" readonly required>
 
-        <label for="archiveMemberReason">Reason for Archiving</label>
+        <label for="archiveMemberReason">
+          Reason for Archiving
+        </label>
         <select id="archiveMemberReason" required>
           <option value="">Select reason</option>
           <option value="resigned">Resigned</option>
-          <option value="inactive">Inactive Membership</option>
+          <option value="inactive">
+            Inactive Membership
+          </option>
           <option value="deceased">Deceased</option>
-          <option value="duplicate">Duplicate Record</option>
+          <option value="duplicate">
+            Duplicate Record
+          </option>
           <option value="other">Other</option>
         </select>
 
-        <label for="archiveMemberNotes">Notes (Optional)</label>
-        <input id="archiveMemberNotes" type="text" maxlength="250"
+        <label for="archiveMemberNotes">
+          Notes (Optional)
+        </label>
+        <input id="archiveMemberNotes"
+          type="text" maxlength="250"
           placeholder="Additional details">
 
         <label class="flex">
-          <input id="archiveMemberConfirm" type="checkbox"
+          <input id="archiveMemberConfirm"
+            type="checkbox"
             style="width:auto" required>
-          I understand that this member will be moved to the
-          admin-only archive.
+          I understand that this member will be moved
+          to the admin-only archive.
         </label>
 
         <div class="form-actions">
-          <button id="confirmArchiveMember" type="submit"
-            class="danger" disabled>
+          <button id="confirmArchiveMember"
+            type="submit" class="danger" disabled>
             Confirm Archive
           </button>
-          <button id="cancelArchiveMember" type="button"
-            class="secondary">
+          <button id="cancelArchiveMember"
+            type="button" class="secondary">
             Cancel
           </button>
         </div>
@@ -555,7 +552,8 @@ code {overflow-wrap:anywhere}
   <div id="paymentsPanel" class="panel hide">
     <h2>Payment verification</h2>
     <p class="notice">
-      Check the recipient's bank/UPI statement before approving.
+      Check the recipient's bank/UPI statement
+      before approving.
       Transaction ID alone is not proof of payment.
     </p>
     <div id="adminPaymentList"></div>
@@ -567,27 +565,36 @@ code {overflow-wrap:anywhere}
 
     <p class="notice">
       Admin only. Enter an available member number.
-      Previously used numbers require safe archival of
-      the former member's records before reuse.
+      Previously used numbers require safe archival
+      of the former member's records before reuse.
     </p>
 
     <form id="addMemberForm">
-      <label for="newMemberNumber">Member Number</label>
-      <input id="newMemberNumber" type="number"
-        min="1" step="1" required>
+      <label for="newMemberNumber">
+        Member Number
+      </label>
+      <input id="newMemberNumber"
+        type="number" min="1" step="1" required>
 
       <label for="newMemberName">Full Name</label>
-      <input id="newMemberName" type="text"
-        maxlength="100" required>
+      <input id="newMemberName"
+        type="text" maxlength="100" required>
 
-      <label for="newMemberPhone">Mobile Number</label>
-      <input id="newMemberPhone" type="tel"
-        maxlength="15">
+      <label for="newMemberPhone">
+        Mobile Number
+      </label>
+      <input id="newMemberPhone"
+        type="tel" maxlength="15">
 
-      <label for="newMemberDate">Joining Date</label>
-      <input id="newMemberDate" type="date" required>
+      <label for="newMemberDate">
+        Joining Date
+      </label>
+      <input id="newMemberDate"
+        type="date" required>
 
-      <label for="newMemberStatus">Membership Status</label>
+      <label for="newMemberStatus">
+        Membership Status
+      </label>
       <select id="newMemberStatus">
         <option value="active">Active</option>
         <option value="inactive">Inactive</option>
@@ -606,21 +613,29 @@ code {overflow-wrap:anywhere}
     <h2>Archived Members</h2>
 
     <p class="notice">
-      Admin Only. Former member records and payment history
-      are retained here. Archived records must remain
-      separate from newly assigned member numbers.
+      Admin Only. Former member records and payment
+      history are retained here. Archived records
+      must remain separate from newly assigned
+      member numbers.
     </p>
 
-    <label for="archivedMembersSearch">Search Archived Members</label>
-    <input id="archivedMembersSearch" type="search"
+    <label for="archivedMembersSearch">
+      Search Archived Members
+    </label>
+    <input id="archivedMembersSearch"
+      type="search"
       placeholder="Search name, old member number or archive ID">
 
     <div id="archivedMembersList" class="scroll"></div>
 
-    <div id="archivedMemberHistory" class="panel hide">
-      <h3 id="archivedHistoryTitle">Archived Payment History</h3>
+    <div id="archivedMemberHistory"
+      class="panel hide">
+      <h3 id="archivedHistoryTitle">
+        Archived Payment History
+      </h3>
       <p id="archivedHistorySummary"></p>
-      <div id="archivedHistoryTable" class="scroll"></div>
+      <div id="archivedHistoryTable"
+        class="scroll"></div>
     </div>
   </div>
 
@@ -629,12 +644,15 @@ code {overflow-wrap:anywhere}
     <h2>Member Profile Photos</h2>
 
     <p class="muted">
-      Admin can upload or change member profile photos
-      when photo storage is configured.
+      Admin can upload or change member profile
+      photos when photo storage is configured.
     </p>
 
-    <label for="photoMemberSearch">Search Member</label>
-    <input id="photoMemberSearch" type="search"
+    <label for="photoMemberSearch">
+      Search Member
+    </label>
+    <input id="photoMemberSearch"
+      type="search"
       placeholder="Search member number or name">
 
     <div id="photoMembersList" class="scroll"></div>
@@ -650,9 +668,9 @@ code {overflow-wrap:anywhere}
   <div id="importStatusPanel" class="panel hide">
     <h2>2027 Payment Import</h2>
     <p class="notice">
-      2027 membership card payments will be imported
-      after validation. Existing 2024–2026 records
-      will be preserved.
+      2027 membership card payments will be
+      imported after validation.
+      Existing 2024–2026 records will be preserved.
     </p>
     <p id="importStatusText">
       Import not completed.
@@ -663,85 +681,12 @@ code {overflow-wrap:anywhere}
 
 </main>
 
-<footer>© TFC Bandiyod · Private Member Portal</footer>
+<footer>
+  © TFC Bandiyod · Private Member Portal
+</footer>
 
-<!-- Existing application unchanged -->
+<!-- Existing application retained -->
 <script type="module" src="./app.js?v=75.7"></script>
-
-<!-- PAYMENT UI VERSION 75.8 -->
-<script>
-(function () {
-  const UPI_ID = 'waheedwahi84-1@oksbi';
-
-  const copyButton =
-    document.getElementById('copyUpiId');
-
-  const openButton =
-    document.getElementById('openGooglePay');
-
-  const status =
-    document.getElementById('copyStatus');
-
-  const amountDisplay =
-    document.getElementById('displayPaymentAmount');
-
-  const planSelect =
-    document.getElementById('paymentPlan');
-
-  function refreshAmount() {
-    const amount =
-      planSelect.value === 'yearly' ? 600 : 50;
-
-    amountDisplay.textContent = '₹' + amount;
-  }
-
-  async function copyUpiId() {
-    try {
-      await navigator.clipboard.writeText(UPI_ID);
-
-      status.textContent =
-        'UPI ID copied! Open Google Pay and paste it.';
-      status.className = 'ok';
-
-    } catch (error) {
-      status.textContent =
-        'Could not copy automatically. ' +
-        'Long-press the UPI ID above to copy it.';
-      status.className = 'error';
-    }
-  }
-
-  copyButton.addEventListener('click', copyUpiId);
-
-  planSelect.addEventListener('change', refreshAmount);
-
-  refreshAmount();
-
-  openButton.addEventListener('click', function () {
-    status.textContent =
-      'Opening Google Pay. If it does not open, ' +
-      'open the Google Pay app manually and ' +
-      'select Pay UPI ID.';
-    status.className = '';
-
-    // Best-effort Android app launch.
-    // No payment deep link is used.
-    // Some browsers may block this.
-    if (/Android/i.test(navigator.userAgent)) {
-      window.location.href =
-        'intent://#Intent;' +
-        'action=android.intent.action.MAIN;' +
-        'category=android.intent.category.LAUNCHER;' +
-        'package=com.google.android.apps.nbu.paisa.user;' +
-        'end';
-    } else {
-      status.textContent =
-        'Open your Google Pay or UPI app manually. ' +
-        'Paste the copied UPI ID to pay.';
-    }
-  });
-})();
-</script>
 
 </body>
 </html>
