@@ -4,689 +4,204 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <title>TFC Bandiyod | Member Portal</title>
-
 <style>
-:root {
-  font-family:system-ui,-apple-system,sans-serif;
-  color:#1b2330;
-  background:#f6f7fa;
-}
-* {box-sizing:border-box}
-body {margin:0}
-header {
-  background:#f8ce23;
-  padding:15px 5%;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-}
-.brand {
-  display:flex;
-  align-items:center;
-  gap:12px;
-  min-width:0;
-}
-.brand-logo {
-  width:65px;
-  height:65px;
-  object-fit:contain;
-  flex-shrink:0;
-}
-h1 {font-size:24px;margin:0}
-h2 {font-size:21px}
-small,.muted {color:#667085}
-.wrap {max-width:1050px;margin:28px auto;padding:0 16px}
-.panel {
-  background:white;
-  border-radius:16px;
-  padding:22px;
-  margin:15px 0;
-  box-shadow:0 2px 12px #17233a10;
-}
-.grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:14px;
-}
-.stat {
-  background:#fff9d9;
-  border-radius:12px;
-  padding:16px;
-}
-.stat strong {font-size:25px;display:block}
-button,.paylink {
-  background:#f3c916;
-  border:0;
-  border-radius:9px;
-  padding:12px 17px;
-  font-weight:700;
-  cursor:pointer;
-  color:#1b2330;
-  text-decoration:none;
-  display:inline-block;
-}
-button.secondary {background:#e8ebef}
-button.danger {
-  background:#b42318;
-  color:white;
-}
-button:disabled {opacity:.5;cursor:not-allowed}
-input,select {
-  padding:12px;
-  border:1px solid #d1d5db;
-  border-radius:8px;
-  max-width:100%;
-  width:100%;
-}
-label {display:block;margin:10px 0 5px;font-size:14px}
-table {width:100%;border-collapse:collapse}
-td,th {
-  text-align:left;
-  padding:10px;
-  border-bottom:1px solid #e7e7e7;
-}
-.scroll {overflow:auto}
-.hide {display:none!important}
-.flex {
-  display:flex;
-  gap:10px;
-  align-items:center;
-  flex-wrap:wrap;
-}
-.notice {
-  background:#fff4d1;
-  padding:12px;
-  border-radius:8px;
-}
-.ok {color:#187044}
-.error {color:#b42318}
-footer {text-align:center;color:#777;padding:30px}
-#msg {margin:10px 0}
-nav button {margin:3px}
-.paygrid {
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
-  gap:12px;
-}
-.paygrid>div {min-width:0}
-.paygrid button {margin-top:12px}
-code {overflow-wrap:anywhere}
-#adminMemberHistory {
-  margin-top:20px;
-  border:1px solid #e7e7e7;
-}
-#adminHistorySummary {
-  font-weight:600;
-  color:#344054;
-}
-.history-paid {
-  color:#187044;
-  font-weight:600;
-}
-.history-unverified {color:#667085}
-.form-actions {
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-top:18px;
-}
-.archive-warning {
-  background:#fff1f0;
-  border:1px solid #f3b4ae;
-  border-radius:10px;
-  padding:14px;
-}
-.archive-warning strong {color:#b42318}
-#editMemberPanel,
-#archiveMemberPanel,
-#archivedMembersPanel {
-  border:1px solid #e7e7e7;
-}
-#archivedMembersList,
-#archivedMemberHistory {
-  margin-top:14px;
-}
-.feature-pending {
-  background:#f2f4f7;
-  border-radius:10px;
-  padding:14px;
-  margin-top:12px;
-}
-.year-select {
-  max-width:220px;
-  margin-bottom:14px;
-}
-
-/* VERSION 75.9 PAYMENT RESET */
-.payment-reset {
-  background:#fff4d1;
-  border:1px solid #f2da75;
-  border-radius:12px;
-  padding:18px;
-  margin:16px 0;
-  text-align:center;
-}
-.payment-reset h3 {
-  margin-top:0;
-  color:#9a6700;
-}
-.payment-reset p {
-  line-height:1.7;
-}
-.payment-reset button {
-  background:#d0d5dd;
-  color:#475467;
-  width:100%;
-  max-width:350px;
-}
-
-@media(max-width:600px) {
-  header {padding:12px;gap:8px}
-  .brand {gap:7px}
-  .brand-logo {width:48px;height:48px}
-  h1 {font-size:17px}
-  header small {font-size:10px}
-  header select {
-    max-width:100px;
-    font-size:12px;
-    padding:8px;
-  }
-  header button {padding:9px;font-size:12px}
-  .panel {padding:16px}
-  td,th {padding:8px;font-size:13px}
-}
+:root{font-family:system-ui,-apple-system,sans-serif;color:#1b2330;background:#f6f7fa}
+*{box-sizing:border-box}body{margin:0}
+header{background:#f8ce23;padding:15px 5%;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}.brand-logo{width:65px;height:65px;object-fit:contain;flex-shrink:0}
+h1{font-size:24px;margin:0}h2{font-size:21px}small,.muted{color:#667085}
+.wrap{max-width:1050px;margin:28px auto;padding:0 16px}.panel{background:white;border-radius:16px;padding:22px;margin:15px 0;box-shadow:0 2px 12px #17233a10}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}.stat{background:#fff9d9;border-radius:12px;padding:16px}.stat strong{font-size:25px;display:block}
+button,.paylink{background:#f3c916;border:0;border-radius:9px;padding:12px 17px;font-weight:700;cursor:pointer;color:#1b2330;text-decoration:none;display:inline-block}
+button.secondary{background:#e8ebef}button.danger{background:#b42318;color:white}button:disabled{opacity:.5;cursor:not-allowed}
+input,select{padding:12px;border:1px solid #d1d5db;border-radius:8px;max-width:100%;width:100%}label{display:block;margin:10px 0 5px;font-size:14px}
+table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:10px;border-bottom:1px solid #e7e7e7}.scroll{overflow:auto}.hide{display:none!important}
+.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.notice{background:#fff4d1;padding:12px;border-radius:8px}.ok{color:#187044}.error{color:#b42318}
+footer{text-align:center;color:#777;padding:30px}#msg{margin:10px 0}nav button{margin:3px}
+.paygrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.paygrid>div{min-width:0}.paygrid button{margin-top:12px}code{overflow-wrap:anywhere}
+#adminMemberHistory{margin-top:20px;border:1px solid #e7e7e7}#adminHistorySummary{font-weight:600;color:#344054}
+.history-paid{color:#187044;font-weight:600}.history-unverified{color:#667085}
+.form-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.archive-warning{background:#fff1f0;border:1px solid #f3b4ae;border-radius:10px;padding:14px}.archive-warning strong{color:#b42318}
+#editMemberPanel,#archiveMemberPanel,#archivedMembersPanel{border:1px solid #e7e7e7}
+#archivedMembersList,#archivedMemberHistory{margin-top:14px}
+.feature-pending{background:#f2f4f7;border-radius:10px;padding:14px;margin-top:12px}.year-select{max-width:220px;margin-bottom:14px}
+.payment-box{background:#fffbea;border:1px solid #f2da75;border-radius:12px;padding:16px;margin:16px 0}
+.payment-actions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}.payment-actions button{flex:1;min-width:150px}
+.payment-id{background:white;border:1px solid #e4d9a3;border-radius:8px;padding:12px;font-weight:600;overflow-wrap:anywhere}
+#copyStatus{font-weight:600;margin:8px 0}.payment-instructions{line-height:1.7;padding-left:23px}
+.payment-paused{border:1px solid #e8d18a;background:#fff9e6;border-radius:12px;padding:18px;margin:12px 0}
+@media(max-width:600px){header{padding:12px;gap:8px}.brand{gap:7px}.brand-logo{width:48px;height:48px}h1{font-size:17px}header small{font-size:10px}header select{max-width:100px;font-size:12px;padding:8px}header button{padding:9px;font-size:12px}.panel{padding:16px}td,th{padding:8px;font-size:13px}}
 </style>
-
 <link rel="stylesheet" href="./login-theme.css">
 </head>
-
 <body>
-
 <header>
   <div class="brand">
     <img src="./tfc-logo.jpeg" alt="TFC Bandiyod Logo" class="brand-logo">
-    <div>
-      <h1>TFC BANDIYOD</h1>
-      <small>ONE TEAM ONE DREAM</small>
-    </div>
+    <div><h1>TFC BANDIYOD</h1><small>ONE TEAM ONE DREAM</small></div>
   </div>
-
   <div class="flex">
-    <select id="lang" style="width:auto">
-      <option value="en">English</option>
-      <option value="ml">മലയാളം</option>
-    </select>
+    <select id="lang" style="width:auto"><option value="en">English</option><option value="ml">മലയാളം</option></select>
     <button id="logout" class="secondary hide">Sign out</button>
   </div>
 </header>
-
 <main class="wrap">
-
 <div id="msg" role="status"></div>
-
-<!-- LOGIN -->
 <section id="login" class="panel">
   <h2 data-t="welcome">Welcome to TFC Bandiyod</h2>
-  <p data-t="loginText">
-    Members can sign in with Google.
-    New accounts require admin approval.
-  </p>
-  <button id="signIn" data-t="signIn">
-    Continue with Google
-  </button>
+  <p data-t="loginText">Members can sign in with Google. New accounts require admin approval.</p>
+  <button id="signIn" data-t="signIn">Continue with Google</button>
 </section>
-
-<!-- APPROVAL PENDING -->
 <section id="pending" class="panel hide">
   <h2 data-t="pending">Membership approval pending</h2>
-  <p data-t="pendingText">
-    Your Google account needs approval from the TFC admin.
-  </p>
-  <label data-t="memberNumber" for="claimNumber">
-    Membership number
-  </label>
-  <input id="claimNumber" type="number" min="1"
-    placeholder="e.g. 25">
-  <button id="requestApproval" data-t="request">
-    Request approval
-  </button>
+  <p data-t="pendingText">Your Google account needs approval from the TFC admin.</p>
+  <label data-t="memberNumber" for="claimNumber">Membership number</label>
+  <input id="claimNumber" type="number" min="1" placeholder="e.g. 25">
+  <button id="requestApproval" data-t="request">Request approval</button>
 </section>
-
-<!-- MEMBER DASHBOARD -->
 <section id="member" class="hide">
-
-  <div class="panel">
-    <h2 id="memberTitle"></h2>
-    <p id="memberMeta"></p>
-  </div>
-
-  <!-- MEMBER PHOTO MENU -->
+  <div class="panel"><h2 id="memberTitle"></h2><p id="memberMeta"></p></div>
   <div class="panel">
     <h2>My Profile Photo</h2>
-    <div class="feature-pending">
-      <p class="muted">
-        Profile photo upload will be available soon.
-      </p>
-      <button id="memberPhotoUpload" disabled>
-        Upload My Photo (Coming Soon)
-      </button>
-    </div>
+    <div class="feature-pending"><p class="muted">Profile photo upload will be available soon.</p><button id="memberPhotoUpload" disabled>Upload My Photo (Coming Soon)</button></div>
   </div>
-
   <div class="grid">
-    <div class="stat">
-      <span data-t="due">Outstanding dues</span>
-      <strong id="dueAmount">—</strong>
-    </div>
-    <div class="stat">
-      <span data-t="paid">Paid months</span>
-      <strong id="paidCount">—</strong>
-    </div>
-    <div class="stat">
-      <span data-t="fee">Membership fee</span>
-      <strong>₹50 / ₹600</strong>
-    </div>
+    <div class="stat"><span data-t="due">Outstanding dues</span><strong id="dueAmount">—</strong></div>
+    <div class="stat"><span data-t="paid">Paid months</span><strong id="paidCount">—</strong></div>
+    <div class="stat"><span data-t="fee">Membership fee</span><strong>₹50 / ₹600</strong></div>
   </div>
-
   <div class="panel">
     <h2 data-t="history">Payment history</h2>
-
     <label for="memberHistoryYear">Select Year</label>
-    <select id="memberHistoryYear" class="year-select">
-      <option value="all">All Years</option>
-    </select>
-
-    <p class="muted">
-      Historical payments are based on recorded membership
-      card marks. Unmarked months are not automatically
-      treated as outstanding dues.
-    </p>
-
-    <div class="scroll">
-      <table>
-        <thead>
-          <tr>
-            <th data-t="month">Month</th>
-            <th data-t="status">Status</th>
-          </tr>
-        </thead>
-        <tbody id="historyBody"></tbody>
-      </table>
-    </div>
+    <select id="memberHistoryYear" class="year-select"><option value="all">All Years</option></select>
+    <p class="muted">Historical payments are based on recorded membership card marks. Unmarked months are not automatically treated as outstanding dues.</p>
+    <div class="scroll"><table><thead><tr><th data-t="month">Month</th><th data-t="status">Status</th></tr></thead><tbody id="historyBody"></tbody></table></div>
   </div>
-
-  <!-- PAYMENT RESET VERSION 75.9 -->
   <div class="panel">
     <h2 data-t="pay">Pay membership fee</h2>
-
-    <div class="payment-reset">
-      <h3>Payment Temporarily Unavailable</h3>
-
-      <p>
-        TFC Bandiyod is upgrading the membership
-        payment system.
-      </p>
-
-      <p>
-        Please do not make any UPI transfer until
-        the new payment system is activated.
-      </p>
-
-      <p class="muted">
-        Existing payment history and previously
-        submitted requests are preserved.
-      </p>
-
-      <button type="button" disabled>
-        Payment Temporarily Unavailable
-      </button>
+    <div class="payment-paused" role="status">
+      <strong>Online payment temporarily unavailable</strong>
+      <p>The TFC payment system is being updated. Please do not transfer money using previous UPI instructions or submit a new transaction reference until the updated system is announced.</p>
+      <p class="muted">Existing verified payment history remains available above.</p>
     </div>
-
-    <!-- Hidden compatibility controls for app.js 75.7 -->
+    <!-- Payment controls remain hidden until Firebase Rules and payment workflow are ready. -->
     <div class="hide" aria-hidden="true">
-      <select id="paymentPlan" tabindex="-1">
-        <option value="monthly">Monthly</option>
-        <option value="yearly">Yearly</option>
-      </select>
-
-      <input id="paymentPeriod" type="month" tabindex="-1">
-
-      <a id="upiPayLink" href="#"
-        tabindex="-1">UPI Payment</a>
-
-      <input id="transactionId" tabindex="-1">
-
-      <button id="submitPayment" type="button"
-        disabled tabindex="-1">
-        Payment Disabled
-      </button>
+      <div class="paygrid">
+        <div><label for="paymentPlan">Payment plan</label><select id="paymentPlan"><option value="monthly">Monthly — ₹50</option><option value="yearly">Yearly — ₹600</option></select></div>
+        <div><label for="paymentPeriod">Payment month / year</label><input id="paymentPeriod" type="month"></div>
+      </div>
+      <div class="payment-box">
+        <h3>UPI payment paused</h3>
+        <div id="displayUpiId" class="payment-id"></div>
+        <strong id="displayPaymentAmount">₹50</strong>
+        <div class="payment-actions"><button id="copyUpiId" type="button" disabled>Copy UPI ID</button><button id="openGooglePay" type="button" disabled>Open Google Pay</button></div>
+        <p id="copyStatus" role="status"></p>
+      </div>
+      <a id="upiPayLink" class="hide" href="#" rel="noopener" tabindex="-1" aria-hidden="true">UPI Payment Link</a>
+      <label for="transactionId">UPI transaction / reference ID</label>
+      <input id="transactionId" maxlength="100" autocomplete="off" disabled>
+      <button id="submitPayment" type="button" disabled>Payment Temporarily Unavailable</button>
     </div>
-
-    <h3>Your previous payment submissions</h3>
+    <h3>Your payment submissions</h3>
     <div id="myPaymentList" class="scroll"></div>
   </div>
-
 </section>
-
-<!-- ADMIN DASHBOARD -->
 <section id="admin" class="hide">
-
   <div class="panel">
     <h2 data-t="admin">Admin dashboard</h2>
     <div class="flex">
       <button id="tabRequests">Approval requests</button>
       <button id="tabMembers" class="secondary">Members</button>
-      <button id="tabPayments" class="secondary">
-        Payment verification
-      </button>
-      <button id="tabAddMember" class="secondary">
-        + Add Member
-      </button>
-      <button id="tabArchivedMembers" class="secondary">
-        Archived Members
-      </button>
-      <button id="tabMemberPhotos" class="secondary">
-        Member Photos
-      </button>
+      <button id="tabPayments" class="secondary">Payment verification</button>
+      <button id="tabAddMember" class="secondary">+ Add Member</button>
+      <button id="tabArchivedMembers" class="secondary">Archived Members</button>
+      <button id="tabMemberPhotos" class="secondary">Member Photos</button>
     </div>
   </div>
-
-  <!-- APPROVAL REQUESTS -->
-  <div id="requestsPanel" class="panel">
-    <h2>Pending requests</h2>
-    <div id="requestsList"></div>
-  </div>
-
-  <!-- MEMBERS LIST -->
+  <div id="requestsPanel" class="panel"><h2>Pending requests</h2><div id="requestsList"></div></div>
   <div id="membersPanel" class="panel hide">
-    <h2>Members</h2>
-    <input id="search"
-      placeholder="Search name or member number">
-
+    <h2>Members</h2><input id="search" placeholder="Search name or member number">
     <div id="membersList" class="scroll"></div>
-
-    <!-- ADMIN PAYMENT HISTORY VIEW -->
     <div id="adminMemberHistory" class="panel hide">
-      <h3 id="adminHistoryTitle">
-        Member Payment History
-      </h3>
-      <p id="adminHistorySummary"></p>
-
+      <h3 id="adminHistoryTitle">Member Payment History</h3><p id="adminHistorySummary"></p>
       <label for="adminHistoryYear">Select Year</label>
-      <select id="adminHistoryYear" class="year-select">
-        <option value="all">All Years</option>
-      </select>
-
+      <select id="adminHistoryYear" class="year-select"><option value="all">All Years</option></select>
       <div id="adminHistoryTable" class="scroll"></div>
     </div>
-
-    <!-- EDIT MEMBER PANEL -->
     <div id="editMemberPanel" class="panel hide">
       <h3>Edit Member</h3>
-      <p class="muted">
-        Update member details without changing the
-        membership number or existing payment history.
-      </p>
-
+      <p class="muted">Update member details without changing the membership number or existing payment history.</p>
       <form id="editMemberForm">
-        <label for="editMemberNumber">
-          Member Number
-        </label>
-        <input id="editMemberNumber"
-          type="number" readonly required>
-
-        <label for="editMemberName">Full Name</label>
-        <input id="editMemberName"
-          type="text" maxlength="100" required>
-
-        <label for="editMemberPhone">
-          Mobile Number
-        </label>
-        <input id="editMemberPhone"
-          type="tel" maxlength="15">
-
-        <label for="editMemberDate">
-          Joining Date
-        </label>
-        <input id="editMemberDate"
-          type="date" required>
-
-        <label for="editMemberStatus">
-          Membership Status
-        </label>
-        <select id="editMemberStatus">
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-
-        <div class="form-actions">
-          <button id="saveEditMember" type="submit">
-            Save Changes
-          </button>
-          <button id="cancelEditMember"
-            type="button" class="secondary">
-            Cancel
-          </button>
-        </div>
+        <label for="editMemberNumber">Member Number</label><input id="editMemberNumber" type="number" readonly required>
+        <label for="editMemberName">Full Name</label><input id="editMemberName" type="text" maxlength="100" required>
+        <label for="editMemberPhone">Mobile Number</label><input id="editMemberPhone" type="tel" maxlength="15">
+        <label for="editMemberDate">Joining Date</label><input id="editMemberDate" type="date" required>
+        <label for="editMemberStatus">Membership Status</label><select id="editMemberStatus"><option value="active">Active</option><option value="inactive">Inactive</option></select>
+        <div class="form-actions"><button id="saveEditMember" type="submit">Save Changes</button><button id="cancelEditMember" type="button" class="secondary">Cancel</button></div>
       </form>
     </div>
-
-    <!-- ARCHIVE MEMBER PANEL -->
     <div id="archiveMemberPanel" class="panel hide">
       <h3>Archive Member</h3>
-
-      <div class="archive-warning">
-        <strong>
-          Important: Archive is not permanent deletion.
-        </strong>
-        <p>
-          The member record and associated payment
-          history must be preserved in the admin-only
-          archive before the membership number can
-          be reused.
-        </p>
-        <p>
-          Old Google login access and pending payment
-          requests must also be handled safely.
-        </p>
+      <div class="archive-warning"><strong>Important: Archive is not permanent deletion.</strong>
+        <p>The member record and associated payment history must be preserved in the admin-only archive before the membership number can be reused.</p>
+        <p>Old Google login access and pending payment requests must also be handled safely.</p>
       </div>
-
       <p id="archiveMemberSummary"></p>
-
       <form id="archiveMemberForm">
-        <label for="archiveMemberNumber">
-          Member Number
-        </label>
-        <input id="archiveMemberNumber"
-          type="number" readonly required>
-
-        <label for="archiveMemberReason">
-          Reason for Archiving
-        </label>
-        <select id="archiveMemberReason" required>
-          <option value="">Select reason</option>
-          <option value="resigned">Resigned</option>
-          <option value="inactive">
-            Inactive Membership
-          </option>
-          <option value="deceased">Deceased</option>
-          <option value="duplicate">
-            Duplicate Record
-          </option>
-          <option value="other">Other</option>
-        </select>
-
-        <label for="archiveMemberNotes">
-          Notes (Optional)
-        </label>
-        <input id="archiveMemberNotes"
-          type="text" maxlength="250"
-          placeholder="Additional details">
-
-        <label class="flex">
-          <input id="archiveMemberConfirm"
-            type="checkbox"
-            style="width:auto" required>
-          I understand that this member will be moved
-          to the admin-only archive.
-        </label>
-
-        <div class="form-actions">
-          <button id="confirmArchiveMember"
-            type="submit" class="danger" disabled>
-            Confirm Archive
-          </button>
-          <button id="cancelArchiveMember"
-            type="button" class="secondary">
-            Cancel
-          </button>
-        </div>
+        <label for="archiveMemberNumber">Member Number</label><input id="archiveMemberNumber" type="number" readonly required>
+        <label for="archiveMemberReason">Reason for Archiving</label>
+        <select id="archiveMemberReason" required><option value="">Select reason</option><option value="resigned">Resigned</option><option value="inactive">Inactive Membership</option><option value="deceased">Deceased</option><option value="duplicate">Duplicate Record</option><option value="other">Other</option></select>
+        <label for="archiveMemberNotes">Notes (Optional)</label><input id="archiveMemberNotes" type="text" maxlength="250" placeholder="Additional details">
+        <label class="flex"><input id="archiveMemberConfirm" type="checkbox" style="width:auto" required>I understand that this member will be moved to the admin-only archive.</label>
+        <div class="form-actions"><button id="confirmArchiveMember" type="submit" class="danger" disabled>Confirm Archive</button><button id="cancelArchiveMember" type="button" class="secondary">Cancel</button></div>
       </form>
     </div>
   </div>
-
-  <!-- PAYMENT VERIFICATION -->
   <div id="paymentsPanel" class="panel hide">
     <h2>Payment verification</h2>
-    <p class="notice">
-      Check the recipient's bank/UPI statement
-      before approving.
-      Transaction ID alone is not proof of payment.
-    </p>
+    <p class="notice">Check the recipient's bank/UPI statement before approving. Transaction ID alone is not proof of payment.</p>
     <div id="adminPaymentList"></div>
   </div>
-
-  <!-- ADD MEMBER PANEL -->
   <div id="addMemberPanel" class="panel hide">
     <h2>Add New Member</h2>
-
-    <p class="notice">
-      Admin only. Enter an available member number.
-      Previously used numbers require safe archival
-      of the former member's records before reuse.
-    </p>
-
+    <p class="notice">Admin only. Enter an available member number. Previously used numbers require safe archival of the former member's records before reuse.</p>
     <form id="addMemberForm">
-      <label for="newMemberNumber">
-        Member Number
-      </label>
-      <input id="newMemberNumber"
-        type="number" min="1" step="1" required>
-
-      <label for="newMemberName">Full Name</label>
-      <input id="newMemberName"
-        type="text" maxlength="100" required>
-
-      <label for="newMemberPhone">
-        Mobile Number
-      </label>
-      <input id="newMemberPhone"
-        type="tel" maxlength="15">
-
-      <label for="newMemberDate">
-        Joining Date
-      </label>
-      <input id="newMemberDate"
-        type="date" required>
-
-      <label for="newMemberStatus">
-        Membership Status
-      </label>
-      <select id="newMemberStatus">
-        <option value="active">Active</option>
-        <option value="inactive">Inactive</option>
-      </select>
-
-      <p>
-        <button id="saveNewMember" type="submit">
-          Save Member
-        </button>
-      </p>
+      <label for="newMemberNumber">Member Number</label><input id="newMemberNumber" type="number" min="1" step="1" required>
+      <label for="newMemberName">Full Name</label><input id="newMemberName" type="text" maxlength="100" required>
+      <label for="newMemberPhone">Mobile Number</label><input id="newMemberPhone" type="tel" maxlength="15">
+      <label for="newMemberDate">Joining Date</label><input id="newMemberDate" type="date" required>
+      <label for="newMemberStatus">Membership Status</label><select id="newMemberStatus"><option value="active">Active</option><option value="inactive">Inactive</option></select>
+      <p><button id="saveNewMember" type="submit">Save Member</button></p>
     </form>
   </div>
-
-  <!-- ARCHIVED MEMBERS PANEL -->
   <div id="archivedMembersPanel" class="panel hide">
     <h2>Archived Members</h2>
-
-    <p class="notice">
-      Admin Only. Former member records and payment
-      history are retained here. Archived records
-      must remain separate from newly assigned
-      member numbers.
-    </p>
-
-    <label for="archivedMembersSearch">
-      Search Archived Members
-    </label>
-    <input id="archivedMembersSearch"
-      type="search"
-      placeholder="Search name, old member number or archive ID">
-
+    <p class="notice">Admin Only. Former member records and payment history are retained here. Archived records must remain separate from newly assigned member numbers.</p>
+    <label for="archivedMembersSearch">Search Archived Members</label>
+    <input id="archivedMembersSearch" type="search" placeholder="Search name, old member number or archive ID">
     <div id="archivedMembersList" class="scroll"></div>
-
-    <div id="archivedMemberHistory"
-      class="panel hide">
-      <h3 id="archivedHistoryTitle">
-        Archived Payment History
-      </h3>
-      <p id="archivedHistorySummary"></p>
-      <div id="archivedHistoryTable"
-        class="scroll"></div>
+    <div id="archivedMemberHistory" class="panel hide">
+      <h3 id="archivedHistoryTitle">Archived Payment History</h3><p id="archivedHistorySummary"></p><div id="archivedHistoryTable" class="scroll"></div>
     </div>
   </div>
-
-  <!-- ADMIN PHOTO MENU -->
   <div id="memberPhotosPanel" class="panel hide">
     <h2>Member Profile Photos</h2>
-
-    <p class="muted">
-      Admin can upload or change member profile
-      photos when photo storage is configured.
-    </p>
-
-    <label for="photoMemberSearch">
-      Search Member
-    </label>
-    <input id="photoMemberSearch"
-      type="search"
-      placeholder="Search member number or name">
-
+    <p class="muted">Admin can upload or change member profile photos when photo storage is configured.</p>
+    <label for="photoMemberSearch">Search Member</label>
+    <input id="photoMemberSearch" type="search" placeholder="Search member number or name">
     <div id="photoMembersList" class="scroll"></div>
-
-    <div class="feature-pending">
-      <button id="adminPhotoUpload" disabled>
-        Upload Member Photo (Coming Soon)
-      </button>
-    </div>
+    <div class="feature-pending"><button id="adminPhotoUpload" disabled>Upload Member Photo (Coming Soon)</button></div>
   </div>
-
-  <!-- 2027 IMPORT STATUS -->
   <div id="importStatusPanel" class="panel hide">
     <h2>2027 Payment Import</h2>
-    <p class="notice">
-      2027 membership card payments will be
-      imported after validation.
-      Existing 2024–2026 records will be preserved.
-    </p>
-    <p id="importStatusText">
-      Import not completed.
-    </p>
+    <p class="notice">2027 membership card payments will be imported after validation. Existing 2024–2026 records will be preserved.</p>
+    <p id="importStatusText">Import not completed.</p>
   </div>
-
 </section>
-
 </main>
-
-<footer>
-  © TFC Bandiyod · Private Member Portal
-</footer>
-
-<!-- Existing application retained -->
-<script type="module" src="./app.js?v=75.7"></script>
-
+<footer>© TFC Bandiyod · Private Member Portal</footer>
+<script type="module" src="./app.js?v=76.0"></script>
 </body>
 </html>
