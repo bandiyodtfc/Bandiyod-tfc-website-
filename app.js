@@ -10,7 +10,7 @@ const ARCHIVE_WRITE_ENABLED = false;
 const MONTHLY_FEE = 50, YEARLY_FEE = 600;
 const UPI_ID = 'waheedwahi84-1@oksbi', UPI_NAME = 'MOOSA WAHEED M B';
 // Keep payments disabled until index.html and Firebase Rules v76 are deployed.
-const PAYMENT_V76_ENABLED = false;
+const PAYMENT_V76_ENABLED = true;
 const $ = id => document.getElementById(id);
 const show = (id, yes) => { if ($(id)) $(id).classList.toggle('hide', !yes); };
 const notify = (message, error = false) => { if ($('msg')) { $('msg').textContent = message; $('msg').className = error ? 'error' : 'ok'; } };
