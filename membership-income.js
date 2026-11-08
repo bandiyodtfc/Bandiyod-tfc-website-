@@ -1,21 +1,19 @@
 
 /*
  TFC BANDIYOD
- MEMBERSHIP INCOME v86.0
+ MEMBERSHIP INCOME v87.0
 
  Compatible:
  app.js v82.0
  accounts.js v84.0
 
- Admin:
- Verified Cash / UPI collections.
- Publishes privacy-safe member summary.
+ Verified collections from 08-11-2026.
+ Historical PDF payments excluded.
 
- Members:
- Read-only published collections.
+ Admin publishes verified collections.
+ Approved members read published collections.
 
- Historical PDF records excluded.
- Collection start: 08-11-2026.
+ Does not change original payment records.
 */
 
 import {
@@ -42,20 +40,29 @@ const app = getApps()[0] || initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-const START_AT = Date.parse("2026-11-08T00:00:00+05:30");
+const START_AT = Date.parse(
+  "2026-11-08T00:00:00+05:30"
+);
+
 const PUBLIC_PATH = "accounts/publicMembershipIncome";
+const FEE = 50;
 
 const $ = id => document.getElementById(id);
 
 let admin = false;
 let generation = 0;
+
 let members = {};
 let requests = {};
 let corrections = {};
 let publicData = null;
+
 let unsubs = [];
 let publishing = false;
+let publishPending = false;
 let publishedSignature = "";
+let publishError = "";
+let publishStatus = "";
 
 let loaded = {
   members: false,
@@ -69,8 +76,8 @@ const money = n =>
     maximumFractionDigits: 2
   });
 
-const safe = v =>
-  String(v ?? "").replace(/[&<>"']/g, c => ({
+const safe = value =>
+  String(value ?? "").replace(/[&<>"']/g, c => ({
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
@@ -78,41 +85,61 @@ const safe = v =>
     "'": "&#39;"
   }[c]));
 
-function validPeriod(p) {
-  return /^\d{4}-(0[1-9]|1[0-2])$/.test(String(p));
+function validPeriod(period) {
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(
+    String(period)
+  );
 }
 
-function validTime(t) {
-  const n = Number(t);
+function validTime(value) {
+  const n = Number(value);
 
   return Number.isFinite(n) &&
     n >= START_AT &&
     n <= Date.now() + 300000;
 }
 
-function localDate(t) {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Kolkata",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  }).format(new Date(Number(t)));
+function localDate(timestamp) {
+  const parts = new Intl.DateTimeFormat(
+    "en-GB",
+    {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }
+  ).formatToParts(new Date(Number(timestamp)));
+
+  const part = type =>
+    parts.find(p => p.type === type)?.value || "";
+
+  return [
+    part("year"),
+    part("month"),
+    part("day")
+  ].join("-");
 }
 
 function cancelled(number, period) {
-  return corrections?.[String(number)]?.[period]?.state === "cancelled";
+  return corrections?.[String(number)]?.[period]
+    ?.state === "cancelled";
 }
 
 function periodsFor(plan, period) {
   if (!validPeriod(period)) return [];
 
-  if (plan === "monthly") return [period];
+  if (plan === "monthly") {
+    return [period];
+  }
 
   if (plan === "yearly") {
     const year = period.slice(0, 4);
 
-    return Array.from({ length: 12 }, (_, i) =>
-      year + "-" + String(i + 1).padStart(2, "0")
+    return Array.from(
+      { length: 12 },
+      (_, i) =>
+        year + "-" +
+        String(i + 1).padStart(2, "0")
     );
   }
 
@@ -123,6 +150,7 @@ function buildSection(parent, id, prefix, heading) {
   if (!parent || $(id)) return;
 
   const section = document.createElement("section");
+
   section.id = id;
   section.className = "panel";
 
@@ -130,11 +158,14 @@ function buildSection(parent, id, prefix, heading) {
     <h3>${heading}</h3>
 
     <p class="muted">
-      Verified membership collections from 08-11-2026.
+      Verified membership collections from
+      08-11-2026.
       Historical PDF payments excluded.
     </p>
 
-    <label for="${prefix}Year">Collection Year</label>
+    <label for="${prefix}Year">
+      Collection Year
+    </label>
 
     <select id="${prefix}Year">
       <option value="all">All Years</option>
@@ -157,13 +188,19 @@ function buildSection(parent, id, prefix, heading) {
       </div>
     </div>
 
-    <p id="${prefix}Status" role="status">Loading...</p>
+    <p id="${prefix}Status" role="status">
+      Loading...
+    </p>
+
     <div id="${prefix}History" class="scroll"></div>
   `;
 
   parent.append(section);
 
-  $(`${prefix}Year`).addEventListener("change", render);
+  $(`${prefix}Year`).addEventListener(
+    "change",
+    render
+  );
 }
 
 function setupUI() {
@@ -194,11 +231,13 @@ function collectCash() {
       if (
         !validPeriod(period) ||
         payment?.status !== "paid" ||
-        payment.method !== "cash" ||
-        Number(payment.amount) !== 50 ||
+        payment?.method !== "cash" ||
+        Number(payment.amount) !== FEE ||
         !validTime(payment.verifiedAt) ||
         cancelled(number, period)
-      ) continue;
+      ) {
+        continue;
+      }
 
       const key = [
         number,
@@ -223,7 +262,8 @@ function collectCash() {
       }
 
       const group = groups.get(key);
-      group.amount += 50;
+
+      group.amount += FEE;
       group.periods.push(period);
     }
   }
@@ -238,7 +278,9 @@ function collectUPI() {
     if (
       request?.status !== "approved" ||
       !validTime(request.reviewedAt)
-    ) continue;
+    ) {
+      continue;
+    }
 
     const number = String(request.memberNumber || "");
     const member = members[number];
@@ -251,12 +293,14 @@ function collectUPI() {
     );
 
     const amount =
-      request.plan === "yearly" ? 600 : 50;
+      request.plan === "yearly" ? 600 : FEE;
 
     if (
       !periods.length ||
       Number(request.amount) !== amount
-    ) continue;
+    ) {
+      continue;
+    }
 
     const verified = periods.every(period => {
       const payment = member.payments?.[period];
@@ -268,18 +312,28 @@ function collectUPI() {
 
     if (!verified) continue;
 
+    const cancelledList = periods.filter(
+      period => cancelled(number, period)
+    );
+
+    // A cancelled month is excluded from
+    // effective membership income.
+    const activePeriods = periods.filter(
+      period => !cancelled(number, period)
+    );
+
+    if (!activePeriods.length) continue;
+
     result.push({
       id,
       memberNumber: number,
       memberName: member.name || "Member",
       method: "UPI",
       date: localDate(request.reviewedAt),
-      amount,
-      periods,
+      amount: activePeriods.length * FEE,
+      periods: activePeriods,
       timestamp: Number(request.reviewedAt),
-      cancelledPeriods: periods.filter(
-        p => cancelled(number, p)
-      )
+      cancelledPeriods: cancelledList
     });
   }
 
@@ -290,7 +344,9 @@ function collections() {
   return [
     ...collectCash(),
     ...collectUPI()
-  ].sort((a, b) => b.timestamp - a.timestamp);
+  ].sort(
+    (a, b) => b.timestamp - a.timestamp
+  );
 }
 
 function fillYears(select, entries) {
@@ -298,7 +354,7 @@ function fillYears(select, entries) {
 
   const years = [
     ...new Set(
-      entries.map(e => e.date.slice(0, 4))
+      entries.map(e => String(e.date).slice(0, 4))
     )
   ].sort().reverse();
 
@@ -307,7 +363,9 @@ function fillYears(select, entries) {
     ...years.map(y => new Option(y, y))
   );
 
-  select.value = years.includes(old) ? old : "all";
+  select.value = years.includes(old)
+    ? old
+    : "all";
 
   return select.value;
 }
@@ -322,20 +380,21 @@ function renderReport(prefix, entries, isPublic = false) {
   const year = fillYears(select, entries);
 
   const filtered = entries.filter(e =>
-    year === "all" || e.date.startsWith(year)
+    year === "all" ||
+    String(e.date).startsWith(year)
   );
 
   const cash = filtered
     .filter(e => e.method === "Cash")
     .reduce(
-      (sum, e) => sum + Number(e.amount),
+      (sum, e) => sum + Number(e.amount || 0),
       0
     );
 
   const upi = filtered
     .filter(e => e.method === "UPI")
     .reduce(
-      (sum, e) => sum + Number(e.amount),
+      (sum, e) => sum + Number(e.amount || 0),
       0
     );
 
@@ -343,19 +402,35 @@ function renderReport(prefix, entries, isPublic = false) {
   $(`${prefix}Upi`).textContent = money(upi);
   $(`${prefix}Total`).textContent = money(cash + upi);
 
-  status.textContent =
-    `${filtered.length} verified collection(s)` +
-    (
-      isPublic && publicData?.updatedAt
-        ? " | Last published: " +
-          new Date(
-            publicData.updatedAt
-          ).toLocaleString("en-IN")
-        : ""
-    );
+  const countText =
+    `${filtered.length} verified collection(s)`;
+
+  if (isPublic) {
+    status.textContent =
+      countText +
+      (
+        publicData?.updatedAt
+          ? " | Last published: " +
+            new Date(publicData.updatedAt)
+              .toLocaleString("en-IN", {
+                timeZone: "Asia/Kolkata"
+              })
+          : ""
+      );
+  } else {
+    status.textContent =
+      countText + " | " +
+      (
+        publishError ||
+        publishStatus ||
+        "Preparing publication..."
+      );
+  }
 
   if (!filtered.length) {
-    history.textContent = "No verified collections.";
+    history.textContent =
+      "No verified collections.";
+
     return;
   }
 
@@ -385,9 +460,11 @@ function renderReport(prefix, entries, isPublic = false) {
             `}
 
             <td>${safe(e.method)}</td>
+
             <td>${safe(
               (e.periods || []).join(", ")
             )}</td>
+
             <td>${money(e.amount)}</td>
 
             <td>${safe(
@@ -406,42 +483,83 @@ function renderReport(prefix, entries, isPublic = false) {
 function publicEntries(entries) {
   const result = {};
 
-  entries.forEach((e, i) => {
-    result[
-      "collection_" +
-      String(i + 1).padStart(6, "0")
-    ] = {
-      date: e.date,
-      method: e.method,
-      amount: e.amount,
-      periods: e.periods,
-      timestamp: e.timestamp
+  // Stable IDs prevent unnecessary changes
+  // when collection ordering changes.
+  for (const entry of entries) {
+    const source = String(entry.id);
+
+    let hash = 2166136261;
+
+    for (let i = 0; i < source.length; i++) {
+      hash ^= source.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+
+    const key =
+      "collection_" + (hash >>> 0).toString(16);
+
+    result[key] = {
+      date: entry.date,
+      method: entry.method,
+      amount: entry.amount,
+      periods: entry.periods,
+      timestamp: entry.timestamp
     };
-  });
+  }
 
   return result;
 }
 
+function updateAdminStatus(text, error = false) {
+  publishError = error ? text : "";
+  publishStatus = error ? "" : text;
+
+  const status = $("automaticIncomeStatus");
+
+  if (status) {
+    const count = collections().length;
+
+    status.textContent =
+      `${count} verified collection(s) | ${text}`;
+
+    status.className = error ? "error" : "ok";
+  }
+}
+
 async function publishSummary(entries, id) {
-  if (
-    !admin ||
-    publishing ||
-    id !== generation
-  ) return;
+  if (!admin || id !== generation) return;
 
   if (!Object.values(loaded).every(Boolean)) return;
 
   const publicRows = publicEntries(entries);
   const signature = JSON.stringify(publicRows);
 
+  if (publishing) {
+    publishPending = true;
+    return;
+  }
+
   if (signature === publishedSignature) return;
 
   publishing = true;
+  publishPending = false;
 
   try {
     const uid = auth.currentUser?.uid;
 
     if (!uid || id !== generation) return;
+
+    updateAdminStatus("Publishing to Firebase...");
+
+    // Firebase RTDB removes empty objects.
+    // Do not publish an empty collection because
+    // current Rules require an entries child.
+    if (!Object.keys(publicRows).length) {
+      updateAdminStatus(
+        "No verified collections to publish."
+      );
+      return;
+    }
 
     await set(ref(db, PUBLIC_PATH), {
       entries: publicRows,
@@ -451,19 +569,34 @@ async function publishSummary(entries, id) {
 
     if (id === generation) {
       publishedSignature = signature;
+      updateAdminStatus(
+        "Published successfully to Firebase."
+      );
     }
 
   } catch (error) {
-    const status = $("automaticIncomeStatus");
-
-    if (status) {
-      status.textContent =
-        "Member summary publish failed: " +
-        error.message;
+    if (id === generation) {
+      updateAdminStatus(
+        "Publish failed: " + error.message,
+        true
+      );
     }
+
+    console.error(
+      "Membership income publish failed:",
+      error
+    );
 
   } finally {
     publishing = false;
+
+    if (
+      id === generation &&
+      publishPending
+    ) {
+      publishPending = false;
+      render();
+    }
   }
 }
 
@@ -471,7 +604,12 @@ function render() {
   setupUI();
 
   if (admin) {
-    if (!Object.values(loaded).every(Boolean)) return;
+    if (!Object.values(loaded).every(Boolean)) {
+      updateAdminStatus(
+        "Loading membership payment records..."
+      );
+      return;
+    }
 
     const entries = collections();
 
@@ -514,12 +652,17 @@ function stopListening() {
   });
 
   unsubs = [];
+
   members = {};
   requests = {};
   corrections = {};
   publicData = null;
+
   publishing = false;
+  publishPending = false;
   publishedSignature = "";
+  publishError = "";
+  publishStatus = "";
 
   loaded = {
     members: false,
@@ -557,20 +700,16 @@ onAuthStateChanged(auth, async account => {
 
               setter(snapshot.val() || {});
               loaded[key] = true;
+
               render();
             },
             error => {
-              const status = $(
-                "automaticIncomeStatus"
-              );
+              if (id !== generation) return;
 
-              if (
-                status &&
-                id === generation
-              ) {
-                status.textContent =
-                  error.message;
-              }
+              updateAdminStatus(
+                `${path} read failed: ${error.message}`,
+                true
+              );
             }
           )
         );
@@ -579,24 +718,24 @@ onAuthStateChanged(auth, async account => {
       listen(
         "members",
         "members",
-        v => {
-          members = v;
+        value => {
+          members = value;
         }
       );
 
       listen(
         "paymentRequests",
         "requests",
-        v => {
-          requests = v;
+        value => {
+          requests = value;
         }
       );
 
       listen(
         "paymentCorrections",
         "corrections",
-        v => {
-          corrections = v;
+        value => {
+          corrections = value;
         }
       );
 
@@ -621,16 +760,16 @@ onAuthStateChanged(auth, async account => {
             render();
           },
           error => {
-            const status = $(
-              "memberIncomeStatus"
-            );
+            if (id !== generation) return;
 
-            if (
-              status &&
-              id === generation
-            ) {
+            const status = $("memberIncomeStatus");
+
+            if (status) {
               status.textContent =
+                "Membership income read failed: " +
                 error.message;
+
+              status.className = "error";
             }
           }
         )
@@ -639,12 +778,19 @@ onAuthStateChanged(auth, async account => {
 
   } catch (error) {
     console.error(
-      "Membership income:",
+      "Membership income initialization:",
       error
     );
+
+    if (id === generation && admin) {
+      updateAdminStatus(
+        "Initialization failed: " + error.message,
+        true
+      );
+    }
   }
 });
 
 setupUI();
 
-/* END MEMBERSHIP INCOME v86.0 */
+/* END MEMBERSHIP INCOME v87.0 */
