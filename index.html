@@ -2,7 +2,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta name="google-site-verification" content="i8klDfAWXKj0KWwW6eay-Y0i4h78a7Jy2bn0r8gqvY0" />
+<meta name="google-site-verification" content="i8klDfAWXKj0KWwW6eay-Y0i4h78a7Jy2bn0r8gqvY0">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TFC Bandiyod | Member Portal</title>
@@ -26,7 +26,7 @@ button,.paylink{background:#f3c916;border:0;border-radius:9px;padding:12px 17px;
 button.secondary{background:#e8ebef}
 button.danger{background:#b42318;color:white}
 button:disabled{opacity:.5;cursor:not-allowed}
-input,select{padding:12px;border:1px solid #d1d5db;border-radius:8px;max-width:100%;width:100%}
+input,select,textarea{padding:12px;border:1px solid #d1d5db;border-radius:8px;max-width:100%;width:100%;font:inherit}
 label{display:block;margin:10px 0 5px;font-size:14px}
 table{width:100%;border-collapse:collapse}
 td,th{text-align:left;padding:10px;border-bottom:1px solid #e7e7e7}
@@ -56,6 +56,8 @@ footer{text-align:center;color:#777;padding:30px}
 #copyStatus{font-weight:600;margin:8px 0}
 .payment-instructions{line-height:1.7;padding-left:23px}
 .payment-status{background:#fff8df;padding:12px;border-radius:8px;margin-top:12px}
+#accountsPanel,#memberAccountsPanel{border:1px solid #e7e7e7}
+#accAuditTable{max-height:400px;overflow:auto}
 @media(max-width:600px){
 header{padding:12px;gap:8px}
 .brand{gap:7px}
@@ -211,12 +213,12 @@ Open UPI App — Enter ₹50
 
 <p>
 <button id="submitPayment" type="button">
- Submit Payment for Verification
+Submit Payment for Verification
 </button>
 </p>
 
 <p class="muted">
-Payment submission will be enabled after the final application and database permission checks.
+Payments require admin verification before being marked Paid.
 </p>
 
 <h3>Your Payment Submissions</h3>
@@ -412,7 +414,8 @@ I understand that this member will be moved to the admin-only archive.
 </script>
 
 <script type="module" src="./app.js?v=82.0"></script>
-<script type="module" src="./accounts.js?v=83.2"></script>
-<script type="module" src="./membership-income.js?v=83.3"></script>
+<script type="module" src="./accounts.js?v=84.0"></script>
+<script type="module" src="./membership-income.js?v=84.0"></script>
+
 </body>
 </html>
