@@ -1,21 +1,37 @@
 
-/* TFC BANDIYOD - ACCOUNTS v83.3
-   Membership reconciliation + manual ledger
-   Historical PDF amounts are estimates, not bank cash flow.
-   Existing payment records are never modified.
+/*
+ TFC BANDIYOD ACCOUNTS v83.4
+ START DATE: 2026-11-08
+
+ - No historical PDF income
+ - New cash receipts from start date
+ - New approved UPI receipts from start date
+ - Cancelled member-months excluded
+ - Manual income and expenses from start date
+ - No changes to existing payment records
+ - Member ledger is read-only
+ - Admin can add manual entries
 */
 
-import { initializeApp, getApps } from
-  "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-
-import { getAuth, onAuthStateChanged } from
-  "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import {
+  initializeApp,
+  getApps
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 
 import {
-  getDatabase, ref, get, onValue, push, set,
+  getAuth,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  get,
+  onValue,
+  push,
+  set,
   serverTimestamp
-} from
-  "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
 import { firebaseConfig } from "./firebase-config.js";
 
@@ -26,45 +42,34 @@ const app = getApps().length
 const auth = getAuth(app);
 const db = getDatabase(app);
 
+const START_DATE = "2026-11-08";
+const MONTHLY_FEE = 50;
+
 const $ = id => document.getElementById(id);
-const FEE = 50;
 
 let user = null;
-let admin = false;
-let approved = false;
+let isAdmin = false;
+let isApproved = false;
+
 let entries = {};
 let members = {};
-let histories = {};
 let corrections = {};
+let paymentRequests = {};
 
 let loaded = {
   entries: false,
   members: false,
-  histories: false,
-  corrections: false
+  corrections: false,
+  requests: false
 };
 
-let unsubscribers = [];
-let generation = 0;
+let listeners = [];
+let authVersion = 0;
 let saving = false;
 
-const esc = value =>
-  String(value ?? "").replace(/[&<>"']/g, c => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  })[c]);
+function localDate(ms = Date.now()) {
+  const d = new Date(ms);
 
-const money = value =>
-  "₹" + Number(value || 0).toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
-
-function today() {
-  const d = new Date();
   return [
     d.getFullYear(),
     String(d.getMonth() + 1).padStart(2, "0"),
@@ -73,29 +78,50 @@ function today() {
 }
 
 function validDate(value) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+
   const d = new Date(value + "T00:00:00");
+
   return !isNaN(d) &&
     d.getFullYear() === Number(value.slice(0, 4)) &&
     d.getMonth() + 1 === Number(value.slice(5, 7)) &&
     d.getDate() === Number(value.slice(8, 10));
 }
 
-function validPeriod(p) {
-  return /^\d{4}-(0[1-9]|1[0-2])$/.test(p);
+function escapeHTML(value) {
+  return String(value ?? "").replace(
+    /[&<>"']/g,
+    c => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[c])
+  );
 }
 
-function stat(id, value) {
-  if ($(id)) $(id).textContent = money(value);
+function money(value) {
+  return "₹" + Number(value || 0).toLocaleString(
+    "en-IN",
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }
+  );
 }
 
-function status(message) {
-  if ($("accMessage")) {
-    $("accMessage").textContent = message;
-  }
+function setText(id, value) {
+  if ($(id)) $(id).textContent = value;
 }
 
-function setup() {
+function message(value) {
+  setText("accMessage", value);
+}
+
+function createUI() {
   const adminRoot = $("admin");
   const memberRoot = $("member");
 
@@ -103,15 +129,16 @@ function setup() {
 
   if (!$("accountsPanel")) {
     const panel = document.createElement("div");
+
     panel.id = "accountsPanel";
     panel.className = "panel hide";
 
     panel.innerHTML = `
-      <h2>TFC Accounts v83.3</h2>
-      <p class="muted">
-        Membership income includes effective paid months.
-        Historical PDF amounts are estimated at ₹50/month,
-        not verified cash receipts.
+      <h2>TFC Accounts</h2>
+
+      <p>
+        Accounts Starting Date:
+        <strong>08-11-2026</strong>
       </p>
 
       <div class="grid">
@@ -119,25 +146,34 @@ function setup() {
           <span>Membership Income</span>
           <strong id="accMembership">₹0</strong>
         </div>
+
         <div class="stat">
           <span>Other Income</span>
-          <strong id="accIncome">₹0</strong>
+          <strong id="accOtherIncome">₹0</strong>
         </div>
+
         <div class="stat">
           <span>Expenses</span>
-          <strong id="accExpense">₹0</strong>
+          <strong id="accExpenses">₹0</strong>
         </div>
+
         <div class="stat">
-          <span>Calculated Balance</span>
+          <span>Balance</span>
           <strong id="accBalance">₹0</strong>
+        </div>
+
+        <div class="stat">
+          <span>Today's Income</span>
+          <strong id="accTodayIncome">₹0</strong>
         </div>
       </div>
 
-      <p id="accSummaryNote" class="muted"></p>
+      <p id="accStatus" class="muted"></p>
 
       <h3>Add Income / Expense</h3>
 
       <form id="accForm">
+
         <label>Type</label>
         <select id="accType" required>
           <option value="income">Other Income</option>
@@ -145,40 +181,57 @@ function setup() {
         </select>
 
         <label>Date</label>
-        <input id="accDate" type="date" required>
+        <input
+          id="accDate"
+          type="date"
+          min="2026-11-08"
+          required
+        >
 
         <label>Category</label>
-        <input id="accCategory" maxlength="80"
-          placeholder="Donation, Office, Travel" required>
+        <input
+          id="accCategory"
+          maxlength="80"
+          placeholder="Donation / Office / Other"
+          required
+        >
 
         <label>Particulars</label>
-        <input id="accParticulars" maxlength="500"
-          placeholder="Transaction details" required>
+        <input
+          id="accParticulars"
+          maxlength="500"
+          placeholder="Enter details"
+          required
+        >
 
-        <label>Amount (₹)</label>
-        <input id="accAmount" type="number"
-          min="0.01" max="10000000"
-          step="0.01" required>
+        <label>Amount</label>
+        <input
+          id="accAmount"
+          type="number"
+          min="0.01"
+          max="10000000"
+          step="0.01"
+          required
+        >
 
-        <label>Payment Method</label>
-        <select id="accMethod" required>
+        <label>Method</label>
+        <select id="accMethod">
           <option value="cash">Cash</option>
           <option value="upi">UPI</option>
           <option value="bank">Bank</option>
           <option value="other">Other</option>
         </select>
 
-        <p>
-          <button id="accSave" type="submit">
-            Save Transaction
-          </button>
-        </p>
+        <button id="accSave" type="submit">
+          Save Transaction
+        </button>
       </form>
 
       <p id="accMessage" role="status"></p>
 
-      <h3>Transaction History</h3>
-      <label>Filter by Year</label>
+      <h3>Income / Expense History</h3>
+
+      <label>Year</label>
       <select id="accYear">
         <option value="all">All Years</option>
       </select>
@@ -191,14 +244,15 @@ function setup() {
 
   if (!$("memberAccountsPanel")) {
     const panel = document.createElement("div");
+
     panel.id = "memberAccountsPanel";
     panel.className = "panel hide";
 
     panel.innerHTML = `
-      <h2>TFC Accounts - Transparency</h2>
-      <p class="muted">
-        Read-only income and expense ledger.
-        Membership totals require a secure shared summary.
+      <h2>TFC Accounts</h2>
+
+      <p>
+        Records from 08-11-2026
       </p>
 
       <div class="grid">
@@ -206,39 +260,50 @@ function setup() {
           <span>Other Income</span>
           <strong id="memberAccIncome">₹0</strong>
         </div>
+
         <div class="stat">
           <span>Expenses</span>
-          <strong id="memberAccExpense">₹0</strong>
+          <strong id="memberAccExpenses">₹0</strong>
         </div>
+
         <div class="stat">
           <span>Net Manual Entries</span>
           <strong id="memberAccBalance">₹0</strong>
         </div>
       </div>
 
-      <h3>Income and Expense Ledger</h3>
+      <p class="muted">
+        Membership income is available in the admin
+        reconciliation report. A secure member-wide
+        membership summary is not yet enabled.
+      </p>
+
+      <h3>Income / Expense History</h3>
+
       <div id="memberAccTable" class="scroll"></div>
     `;
 
     memberRoot.appendChild(panel);
   }
 
-  $("accDate").value = today();
-  $("accForm").addEventListener("submit", saveEntry);
-  $("accYear").addEventListener("change", render);
+  $("accDate").value = localDate();
+  $("accForm").onsubmit = saveManualEntry;
+  $("accYear").onchange = render;
 
-  const tabBar = $("tabMembers")?.parentElement;
+  const tabs = $("tabMembers")?.parentElement;
 
-  if (tabBar && !$("tabAccounts")) {
+  if (tabs && !$("tabAccounts")) {
     const tab = document.createElement("button");
+
     tab.id = "tabAccounts";
     tab.type = "button";
     tab.className = "secondary";
     tab.textContent = "Accounts";
-    tabBar.appendChild(tab);
 
-    tab.addEventListener("click", () => {
-      if (!admin) return;
+    tabs.appendChild(tab);
+
+    tab.onclick = () => {
+      if (!isAdmin) return;
 
       [
         "requestsPanel",
@@ -249,88 +314,133 @@ function setup() {
         "memberPhotosPanel",
         "cashPanel",
         "correctionPanel"
-      ].forEach(id => $(id)?.classList.add("hide"));
+      ].forEach(id => {
+        $(id)?.classList.add("hide");
+      });
 
       $("accountsPanel").classList.remove("hide");
+    };
 
-      tabBar.querySelectorAll("button").forEach(b =>
-        b.classList.add("secondary")
-      );
-
-      tab.classList.remove("secondary");
-    });
-
-    tabBar.addEventListener("click", event => {
+    tabs.addEventListener("click", event => {
       const clicked = event.target.closest("button");
+
       if (clicked && clicked !== tab) {
         $("accountsPanel")?.classList.add("hide");
-        tab.classList.add("secondary");
       }
     });
   }
 }
 
-function showAccess() {
+function accessUI() {
+  $("accountsPanel")?.classList.add("hide");
+
   $("memberAccountsPanel")?.classList.toggle(
-    "hide", !user || admin || !approved
+    "hide",
+    !user || isAdmin || !isApproved
   );
-
-  if (!admin) {
-    $("accountsPanel")?.classList.add("hide");
-  }
 }
 
-/* Membership calculation:
-   one member + one month = one counted fee.
-   Original PDF and member payment duplicates collapse.
-   Cancelled months are excluded.
+function manualRows() {
+  return Object.entries(entries)
+    .filter(([, item]) =>
+      item &&
+      validDate(item.date) &&
+      item.date >= START_DATE &&
+      ["income", "expense"].includes(item.type) &&
+      Number.isFinite(Number(item.amount)) &&
+      Number(item.amount) > 0
+    )
+    .map(([id, item]) => ({
+      id,
+      date: item.date,
+      type: item.type,
+      category: item.category || "",
+      particulars: item.particulars || "",
+      amount: Number(item.amount),
+      method: item.method || ""
+    }));
+}
+
+/*
+ Membership payment sources:
+
+ Cash:
+ members/{number}/payments/{period}
+ method: cash
+ receivedDate: YYYY-MM-DD
+
+ UPI:
+ members/{number}/payments/{period}
+ requestId: paymentRequests ID
+ verifiedAt: timestamp
+
+ Only approved UPI requests count.
+ Each paid month is counted once.
+ Historical PDF records are not included.
 */
-
-function historicalPaid(record) {
-  return record === "marked_paid" ||
-    (record && typeof record === "object" &&
-      ["marked_paid", "paid"].includes(record.status));
-}
 
 function membershipRows() {
   const rows = [];
 
   for (const [number, member] of Object.entries(members)) {
-    const periods = new Set();
-    const history = histories[number] || {};
     const memberCorrections = corrections[number] || {};
-
-    for (const [year, months] of Object.entries(
-      history.months || {}
-    )) {
-      if (!/^\d{4}$/.test(year) || !months) continue;
-
-      for (const [month, record] of Object.entries(months)) {
-        const period = `${year}-${month.padStart(2, "0")}`;
-
-        if (validPeriod(period) && historicalPaid(record)) {
-          periods.add(period);
-        }
-      }
-    }
 
     for (const [period, payment] of Object.entries(
       member?.payments || {}
     )) {
-      if (validPeriod(period) && payment?.status === "paid") {
-        periods.add(period);
-      }
-    }
+      if (
+        !/^\d{4}-(0[1-9]|1[0-2])$/.test(period) ||
+        payment?.status !== "paid"
+      ) continue;
 
-    for (const period of periods) {
-      if (memberCorrections[period]?.state === "cancelled") {
-        continue;
+      if (
+        memberCorrections[period]?.state === "cancelled"
+      ) continue;
+
+      let date = "";
+      let method = "";
+      let verified = false;
+
+      if (payment.method === "cash") {
+        date = payment.receivedDate || "";
+
+        verified =
+          validDate(date) &&
+          date >= START_DATE &&
+          Number(payment.verifiedAt) > 0 &&
+          localDate(Number(payment.verifiedAt)) >= START_DATE;
+
+        method = "Cash";
+      } else if (payment.requestId) {
+        const request = paymentRequests[payment.requestId];
+
+        if (
+          request?.status === "approved" &&
+          String(request.memberNumber) === String(number) &&
+          Number(request.reviewedAt) > 0 &&
+          Number(payment.verifiedAt) > 0
+        ) {
+          date = localDate(Number(request.reviewedAt));
+
+          verified =
+            date >= START_DATE &&
+            localDate(Number(payment.verifiedAt)) >= START_DATE;
+
+          method = "UPI";
+        }
       }
+
+      if (!verified) continue;
 
       rows.push({
-        memberNumber: number,
+        date,
         period,
-        amount: FEE
+        type: "income",
+        category: "Membership Fee",
+        particulars: "Membership Fee - " + period,
+        amount: MONTHLY_FEE,
+        method,
+        source: "membership"
       });
     }
   }
@@ -338,26 +448,16 @@ function membershipRows() {
   return rows;
 }
 
-function manualRows() {
-  return Object.entries(entries)
-    .filter(([, item]) => item && typeof item === "object")
-    .map(([id, item]) => ({ id, ...item }))
-    .sort((a, b) =>
-      String(b.date || "").localeCompare(String(a.date || "")) ||
-      Number(b.createdAt || 0) - Number(a.createdAt || 0)
-    );
-}
-
-function transactionTable(items) {
-  if (!items.length) {
-    return '<p class="muted">No transactions recorded.</p>';
+function tableHTML(rows) {
+  if (!rows.length) {
+    return "<p>No records available.</p>";
   }
 
   return `
     <table>
       <thead>
         <tr>
-          <th>Date / Period</th>
+          <th>Date</th>
           <th>Type</th>
           <th>Category</th>
           <th>Particulars</th>
@@ -366,14 +466,14 @@ function transactionTable(items) {
         </tr>
       </thead>
       <tbody>
-        ${items.map(item => `
+        ${rows.map(row => `
           <tr>
-            <td>${esc(item.date || item.period)}</td>
-            <td>${esc(item.type)}</td>
-            <td>${esc(item.category)}</td>
-            <td>${esc(item.particulars)}</td>
-            <td>${money(item.amount)}</td>
-            <td>${esc(item.method)}</td>
+            <td>${escapeHTML(row.date)}</td>
+            <td>${escapeHTML(row.type)}</td>
+            <td>${escapeHTML(row.category)}</td>
+            <td>${escapeHTML(row.particulars)}</td>
+            <td>${money(row.amount)}</td>
+            <td>${escapeHTML(row.method)}</td>
           </tr>
         `).join("")}
       </tbody>
@@ -381,143 +481,143 @@ function transactionTable(items) {
   `;
 }
 
+function sum(rows, type) {
+  return rows.reduce(
+    (total, row) =>
+      total + (
+        row.type === type
+          ? Number(row.amount) || 0
+          : 0
+      ),
+    0
+  );
+}
+
 function render() {
   const manual = manualRows();
 
-  const membershipReady = admin &&
+  const membershipReady =
+    isAdmin &&
     loaded.members &&
-    loaded.histories &&
-    loaded.corrections;
+    loaded.corrections &&
+    loaded.requests;
 
   const membership = membershipReady
     ? membershipRows()
     : [];
 
-  const years = new Set();
-
-  for (const item of manual) {
-    const y = String(item.date || "").slice(0, 4);
-    if (/^\d{4}$/.test(y)) years.add(y);
-  }
-
-  for (const item of membership) {
-    years.add(item.period.slice(0, 4));
-  }
+  const allRows = [
+    ...membership,
+    ...manual
+  ];
 
   const yearSelect = $("accYear");
   let selectedYear = "all";
 
   if (yearSelect) {
-    const previous = yearSelect.value;
+    const old = yearSelect.value;
 
-    const sortedYears = [...years].sort().reverse();
+    const years = [...new Set(
+      allRows.map(r => r.date.slice(0, 4))
+    )].sort().reverse();
 
-    yearSelect.innerHTML =
-      '<option value="all">All Years</option>' +
-      sortedYears.map(y =>
-        `<option value="${y}">${y}</option>`
-      ).join("");
+    yearSelect.replaceChildren(
+      new Option("All Years", "all"),
+      ...years.map(y => new Option(y, y))
+    );
 
-    yearSelect.value = sortedYears.includes(previous)
-      ? previous
+    yearSelect.value = years.includes(old)
+      ? old
       : "all";
 
     selectedYear = yearSelect.value;
   }
 
-  const filteredManual = manual.filter(item =>
+  const filterYear = row =>
     selectedYear === "all" ||
-    String(item.date || "").startsWith(selectedYear)
+    row.date.startsWith(selectedYear);
+
+  const filteredManual = manual.filter(filterYear);
+  const filteredMembership = membership.filter(filterYear);
+
+  const otherIncome = sum(filteredManual, "income");
+  const expenses = sum(filteredManual, "expense");
+  const membershipIncome = sum(filteredMembership, "income");
+
+  const combined = [
+    ...filteredManual,
+    ...filteredMembership
+  ].sort((a, b) => b.date.localeCompare(a.date));
+
+  const todayIncome = sum(
+    combined.filter(r => r.date === localDate()),
+    "income"
   );
 
-  const filteredMembership = membership.filter(item =>
-    selectedYear === "all" ||
-    item.period.startsWith(selectedYear)
+  setText("accOtherIncome", money(otherIncome));
+  setText("accExpenses", money(expenses));
+
+  setText(
+    "accMembership",
+    membershipReady
+      ? money(membershipIncome)
+      : "Loading / Unavailable"
   );
 
-  let income = 0;
-  let expense = 0;
-
-  for (const item of filteredManual) {
-    const amount = Number(item.amount);
-
-    if (!Number.isFinite(amount) || amount <= 0) continue;
-
-    if (item.type === "income") income += amount;
-    if (item.type === "expense") expense += amount;
-  }
-
-  const membershipIncome = filteredMembership.reduce(
-    (sum, item) => sum + item.amount, 0
+  setText(
+    "accBalance",
+    membershipReady
+      ? money(membershipIncome + otherIncome - expenses)
+      : "Loading / Unavailable"
   );
 
-  stat("accMembership", membershipIncome);
-  stat("accIncome", income);
-  stat("accExpense", expense);
+  setText(
+    "accTodayIncome",
+    membershipReady
+      ? money(todayIncome)
+      : "Loading / Unavailable"
+  );
 
-  if ($("accBalance")) {
-    $("accBalance").textContent = membershipReady
-      ? money(membershipIncome + income - expense)
-      : "Loading / Unavailable";
-  }
-
-  const note = $("accSummaryNote");
-
-  if (note) {
-    note.textContent = membershipReady
-      ? `${filteredMembership.length} effective paid member-months. ` +
-        `This is a calculated ledger balance, not a verified bank balance.`
-      : "Membership data is loading or access is unavailable. " +
-        "Do not use the displayed totals as final accounts.";
-  }
-
-  // Members see manual entries only until a secure
-  // server-generated membership summary is available.
-  const memberIncome = manual.reduce((sum, item) =>
-    sum + (item.type === "income" &&
-      Number.isFinite(Number(item.amount))
-      ? Math.max(0, Number(item.amount)) : 0), 0);
-
-  const memberExpense = manual.reduce((sum, item) =>
-    sum + (item.type === "expense" &&
-      Number.isFinite(Number(item.amount))
-      ? Math.max(0, Number(item.amount)) : 0), 0);
-
-  stat("memberAccIncome", memberIncome);
-  stat("memberAccExpense", memberExpense);
-  stat("memberAccBalance", memberIncome - memberExpense);
-
-  const rows = [
-    ...filteredMembership.map(item => ({
-      date: item.period,
-      type: "income",
-      category: "Membership Fee",
-      particulars: `Member #${item.memberNumber} - Paid Month`,
-      amount: item.amount,
-      method: "Recorded"
-    })),
-    ...filteredManual
-  ].sort((a, b) =>
-    String(b.date || "").localeCompare(String(a.date || ""))
+  setText(
+    "accStatus",
+    membershipReady
+      ? "Accounts from 08-11-2026. Historical PDF payments excluded. Balance is a calculated ledger balance, not a verified bank balance."
+      : "Membership records are loading or unavailable. Totals are not final."
   );
 
   if ($("accTable")) {
     $("accTable").innerHTML = membershipReady
-      ? transactionTable(rows)
-      : transactionTable(filteredManual);
+      ? tableHTML(combined)
+      : tableHTML(filteredManual);
   }
 
+  const memberIncome = sum(manual, "income");
+  const memberExpenses = sum(manual, "expense");
+
+  setText("memberAccIncome", money(memberIncome));
+  setText("memberAccExpenses", money(memberExpenses));
+
+  setText(
+    "memberAccBalance",
+    money(memberIncome - memberExpenses)
+  );
+
   if ($("memberAccTable")) {
-    $("memberAccTable").innerHTML = transactionTable(manual);
+    $("memberAccTable").innerHTML = tableHTML(
+      [...manual].sort(
+        (a, b) => b.date.localeCompare(a.date)
+      )
+    );
   }
 }
 
-async function saveEntry(event) {
+async function saveManualEntry(event) {
   event.preventDefault();
 
-  if (!user || !admin || saving) return;
+  if (!user || !isAdmin || saving) return;
 
-  const sessionUid = user.uid;
+  const uid = user.uid;
+
   const type = $("accType").value;
   const date = $("accDate").value;
   const category = $("accCategory").value.trim();
@@ -525,42 +625,44 @@ async function saveEntry(event) {
   const amount = Number($("accAmount").value);
   const method = $("accMethod").value;
 
-  const valid =
-    ["income", "expense"].includes(type) &&
-    validDate(date) &&
-    category.length >= 2 &&
-    category.length <= 80 &&
-    !/membership|member\s*fee|subscription/i.test(category) &&
-    particulars.length >= 3 &&
-    particulars.length <= 500 &&
-    Number.isFinite(amount) &&
-    amount > 0 &&
-    amount <= 10000000 &&
-    Math.round(amount * 100) === amount * 100 &&
-    ["cash", "upi", "bank", "other"].includes(method);
-
-  if (!valid) {
-    status("Please check the transaction details. Membership fees must use the payment system.");
+  if (
+    !["income", "expense"].includes(type) ||
+    !validDate(date) ||
+    date < START_DATE ||
+    category.length < 2 ||
+    category.length > 80 ||
+    /membership|member\s*fee|subscription/i.test(category) ||
+    particulars.length < 3 ||
+    particulars.length > 500 ||
+    !Number.isFinite(amount) ||
+    amount <= 0 ||
+    amount > 10000000 ||
+    Math.abs(amount * 100 - Math.round(amount * 100)) > 0.000001 ||
+    !["cash", "upi", "bank", "other"].includes(method)
+  ) {
+    message("Check transaction details. Membership fees must use the payment system.");
     return;
   }
 
   if (!confirm(
-    `Save ${type} of ${money(amount)}?\n` +
-    "This entry cannot be edited or deleted from this panel."
+    `Save transaction?\n\n` +
+    `Type: ${type}\n` +
+    `Date: ${date}\n` +
+    `Amount: ${money(amount)}\n` +
+    `Particulars: ${particulars}`
   )) return;
 
   saving = true;
   $("accSave").disabled = true;
-  status("Saving...");
 
   try {
-    if (auth.currentUser?.uid !== sessionUid) {
+    if (auth.currentUser?.uid !== uid) {
       throw Error("Login session changed.");
     }
 
-    const entryRef = push(ref(db, "accounts/entries"));
+    const newRef = push(ref(db, "accounts/entries"));
 
-    await set(entryRef, {
+    await set(newRef, {
       type,
       date,
       category,
@@ -568,17 +670,16 @@ async function saveEntry(event) {
       amount,
       method,
       createdAt: serverTimestamp(),
-      createdBy: sessionUid
+      createdBy: uid
     });
 
-    status("Transaction saved. ID: " + entryRef.key);
+    message("Transaction saved successfully.");
 
     $("accForm").reset();
-    $("accDate").value = today();
+    $("accDate").value = localDate();
 
   } catch (error) {
-    console.error(error);
-    status("Save failed: " + (error.code || error.message));
+    message("Save failed: " + error.message);
 
   } finally {
     saving = false;
@@ -586,124 +687,131 @@ async function saveEntry(event) {
   }
 }
 
-function stopListening() {
-  for (const unsubscribe of unsubscribers) {
-    try { unsubscribe(); } catch (_) {}
+function clearListeners() {
+  for (const stop of listeners) {
+    try {
+      stop();
+    } catch (_) {}
   }
 
-  unsubscribers = [];
+  listeners = [];
 
   entries = {};
   members = {};
-  histories = {};
   corrections = {};
+  paymentRequests = {};
 
   loaded = {
     entries: false,
     members: false,
-    histories: false,
-    corrections: false
+    corrections: false,
+    requests: false
   };
-
-  render();
 }
 
-function listen(path, assign, loadedKey, authId) {
-  const unsubscribe = onValue(
+function listen(path, key, callback, version) {
+  const stop = onValue(
     ref(db, path),
     snapshot => {
-      if (authId !== generation) return;
+      if (version !== authVersion) return;
 
-      assign(snapshot.val() || {});
-      loaded[loadedKey] = true;
+      callback(snapshot.val() || {});
+      loaded[key] = true;
+
       render();
     },
     error => {
-      if (authId !== generation) return;
+      if (version !== authVersion) return;
 
-      loaded[loadedKey] = false;
-      console.error("Accounts read:", path, error);
-      status("Read failed at " + path + ": " + error.message);
+      loaded[key] = false;
+      console.error("Accounts:", path, error);
+
+      message(
+        "Unable to read " + path + ": " + error.message
+      );
+
       render();
     }
   );
 
-  unsubscribers.push(unsubscribe);
+  listeners.push(stop);
 }
 
 onAuthStateChanged(auth, async account => {
-  const authId = ++generation;
+  const version = ++authVersion;
 
-  stopListening();
+  clearListeners();
 
   user = account;
-  admin = false;
-  approved = false;
+  isAdmin = false;
+  isApproved = false;
 
-  if (!account) {
-    showAccess();
-    return;
-  }
+  accessUI();
+  render();
+
+  if (!account) return;
 
   try {
     const adminSnap = await get(
       ref(db, "admins/" + account.uid)
     );
 
-    if (authId !== generation) return;
+    if (version !== authVersion) return;
 
-    admin = adminSnap.val() === true;
+    isAdmin = adminSnap.val() === true;
 
-    if (!admin) {
+    if (!isAdmin) {
       const userSnap = await get(
         ref(db, "users/" + account.uid)
       );
 
-      if (authId !== generation) return;
+      if (version !== authVersion) return;
 
-      approved = userSnap.val()?.status === "approved";
+      isApproved =
+        userSnap.val()?.status === "approved";
     }
 
-    showAccess();
+    accessUI();
 
-    if (!admin && !approved) return;
+    if (!isAdmin && !isApproved) return;
 
     listen(
       "accounts/entries",
-      value => { entries = value; },
       "entries",
-      authId
+      value => { entries = value; },
+      version
     );
 
-    if (admin) {
+    if (isAdmin) {
       listen(
+        "members",
         "members",
         value => { members = value; },
-        "members",
-        authId
-      );
-
-      listen(
-        "paymentHistory",
-        value => { histories = value; },
-        "histories",
-        authId
+        version
       );
 
       listen(
         "paymentCorrections",
-        value => { corrections = value; },
         "corrections",
-        authId
+        value => { corrections = value; },
+        version
+      );
+
+      listen(
+        "paymentRequests",
+        "requests",
+        value => { paymentRequests = value; },
+        version
       );
     }
 
   } catch (error) {
-    console.error("Accounts authentication:", error);
-    status("Accounts access failed: " + error.message);
-    showAccess();
+    console.error(error);
+    message("Accounts login error: " + error.message);
   }
 });
 
-setup();
+createUI();
 render();
+
+/* END - TFC ACCOUNTS v83.4 */
