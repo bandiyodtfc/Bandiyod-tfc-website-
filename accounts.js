@@ -1,16 +1,20 @@
 
 /*
- TFC BANDIYOD ACCOUNTS v83.4
- START DATE: 2026-11-08
+ TFC BANDIYOD
+ ACCOUNTS VERSION 83.5
 
- - No historical PDF income
- - New cash receipts from start date
- - New approved UPI receipts from start date
- - Cancelled member-months excluded
- - Manual income and expenses from start date
- - No changes to existing payment records
- - Member ledger is read-only
- - Admin can add manual entries
+ Starting Date: 2026-11-08
+
+ Opening Balance: Existing Firebase record
+ ₹221914 - Last balance / Last year balance
+
+ Historical membership records excluded.
+ New verified payments only.
+ Cancelled payments excluded.
+
+ Admin: Full account calculations.
+ Members: Opening balance and manual ledger.
+ Private membership data never exposed.
 */
 
 import {
@@ -45,9 +49,7 @@ const db = getDatabase(app);
 const START_DATE = "2026-11-08";
 const MONTHLY_FEE = 50;
 
-const $ = id => document.getElementById(id);
-
-let user = null;
+let currentUser = null;
 let isAdmin = false;
 let isApproved = false;
 
@@ -66,6 +68,8 @@ let loaded = {
 let listeners = [];
 let authVersion = 0;
 let saving = false;
+
+const $ = id => document.getElementById(id);
 
 function localDate(ms = Date.now()) {
   const d = new Date(ms);
@@ -114,11 +118,34 @@ function money(value) {
 }
 
 function setText(id, value) {
-  if ($(id)) $(id).textContent = value;
+  if ($(id)) {
+    $(id).textContent = value;
+  }
 }
 
 function message(value) {
   setText("accMessage", value);
+}
+
+/*
+ Identify the EXISTING opening balance record.
+ No database modification is performed.
+
+ Match all identifying fields to avoid
+ classifying unrelated income as opening balance.
+*/
+
+function isOpeningBalance(item) {
+  return (
+    item &&
+    item.type === "income" &&
+    item.date === START_DATE &&
+    Number(item.amount) === 221914 &&
+    String(item.category || "")
+      .trim().toLowerCase() === "last balance" &&
+    String(item.particulars || "")
+      .trim().toLowerCase() === "last year balance"
+  );
 }
 
 function createUI() {
@@ -137,11 +164,17 @@ function createUI() {
       <h2>TFC Accounts</h2>
 
       <p>
-        Accounts Starting Date:
+        Accounts from
         <strong>08-11-2026</strong>
       </p>
 
       <div class="grid">
+
+        <div class="stat">
+          <span>Opening Balance</span>
+          <strong id="accOpening">₹0</strong>
+        </div>
+
         <div class="stat">
           <span>Membership Income</span>
           <strong id="accMembership">₹0</strong>
@@ -158,14 +191,15 @@ function createUI() {
         </div>
 
         <div class="stat">
-          <span>Balance</span>
+          <span>Closing Balance</span>
           <strong id="accBalance">₹0</strong>
         </div>
 
         <div class="stat">
-          <span>Today's Income</span>
+          <span>Today's New Income</span>
           <strong id="accTodayIncome">₹0</strong>
         </div>
+
       </div>
 
       <p id="accStatus" class="muted"></p>
@@ -175,12 +209,14 @@ function createUI() {
       <form id="accForm">
 
         <label>Type</label>
+
         <select id="accType" required>
           <option value="income">Other Income</option>
           <option value="expense">Expense</option>
         </select>
 
         <label>Date</label>
+
         <input
           id="accDate"
           type="date"
@@ -189,6 +225,7 @@ function createUI() {
         >
 
         <label>Category</label>
+
         <input
           id="accCategory"
           maxlength="80"
@@ -197,6 +234,7 @@ function createUI() {
         >
 
         <label>Particulars</label>
+
         <input
           id="accParticulars"
           maxlength="500"
@@ -205,6 +243,7 @@ function createUI() {
         >
 
         <label>Amount</label>
+
         <input
           id="accAmount"
           type="number"
@@ -215,6 +254,7 @@ function createUI() {
         >
 
         <label>Method</label>
+
         <select id="accMethod">
           <option value="cash">Cash</option>
           <option value="upi">UPI</option>
@@ -225,13 +265,15 @@ function createUI() {
         <button id="accSave" type="submit">
           Save Transaction
         </button>
+
       </form>
 
       <p id="accMessage" role="status"></p>
 
-      <h3>Income / Expense History</h3>
+      <h3>Accounts History</h3>
 
       <label>Year</label>
+
       <select id="accYear">
         <option value="all">All Years</option>
       </select>
@@ -251,11 +293,15 @@ function createUI() {
     panel.innerHTML = `
       <h2>TFC Accounts</h2>
 
-      <p>
-        Records from 08-11-2026
-      </p>
+      <p>Records from 08-11-2026</p>
 
       <div class="grid">
+
+        <div class="stat">
+          <span>Opening Balance</span>
+          <strong id="memberAccOpening">₹0</strong>
+        </div>
+
         <div class="stat">
           <span>Other Income</span>
           <strong id="memberAccIncome">₹0</strong>
@@ -267,15 +313,16 @@ function createUI() {
         </div>
 
         <div class="stat">
-          <span>Net Manual Entries</span>
+          <span>Balance Before Membership Income</span>
           <strong id="memberAccBalance">₹0</strong>
         </div>
+
       </div>
 
       <p class="muted">
-        Membership income is available in the admin
-        reconciliation report. A secure member-wide
-        membership summary is not yet enabled.
+        Membership income and the final closing balance
+        are not yet available in the member view.
+        The displayed balance excludes membership income.
       </p>
 
       <h3>Income / Expense History</h3>
@@ -287,6 +334,7 @@ function createUI() {
   }
 
   $("accDate").value = localDate();
+
   $("accForm").onsubmit = saveManualEntry;
   $("accYear").onchange = render;
 
@@ -336,11 +384,11 @@ function accessUI() {
 
   $("memberAccountsPanel")?.classList.toggle(
     "hide",
-    !user || isAdmin || !isApproved
+    !currentUser || isAdmin || !isApproved
   );
 }
 
-function manualRows() {
+function getManualRows() {
   return Object.entries(entries)
     .filter(([, item]) =>
       item &&
@@ -357,29 +405,12 @@ function manualRows() {
       category: item.category || "",
       particulars: item.particulars || "",
       amount: Number(item.amount),
-      method: item.method || ""
+      method: item.method || "",
+      opening: isOpeningBalance(item)
     }));
 }
 
-/*
- Membership payment sources:
-
- Cash:
- members/{number}/payments/{period}
- method: cash
- receivedDate: YYYY-MM-DD
-
- UPI:
- members/{number}/payments/{period}
- requestId: paymentRequests ID
- verifiedAt: timestamp
-
- Only approved UPI requests count.
- Each paid month is counted once.
- Historical PDF records are not included.
-*/
-
-function membershipRows() {
+function getMembershipRows() {
   const rows = [];
 
   for (const [number, member] of Object.entries(members)) {
@@ -411,6 +442,7 @@ function membershipRows() {
           localDate(Number(payment.verifiedAt)) >= START_DATE;
 
         method = "Cash";
+
       } else if (payment.requestId) {
         const request = paymentRequests[payment.requestId];
 
@@ -440,12 +472,24 @@ function membershipRows() {
         particulars: "Membership Fee - " + period,
         amount: MONTHLY_FEE,
         method,
-        source: "membership"
+        opening: false
       });
     }
   }
 
   return rows;
+}
+
+function sum(rows, type) {
+  return rows.reduce(
+    (total, row) =>
+      total + (
+        row.type === type
+          ? Number(row.amount) || 0
+          : 0
+      ),
+    0
+  );
 }
 
 function tableHTML(rows) {
@@ -465,11 +509,14 @@ function tableHTML(rows) {
           <th>Method</th>
         </tr>
       </thead>
+
       <tbody>
         ${rows.map(row => `
           <tr>
             <td>${escapeHTML(row.date)}</td>
-            <td>${escapeHTML(row.type)}</td>
+            <td>${escapeHTML(
+              row.opening ? "Opening" : row.type
+            )}</td>
             <td>${escapeHTML(row.category)}</td>
             <td>${escapeHTML(row.particulars)}</td>
             <td>${money(row.amount)}</td>
@@ -481,20 +528,18 @@ function tableHTML(rows) {
   `;
 }
 
-function sum(rows, type) {
-  return rows.reduce(
-    (total, row) =>
-      total + (
-        row.type === type
-          ? Number(row.amount) || 0
-          : 0
-      ),
-    0
-  );
-}
-
 function render() {
-  const manual = manualRows();
+  const manual = getManualRows();
+
+  const openingRows = manual.filter(
+    row => row.opening
+  );
+
+  const regularManual = manual.filter(
+    row => !row.opening
+  );
+
+  const openingBalance = sum(openingRows, "income");
 
   const membershipReady =
     isAdmin &&
@@ -503,12 +548,13 @@ function render() {
     loaded.requests;
 
   const membership = membershipReady
-    ? membershipRows()
+    ? getMembershipRows()
     : [];
 
   const allRows = [
-    ...membership,
-    ...manual
+    ...openingRows,
+    ...regularManual,
+    ...membership
   ];
 
   const yearSelect = $("accYear");
@@ -518,7 +564,7 @@ function render() {
     const old = yearSelect.value;
 
     const years = [...new Set(
-      allRows.map(r => r.date.slice(0, 4))
+      allRows.map(row => row.date.slice(0, 4))
     )].sort().reverse();
 
     yearSelect.replaceChildren(
@@ -533,27 +579,44 @@ function render() {
     selectedYear = yearSelect.value;
   }
 
-  const filterYear = row =>
+  const yearFilter = row =>
     selectedYear === "all" ||
     row.date.startsWith(selectedYear);
 
-  const filteredManual = manual.filter(filterYear);
-  const filteredMembership = membership.filter(filterYear);
+  const filteredManual = regularManual.filter(yearFilter);
+  const filteredMembership = membership.filter(yearFilter);
+
+  /*
+   Opening balance belongs to the start of
+   the accounts, not to new income.
+   It remains part of the running balance.
+  */
 
   const otherIncome = sum(filteredManual, "income");
   const expenses = sum(filteredManual, "expense");
-  const membershipIncome = sum(filteredMembership, "income");
 
-  const combined = [
-    ...filteredManual,
-    ...filteredMembership
-  ].sort((a, b) => b.date.localeCompare(a.date));
-
-  const todayIncome = sum(
-    combined.filter(r => r.date === localDate()),
+  const membershipIncome = sum(
+    filteredMembership,
     "income"
   );
 
+  const closingBalance =
+    openingBalance +
+    membershipIncome +
+    otherIncome -
+    expenses;
+
+  const today = localDate();
+
+  const todayIncome = sum(
+    [
+      ...regularManual,
+      ...membership
+    ].filter(row => row.date === today),
+    "income"
+  );
+
+  setText("accOpening", money(openingBalance));
   setText("accOtherIncome", money(otherIncome));
   setText("accExpenses", money(expenses));
 
@@ -567,7 +630,7 @@ function render() {
   setText(
     "accBalance",
     membershipReady
-      ? money(membershipIncome + otherIncome - expenses)
+      ? money(closingBalance)
       : "Loading / Unavailable"
   );
 
@@ -581,32 +644,72 @@ function render() {
   setText(
     "accStatus",
     membershipReady
-      ? "Accounts from 08-11-2026. Historical PDF payments excluded. Balance is a calculated ledger balance, not a verified bank balance."
-      : "Membership records are loading or unavailable. Totals are not final."
+      ? "Opening Balance is separate from new income. This is a calculated ledger balance, not a verified bank balance."
+      : "Membership data is loading or unavailable. Closing balance is not final."
   );
+
+  const adminRows = [
+    ...openingRows,
+    ...filteredManual,
+    ...filteredMembership
+  ].sort((a, b) => b.date.localeCompare(a.date));
 
   if ($("accTable")) {
     $("accTable").innerHTML = membershipReady
-      ? tableHTML(combined)
-      : tableHTML(filteredManual);
+      ? tableHTML(adminRows)
+      : tableHTML([
+          ...openingRows,
+          ...filteredManual
+        ]);
   }
 
-  const memberIncome = sum(manual, "income");
-  const memberExpenses = sum(manual, "expense");
+  /*
+   Member view:
+   Only accounts/entries are read.
+   No private membership data is exposed.
+  */
 
-  setText("memberAccIncome", money(memberIncome));
-  setText("memberAccExpenses", money(memberExpenses));
+  const memberOtherIncome = sum(
+    regularManual,
+    "income"
+  );
+
+  const memberExpenses = sum(
+    regularManual,
+    "expense"
+  );
+
+  const memberBalance =
+    openingBalance +
+    memberOtherIncome -
+    memberExpenses;
+
+  setText(
+    "memberAccOpening",
+    money(openingBalance)
+  );
+
+  setText(
+    "memberAccIncome",
+    money(memberOtherIncome)
+  );
+
+  setText(
+    "memberAccExpenses",
+    money(memberExpenses)
+  );
 
   setText(
     "memberAccBalance",
-    money(memberIncome - memberExpenses)
+    money(memberBalance)
   );
 
   if ($("memberAccTable")) {
     $("memberAccTable").innerHTML = tableHTML(
-      [...manual].sort(
-        (a, b) => b.date.localeCompare(a.date)
-      )
+      [
+        ...openingRows,
+        ...regularManual
+      ].sort((a, b) => b.date.localeCompare(a.date))
     );
   }
 }
@@ -614,9 +717,9 @@ function render() {
 async function saveManualEntry(event) {
   event.preventDefault();
 
-  if (!user || !isAdmin || saving) return;
+  if (!currentUser || !isAdmin || saving) return;
 
-  const uid = user.uid;
+  const uid = currentUser.uid;
 
   const type = $("accType").value;
   const date = $("accDate").value;
@@ -637,19 +740,21 @@ async function saveManualEntry(event) {
     !Number.isFinite(amount) ||
     amount <= 0 ||
     amount > 10000000 ||
-    Math.abs(amount * 100 - Math.round(amount * 100)) > 0.000001 ||
+    Math.abs(
+      amount * 100 - Math.round(amount * 100)
+    ) > 0.000001 ||
     !["cash", "upi", "bank", "other"].includes(method)
   ) {
-    message("Check transaction details. Membership fees must use the payment system.");
+    message("Please check the transaction details.");
     return;
   }
 
   if (!confirm(
-    `Save transaction?\n\n` +
-    `Type: ${type}\n` +
-    `Date: ${date}\n` +
-    `Amount: ${money(amount)}\n` +
-    `Particulars: ${particulars}`
+    "Save this transaction?\n\n" +
+    "Type: " + type + "\n" +
+    "Date: " + date + "\n" +
+    "Amount: " + money(amount) + "\n" +
+    "Particulars: " + particulars
   )) return;
 
   saving = true;
@@ -660,7 +765,9 @@ async function saveManualEntry(event) {
       throw Error("Login session changed.");
     }
 
-    const newRef = push(ref(db, "accounts/entries"));
+    const newRef = push(
+      ref(db, "accounts/entries")
+    );
 
     await set(newRef, {
       type,
@@ -712,6 +819,7 @@ function clearListeners() {
 function listen(path, key, callback, version) {
   const stop = onValue(
     ref(db, path),
+
     snapshot => {
       if (version !== authVersion) return;
 
@@ -720,14 +828,23 @@ function listen(path, key, callback, version) {
 
       render();
     },
+
     error => {
       if (version !== authVersion) return;
 
       loaded[key] = false;
-      console.error("Accounts:", path, error);
+
+      console.error(
+        "Accounts read error:",
+        path,
+        error
+      );
 
       message(
-        "Unable to read " + path + ": " + error.message
+        "Unable to read " +
+        path +
+        ": " +
+        error.message
       );
 
       render();
@@ -742,7 +859,7 @@ onAuthStateChanged(auth, async account => {
 
   clearListeners();
 
-  user = account;
+  currentUser = account;
   isAdmin = false;
   isApproved = false;
 
@@ -778,7 +895,9 @@ onAuthStateChanged(auth, async account => {
     listen(
       "accounts/entries",
       "entries",
-      value => { entries = value; },
+      value => {
+        entries = value;
+      },
       version
     );
 
@@ -786,32 +905,42 @@ onAuthStateChanged(auth, async account => {
       listen(
         "members",
         "members",
-        value => { members = value; },
+        value => {
+          members = value;
+        },
         version
       );
 
       listen(
         "paymentCorrections",
         "corrections",
-        value => { corrections = value; },
+        value => {
+          corrections = value;
+        },
         version
       );
 
       listen(
         "paymentRequests",
         "requests",
-        value => { paymentRequests = value; },
+        value => {
+          paymentRequests = value;
+        },
         version
       );
     }
 
   } catch (error) {
     console.error(error);
-    message("Accounts login error: " + error.message);
+
+    message(
+      "Accounts login error: " +
+      error.message
+    );
   }
 });
 
 createUI();
 render();
 
-/* END - TFC ACCOUNTS v83.4 */
+/* END TFC ACCOUNTS VERSION 83.5 */
