@@ -1,20 +1,26 @@
 
 /*
- TFC BANDIYOD
- ACCOUNTS VERSION 83.5
+ TFC BANDIYOD - ACCOUNTS v83.6
 
- Starting Date: 2026-11-08
+ Starting date: 2026-11-08
 
- Opening Balance: Existing Firebase record
- ₹221914 - Last balance / Last year balance
+ Features:
+ - Opening Balance
+ - New Membership Income
+ - Other Income
+ - Expenses
+ - Closing Balance
+ - Today's New Income
+ - Admin Add / Edit / Soft Delete
+ - Audit History
+ - Member Read Only
 
- Historical membership records excluded.
- New verified payments only.
- Cancelled payments excluded.
+ IMPORTANT:
+ Firebase Rules update is required
+ before Edit/Delete will work.
 
- Admin: Full account calculations.
- Members: Opening balance and manual ledger.
- Private membership data never exposed.
+ Historical PDF payments are excluded.
+ Existing membership payment records are preserved.
 */
 
 import {
@@ -34,6 +40,7 @@ import {
   onValue,
   push,
   set,
+  runTransaction,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
@@ -52,6 +59,9 @@ const MONTHLY_FEE = 50;
 let currentUser = null;
 let isAdmin = false;
 let isApproved = false;
+let saving = false;
+let editingId = null;
+let authVersion = 0;
 
 let entries = {};
 let members = {};
@@ -66,8 +76,6 @@ let loaded = {
 };
 
 let listeners = [];
-let authVersion = 0;
-let saving = false;
 
 const $ = id => document.getElementById(id);
 
@@ -94,6 +102,16 @@ function validDate(value) {
     d.getDate() === Number(value.slice(8, 10));
 }
 
+function money(value) {
+  return "₹" + Number(value || 0).toLocaleString(
+    "en-IN",
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }
+  );
+}
+
 function escapeHTML(value) {
   return String(value ?? "").replace(
     /[&<>"']/g,
@@ -107,44 +125,29 @@ function escapeHTML(value) {
   );
 }
 
-function money(value) {
-  return "₹" + Number(value || 0).toLocaleString(
-    "en-IN",
-    {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }
-  );
-}
-
 function setText(id, value) {
-  if ($(id)) {
-    $(id).textContent = value;
-  }
+  if ($(id)) $(id).textContent = value;
 }
 
 function message(value) {
   setText("accMessage", value);
 }
 
-/*
- Identify the EXISTING opening balance record.
- No database modification is performed.
-
- Match all identifying fields to avoid
- classifying unrelated income as opening balance.
-*/
-
 function isOpeningBalance(item) {
   return (
     item &&
     item.type === "income" &&
-    item.date === START_DATE &&
-    Number(item.amount) === 221914 &&
-    String(item.category || "")
-      .trim().toLowerCase() === "last balance" &&
-    String(item.particulars || "")
-      .trim().toLowerCase() === "last year balance"
+    (
+      item.isOpeningBalance === true ||
+      (
+        item.date === START_DATE &&
+        Number(item.amount) === 221914 &&
+        String(item.category || "")
+          .trim().toLowerCase() === "last balance" &&
+        String(item.particulars || "")
+          .trim().toLowerCase() === "last year balance"
+      )
+    )
   );
 }
 
@@ -162,14 +165,9 @@ function createUI() {
 
     panel.innerHTML = `
       <h2>TFC Accounts</h2>
-
-      <p>
-        Accounts from
-        <strong>08-11-2026</strong>
-      </p>
+      <p>Accounts from 08-11-2026</p>
 
       <div class="grid">
-
         <div class="stat">
           <span>Opening Balance</span>
           <strong id="accOpening">₹0</strong>
@@ -199,62 +197,37 @@ function createUI() {
           <span>Today's New Income</span>
           <strong id="accTodayIncome">₹0</strong>
         </div>
-
       </div>
 
-      <p id="accStatus" class="muted"></p>
+      <p id="accStatus"></p>
 
-      <h3>Add Income / Expense</h3>
+      <h3 id="accFormTitle">Add Income / Expense</h3>
 
       <form id="accForm">
-
         <label>Type</label>
-
         <select id="accType" required>
           <option value="income">Other Income</option>
           <option value="expense">Expense</option>
         </select>
 
         <label>Date</label>
-
-        <input
-          id="accDate"
-          type="date"
-          min="2026-11-08"
-          required
-        >
+        <input id="accDate" type="date"
+          min="2026-11-08" required>
 
         <label>Category</label>
-
-        <input
-          id="accCategory"
-          maxlength="80"
-          placeholder="Donation / Office / Other"
-          required
-        >
+        <input id="accCategory"
+          maxlength="80" required>
 
         <label>Particulars</label>
-
-        <input
-          id="accParticulars"
-          maxlength="500"
-          placeholder="Enter details"
-          required
-        >
+        <input id="accParticulars"
+          maxlength="500" required>
 
         <label>Amount</label>
-
-        <input
-          id="accAmount"
-          type="number"
-          min="0.01"
-          max="10000000"
-          step="0.01"
-          required
-        >
+        <input id="accAmount" type="number"
+          min="0.01" max="10000000"
+          step="0.01" required>
 
         <label>Method</label>
-
         <select id="accMethod">
           <option value="cash">Cash</option>
           <option value="upi">UPI</option>
@@ -262,10 +235,21 @@ function createUI() {
           <option value="other">Other</option>
         </select>
 
+        <div id="accEditReasonBox" hidden>
+          <label>Reason for Edit</label>
+          <textarea id="accEditReason"
+            maxlength="500"
+            placeholder="Reason for changing this record"></textarea>
+        </div>
+
         <button id="accSave" type="submit">
           Save Transaction
         </button>
 
+        <button id="accCancelEdit"
+          type="button" hidden>
+          Cancel Edit
+        </button>
       </form>
 
       <p id="accMessage" role="status"></p>
@@ -273,12 +257,14 @@ function createUI() {
       <h3>Accounts History</h3>
 
       <label>Year</label>
-
       <select id="accYear">
         <option value="all">All Years</option>
       </select>
 
       <div id="accTable" class="scroll"></div>
+
+      <h3>Admin Audit History</h3>
+      <div id="accAuditTable" class="scroll"></div>
     `;
 
     adminRoot.appendChild(panel);
@@ -292,11 +278,9 @@ function createUI() {
 
     panel.innerHTML = `
       <h2>TFC Accounts</h2>
-
       <p>Records from 08-11-2026</p>
 
       <div class="grid">
-
         <div class="stat">
           <span>Opening Balance</span>
           <strong id="memberAccOpening">₹0</strong>
@@ -316,17 +300,15 @@ function createUI() {
           <span>Balance Before Membership Income</span>
           <strong id="memberAccBalance">₹0</strong>
         </div>
-
       </div>
 
-      <p class="muted">
-        Membership income and the final closing balance
-        are not yet available in the member view.
-        The displayed balance excludes membership income.
+      <p>
+        Membership Income and final Closing Balance
+        will be available after the secure
+        member summary is enabled.
       </p>
 
       <h3>Income / Expense History</h3>
-
       <div id="memberAccTable" class="scroll"></div>
     `;
 
@@ -335,8 +317,24 @@ function createUI() {
 
   $("accDate").value = localDate();
 
-  $("accForm").onsubmit = saveManualEntry;
+  $("accForm").onsubmit = saveEntry;
+  $("accCancelEdit").onclick = resetForm;
   $("accYear").onchange = render;
+
+  $("accTable").addEventListener("click", async event => {
+    const button = event.target.closest("button[data-action]");
+    if (!button || !isAdmin) return;
+
+    const id = button.dataset.id;
+
+    if (button.dataset.action === "edit") {
+      startEdit(id);
+    }
+
+    if (button.dataset.action === "delete") {
+      await softDelete(id);
+    }
+  });
 
   const tabs = $("tabMembers")?.parentElement;
 
@@ -362,9 +360,7 @@ function createUI() {
         "memberPhotosPanel",
         "cashPanel",
         "correctionPanel"
-      ].forEach(id => {
-        $(id)?.classList.add("hide");
-      });
+      ].forEach(id => $(id)?.classList.add("hide"));
 
       $("accountsPanel").classList.remove("hide");
     };
@@ -388,10 +384,11 @@ function accessUI() {
   );
 }
 
-function getManualRows() {
+function manualRows() {
   return Object.entries(entries)
     .filter(([, item]) =>
       item &&
+      item.deleted !== true &&
       validDate(item.date) &&
       item.date >= START_DATE &&
       ["income", "expense"].includes(item.type) &&
@@ -406,11 +403,12 @@ function getManualRows() {
       particulars: item.particulars || "",
       amount: Number(item.amount),
       method: item.method || "",
-      opening: isOpeningBalance(item)
+      opening: isOpeningBalance(item),
+      manual: true
     }));
 }
 
-function getMembershipRows() {
+function membershipRows() {
   const rows = [];
 
   for (const [number, member] of Object.entries(members)) {
@@ -421,10 +419,7 @@ function getMembershipRows() {
     )) {
       if (
         !/^\d{4}-(0[1-9]|1[0-2])$/.test(period) ||
-        payment?.status !== "paid"
-      ) continue;
-
-      if (
+        payment?.status !== "paid" ||
         memberCorrections[period]?.state === "cancelled"
       ) continue;
 
@@ -466,13 +461,13 @@ function getMembershipRows() {
 
       rows.push({
         date,
-        period,
         type: "income",
         category: "Membership Fee",
         particulars: "Membership Fee - " + period,
         amount: MONTHLY_FEE,
         method,
-        opening: false
+        opening: false,
+        manual: false
       });
     }
   }
@@ -492,7 +487,7 @@ function sum(rows, type) {
   );
 }
 
-function tableHTML(rows) {
+function tableHTML(rows, admin = false) {
   if (!rows.length) {
     return "<p>No records available.</p>";
   }
@@ -507,9 +502,9 @@ function tableHTML(rows) {
           <th>Particulars</th>
           <th>Amount</th>
           <th>Method</th>
+          ${admin ? "<th>Actions</th>" : ""}
         </tr>
       </thead>
-
       <tbody>
         ${rows.map(row => `
           <tr>
@@ -521,6 +516,88 @@ function tableHTML(rows) {
             <td>${escapeHTML(row.particulars)}</td>
             <td>${money(row.amount)}</td>
             <td>${escapeHTML(row.method)}</td>
+
+            ${admin ? `
+              <td>
+                ${row.manual ? `
+                  <button type="button"
+                    data-action="edit"
+                    data-id="${escapeHTML(row.id)}">
+                    Edit
+                  </button>
+
+                  <button type="button"
+                    data-action="delete"
+                    data-id="${escapeHTML(row.id)}">
+                    Delete
+                  </button>
+                ` : "Payment Record"}
+              </td>
+            ` : ""}
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function auditHTML() {
+  const events = [];
+
+  for (const [id, item] of Object.entries(entries)) {
+    for (const [eventId, event] of Object.entries(
+      item?.audit || {}
+    )) {
+      events.push({
+        id,
+        eventId,
+        ...event
+      });
+    }
+  }
+
+  events.sort((a, b) => Number(b.at || 0) - Number(a.at || 0));
+
+  if (!events.length) {
+    return "<p>No Edit/Delete audit records yet.</p>";
+  }
+
+  return `
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Action</th>
+          <th>Admin UID</th>
+          <th>Reason</th>
+          <th>Previous</th>
+          <th>Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${events.map(event => `
+          <tr>
+            <td>${escapeHTML(
+              event.at
+                ? new Date(event.at).toLocaleString("en-IN")
+                : ""
+            )}</td>
+
+            <td>${escapeHTML(event.action)}</td>
+            <td>${escapeHTML(event.adminUid)}</td>
+            <td>${escapeHTML(event.reason)}</td>
+
+            <td>
+              <pre>${escapeHTML(
+                JSON.stringify(event.before || {}, null, 2)
+              )}</pre>
+            </td>
+
+            <td>
+              <pre>${escapeHTML(
+                JSON.stringify(event.after || {}, null, 2)
+              )}</pre>
+            </td>
           </tr>
         `).join("")}
       </tbody>
@@ -529,15 +606,10 @@ function tableHTML(rows) {
 }
 
 function render() {
-  const manual = getManualRows();
+  const manual = manualRows();
 
-  const openingRows = manual.filter(
-    row => row.opening
-  );
-
-  const regularManual = manual.filter(
-    row => !row.opening
-  );
+  const openingRows = manual.filter(r => r.opening);
+  const regularManual = manual.filter(r => !r.opening);
 
   const openingBalance = sum(openingRows, "income");
 
@@ -548,7 +620,7 @@ function render() {
     loaded.requests;
 
   const membership = membershipReady
-    ? getMembershipRows()
+    ? membershipRows()
     : [];
 
   const allRows = [
@@ -561,10 +633,10 @@ function render() {
   let selectedYear = "all";
 
   if (yearSelect) {
-    const old = yearSelect.value;
+    const previous = yearSelect.value;
 
     const years = [...new Set(
-      allRows.map(row => row.date.slice(0, 4))
+      allRows.map(r => r.date.slice(0, 4))
     )].sort().reverse();
 
     yearSelect.replaceChildren(
@@ -572,47 +644,34 @@ function render() {
       ...years.map(y => new Option(y, y))
     );
 
-    yearSelect.value = years.includes(old)
-      ? old
+    yearSelect.value = years.includes(previous)
+      ? previous
       : "all";
 
     selectedYear = yearSelect.value;
   }
 
-  const yearFilter = row =>
+  const filterYear = row =>
     selectedYear === "all" ||
     row.date.startsWith(selectedYear);
 
-  const filteredManual = regularManual.filter(yearFilter);
-  const filteredMembership = membership.filter(yearFilter);
-
-  /*
-   Opening balance belongs to the start of
-   the accounts, not to new income.
-   It remains part of the running balance.
-  */
+  const filteredManual = regularManual.filter(filterYear);
+  const filteredMembership = membership.filter(filterYear);
 
   const otherIncome = sum(filteredManual, "income");
   const expenses = sum(filteredManual, "expense");
-
-  const membershipIncome = sum(
-    filteredMembership,
-    "income"
-  );
+  const membershipIncome = sum(filteredMembership, "income");
 
   const closingBalance =
     openingBalance +
-    membershipIncome +
-    otherIncome -
+    otherIncome +
+    membershipIncome -
     expenses;
 
-  const today = localDate();
-
   const todayIncome = sum(
-    [
-      ...regularManual,
-      ...membership
-    ].filter(row => row.date === today),
+    [...regularManual, ...membership].filter(
+      r => r.date === localDate()
+    ),
     "income"
   );
 
@@ -644,8 +703,8 @@ function render() {
   setText(
     "accStatus",
     membershipReady
-      ? "Opening Balance is separate from new income. This is a calculated ledger balance, not a verified bank balance."
-      : "Membership data is loading or unavailable. Closing balance is not final."
+      ? "Opening Balance is separate from new income. Closing Balance is a calculated ledger balance, not a verified bank balance."
+      : "Membership data loading or unavailable. Closing Balance is not final."
   );
 
   const adminRows = [
@@ -655,106 +714,161 @@ function render() {
   ].sort((a, b) => b.date.localeCompare(a.date));
 
   if ($("accTable")) {
-    $("accTable").innerHTML = membershipReady
-      ? tableHTML(adminRows)
-      : tableHTML([
-          ...openingRows,
-          ...filteredManual
-        ]);
+    $("accTable").innerHTML = tableHTML(
+      membershipReady
+        ? adminRows
+        : [...openingRows, ...filteredManual],
+      true
+    );
   }
 
-  /*
-   Member view:
-   Only accounts/entries are read.
-   No private membership data is exposed.
-  */
+  if ($("accAuditTable")) {
+    $("accAuditTable").innerHTML = auditHTML();
+  }
 
-  const memberOtherIncome = sum(
-    regularManual,
-    "income"
-  );
+  const memberIncome = sum(regularManual, "income");
+  const memberExpenses = sum(regularManual, "expense");
 
-  const memberExpenses = sum(
-    regularManual,
-    "expense"
-  );
-
-  const memberBalance =
-    openingBalance +
-    memberOtherIncome -
-    memberExpenses;
-
-  setText(
-    "memberAccOpening",
-    money(openingBalance)
-  );
-
-  setText(
-    "memberAccIncome",
-    money(memberOtherIncome)
-  );
-
-  setText(
-    "memberAccExpenses",
-    money(memberExpenses)
-  );
+  setText("memberAccOpening", money(openingBalance));
+  setText("memberAccIncome", money(memberIncome));
+  setText("memberAccExpenses", money(memberExpenses));
 
   setText(
     "memberAccBalance",
-    money(memberBalance)
+    money(openingBalance + memberIncome - memberExpenses)
   );
 
   if ($("memberAccTable")) {
     $("memberAccTable").innerHTML = tableHTML(
-      [
-        ...openingRows,
-        ...regularManual
-      ].sort((a, b) => b.date.localeCompare(a.date))
+      [...openingRows, ...regularManual].sort(
+        (a, b) => b.date.localeCompare(a.date)
+      )
     );
   }
 }
 
-async function saveManualEntry(event) {
+function snapshotFields(item) {
+  return {
+    type: item.type,
+    date: item.date,
+    category: item.category,
+    particulars: item.particulars,
+    amount: item.amount,
+    method: item.method,
+    isOpeningBalance: isOpeningBalance(item)
+  };
+}
+
+function resetForm() {
+  editingId = null;
+
+  $("accForm").reset();
+  $("accDate").value = localDate();
+
+  $("accEditReasonBox").hidden = true;
+  $("accEditReason").value = "";
+
+  $("accCancelEdit").hidden = true;
+
+  setText("accFormTitle", "Add Income / Expense");
+  setText("accSave", "Save Transaction");
+
+  message("");
+}
+
+function startEdit(id) {
+  if (!isAdmin || saving) return;
+
+  const item = entries[id];
+
+  if (!item || item.deleted === true) {
+    message("Record unavailable.");
+    return;
+  }
+
+  editingId = id;
+
+  $("accType").value = item.type;
+  $("accDate").value = item.date;
+  $("accCategory").value = item.category;
+  $("accParticulars").value = item.particulars;
+  $("accAmount").value = item.amount;
+  $("accMethod").value = item.method;
+
+  $("accEditReasonBox").hidden = false;
+  $("accCancelEdit").hidden = false;
+
+  setText("accFormTitle", "Edit Transaction");
+  setText("accSave", "Update Transaction");
+
+  $("accForm").scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+function validateEntry(data) {
+  if (
+    !["income", "expense"].includes(data.type) ||
+    !validDate(data.date) ||
+    data.date < START_DATE ||
+    data.category.length < 2 ||
+    data.category.length > 80 ||
+    /membership|member\s*fee|subscription/i.test(
+      data.category
+    ) ||
+    data.particulars.length < 3 ||
+    data.particulars.length > 500 ||
+    !Number.isFinite(data.amount) ||
+    data.amount <= 0 ||
+    data.amount > 10000000 ||
+    Math.abs(
+      data.amount * 100 -
+      Math.round(data.amount * 100)
+    ) > 0.000001 ||
+    !["cash", "upi", "bank", "other"].includes(
+      data.method
+    )
+  ) {
+    throw Error("Invalid transaction details.");
+  }
+}
+
+async function saveEntry(event) {
   event.preventDefault();
 
   if (!currentUser || !isAdmin || saving) return;
 
   const uid = currentUser.uid;
 
-  const type = $("accType").value;
-  const date = $("accDate").value;
-  const category = $("accCategory").value.trim();
-  const particulars = $("accParticulars").value.trim();
-  const amount = Number($("accAmount").value);
-  const method = $("accMethod").value;
+  const data = {
+    type: $("accType").value,
+    date: $("accDate").value,
+    category: $("accCategory").value.trim(),
+    particulars: $("accParticulars").value.trim(),
+    amount: Number($("accAmount").value),
+    method: $("accMethod").value
+  };
 
-  if (
-    !["income", "expense"].includes(type) ||
-    !validDate(date) ||
-    date < START_DATE ||
-    category.length < 2 ||
-    category.length > 80 ||
-    /membership|member\s*fee|subscription/i.test(category) ||
-    particulars.length < 3 ||
-    particulars.length > 500 ||
-    !Number.isFinite(amount) ||
-    amount <= 0 ||
-    amount > 10000000 ||
-    Math.abs(
-      amount * 100 - Math.round(amount * 100)
-    ) > 0.000001 ||
-    !["cash", "upi", "bank", "other"].includes(method)
-  ) {
-    message("Please check the transaction details.");
+  try {
+    validateEntry(data);
+  } catch (error) {
+    message(error.message);
+    return;
+  }
+
+  const reason = $("accEditReason").value.trim();
+  const targetId = editingId;
+
+  if (targetId && (reason.length < 5 || reason.length > 500)) {
+    message("Edit reason must contain 5 to 500 characters.");
     return;
   }
 
   if (!confirm(
-    "Save this transaction?\n\n" +
-    "Type: " + type + "\n" +
-    "Date: " + date + "\n" +
-    "Amount: " + money(amount) + "\n" +
-    "Particulars: " + particulars
+    `${targetId ? "Update" : "Save"} transaction?\n\n` +
+    `Amount: ${money(data.amount)}\n` +
+    `Particulars: ${data.particulars}`
   )) return;
 
   saving = true;
@@ -765,25 +879,72 @@ async function saveManualEntry(event) {
       throw Error("Login session changed.");
     }
 
-    const newRef = push(
-      ref(db, "accounts/entries")
-    );
+    if (targetId) {
+      const entryRef = ref(db, "accounts/entries/" + targetId);
 
-    await set(newRef, {
-      type,
-      date,
-      category,
-      particulars,
-      amount,
-      method,
-      createdAt: serverTimestamp(),
-      createdBy: uid
-    });
+      const auditId = push(
+        ref(db, "accounts/entries/" + targetId + "/audit")
+      ).key;
 
-    message("Transaction saved successfully.");
+      const actionTime = Date.now();
 
-    $("accForm").reset();
-    $("accDate").value = localDate();
+      const result = await runTransaction(
+        entryRef,
+        current => {
+          if (!current || current.deleted === true) {
+            return;
+          }
+
+          const before = snapshotFields(current);
+
+          const opening = isOpeningBalance(current);
+
+          const after = {
+            ...data,
+            isOpeningBalance: opening
+          };
+
+          return {
+            ...current,
+            ...after,
+            updatedAt: actionTime,
+            updatedBy: uid,
+            revision: Number(current.revision || 0) + 1,
+            audit: {
+              ...(current.audit || {}),
+              [auditId]: {
+                action: "edit",
+                reason,
+                adminUid: uid,
+                at: actionTime,
+                before,
+                after
+              }
+            }
+          };
+        },
+        { applyLocally: false }
+      );
+
+      if (!result.committed) {
+        throw Error("Edit cancelled or record unavailable.");
+      }
+
+      message("Transaction updated. Audit recorded.");
+
+    } else {
+      const entryRef = push(ref(db, "accounts/entries"));
+
+      await set(entryRef, {
+        ...data,
+        createdAt: serverTimestamp(),
+        createdBy: uid
+      });
+
+      message("Transaction saved.");
+    }
+
+    resetForm();
 
   } catch (error) {
     message("Save failed: " + error.message);
@@ -791,6 +952,106 @@ async function saveManualEntry(event) {
   } finally {
     saving = false;
     $("accSave").disabled = false;
+  }
+}
+
+async function softDelete(id) {
+  if (!isAdmin || !currentUser || saving) return;
+
+  const item = entries[id];
+
+  if (!item || item.deleted === true) {
+    message("Record unavailable.");
+    return;
+  }
+
+  const reason = prompt(
+    "Reason for deleting this transaction (minimum 5 characters):"
+  );
+
+  if (reason === null) return;
+
+  const cleanReason = reason.trim();
+
+  if (
+    cleanReason.length < 5 ||
+    cleanReason.length > 500
+  ) {
+    message("Delete reason must contain 5 to 500 characters.");
+    return;
+  }
+
+  if (!confirm(
+    "Soft Delete this transaction?\n\n" +
+    "Amount: " + money(item.amount) + "\n" +
+    "The original record will remain in Firebase."
+  )) return;
+
+  saving = true;
+
+  const uid = currentUser.uid;
+
+  try {
+    if (auth.currentUser?.uid !== uid) {
+      throw Error("Login session changed.");
+    }
+
+    const entryRef = ref(db, "accounts/entries/" + id);
+
+    const auditId = push(
+      ref(db, "accounts/entries/" + id + "/audit")
+    ).key;
+
+    const actionTime = Date.now();
+
+    const result = await runTransaction(
+      entryRef,
+      current => {
+        if (!current || current.deleted === true) {
+          return;
+        }
+
+        const before = snapshotFields(current);
+
+        return {
+          ...current,
+          deleted: true,
+          deletedAt: actionTime,
+          deletedBy: uid,
+          deleteReason: cleanReason,
+          revision: Number(current.revision || 0) + 1,
+          audit: {
+            ...(current.audit || {}),
+            [auditId]: {
+              action: "delete",
+              reason: cleanReason,
+              adminUid: uid,
+              at: actionTime,
+              before,
+              after: {
+                ...before,
+                deleted: true
+              }
+            }
+          }
+        };
+      },
+      { applyLocally: false }
+    );
+
+    if (!result.committed) {
+      throw Error("Delete cancelled or record unavailable.");
+    }
+
+    if (editingId === id) resetForm();
+
+    message("Transaction soft-deleted. Audit recorded.");
+
+  } catch (error) {
+    message("Delete failed: " + error.message);
+
+  } finally {
+    saving = false;
   }
 }
 
@@ -819,32 +1080,22 @@ function clearListeners() {
 function listen(path, key, callback, version) {
   const stop = onValue(
     ref(db, path),
-
     snapshot => {
       if (version !== authVersion) return;
 
       callback(snapshot.val() || {});
       loaded[key] = true;
-
       render();
     },
-
     error => {
       if (version !== authVersion) return;
 
       loaded[key] = false;
 
-      console.error(
-        "Accounts read error:",
-        path,
-        error
-      );
+      console.error("Accounts:", path, error);
 
       message(
-        "Unable to read " +
-        path +
-        ": " +
-        error.message
+        "Unable to read " + path + ": " + error.message
       );
 
       render();
@@ -895,9 +1146,7 @@ onAuthStateChanged(auth, async account => {
     listen(
       "accounts/entries",
       "entries",
-      value => {
-        entries = value;
-      },
+      value => { entries = value; },
       version
     );
 
@@ -905,42 +1154,32 @@ onAuthStateChanged(auth, async account => {
       listen(
         "members",
         "members",
-        value => {
-          members = value;
-        },
+        value => { members = value; },
         version
       );
 
       listen(
         "paymentCorrections",
         "corrections",
-        value => {
-          corrections = value;
-        },
+        value => { corrections = value; },
         version
       );
 
       listen(
         "paymentRequests",
         "requests",
-        value => {
-          paymentRequests = value;
-        },
+        value => { paymentRequests = value; },
         version
       );
     }
 
   } catch (error) {
     console.error(error);
-
-    message(
-      "Accounts login error: " +
-      error.message
-    );
+    message("Accounts login error: " + error.message);
   }
 });
 
 createUI();
 render();
 
-/* END TFC ACCOUNTS VERSION 83.5 */
+/* END TFC ACCOUNTS v83.6 */
