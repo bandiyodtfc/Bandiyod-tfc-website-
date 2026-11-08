@@ -5,7 +5,7 @@
 <meta name="google-site-verification" content="i8klDfAWXKj0KWwW6eay-Y0i4h78a7Jy2bn0r8gqvY0">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TFC Bandiyod | Member Portal</title>
+<title>TFC Bandiyod | Member Portal v85.0</title>
 <link rel="stylesheet" href="./login-theme.css">
 <style>
 :root{font-family:system-ui,-apple-system,sans-serif;color:#1b2330;background:#f6f7fa}
@@ -58,6 +58,12 @@ footer{text-align:center;color:#777;padding:30px}
 .payment-status{background:#fff8df;padding:12px;border-radius:8px;margin-top:12px}
 #accountsPanel,#memberAccountsPanel{border:1px solid #e7e7e7}
 #accAuditTable{max-height:400px;overflow:auto}
+.accounts-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:15px 0}
+.accounts-summary .stat{background:#fff9d9}
+.accounts-actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.accounts-table{width:100%;min-width:480px}
+.accounts-table th{background:#fff8dc}
+.accounts-note{font-size:13px;color:#667085;line-height:1.6}
 @media(max-width:600px){
 header{padding:12px;gap:8px}
 .brand{gap:7px}
@@ -68,6 +74,7 @@ header select{max-width:100px;font-size:12px;padding:8px}
 header button{padding:9px;font-size:12px}
 .panel{padding:16px}
 td,th{padding:8px;font-size:13px}
+.accounts-actions button{flex:1}
 }
 </style>
 </head>
@@ -225,6 +232,16 @@ Payments require admin verification before being marked Paid.
 <div id="myPaymentList" class="scroll"></div>
 </div>
 
+<!-- VERSION 85.0 MEMBER ACCOUNTS -->
+<div id="memberAccountsPanel" class="panel">
+<h2>TFC Accounts — Income & Expenses</h2>
+<p class="notice">
+Approved members can view the club's income, expenses and balance.
+Only admins can manage account entries.
+</p>
+<div id="accountsMemberContent"></div>
+</div>
+
 </section>
 
 <section id="admin" class="hide">
@@ -238,6 +255,7 @@ Payments require admin verification before being marked Paid.
 <button id="tabAddMember" class="secondary">+ Add Member</button>
 <button id="tabArchivedMembers" class="secondary">Archived Members</button>
 <button id="tabMemberPhotos" class="secondary">Member Photos</button>
+<button id="tabAccounts" class="secondary" type="button">Accounts</button>
 </div>
 </div>
 
@@ -376,10 +394,23 @@ I understand that this member will be moved to the admin-only archive.
 <p id="importStatusText">Import not completed.</p>
 </div>
 
+<!-- VERSION 85.0 ADMIN ACCOUNTS -->
+<div id="accountsPanel" class="panel hide">
+<h2>Accounts — Income & Expenses</h2>
+<p class="notice">
+Admin Accounts Management.
+Membership income must not be entered twice.
+Historical records and opening balance must be preserved.
+</p>
+<div id="accountsAdminContent"></div>
+</div>
+
 </section>
 </main>
 
-<footer>© TFC Bandiyod · Private Member Portal</footer>
+<footer>
+© TFC Bandiyod · Private Member Portal
+</footer>
 
 <script>
 (function(){
