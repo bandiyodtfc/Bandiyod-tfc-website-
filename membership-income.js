@@ -1,31 +1,23 @@
 
 /*
  TFC BANDIYOD
- MEMBERSHIP INCOME — VERSION 85.0
+ MEMBERSHIP INCOME v86.0
 
- Compatible with:
+ Compatible:
  app.js v82.0
  accounts.js v84.0
- index.html v84.0
 
  Admin:
- - Verified cash and UPI collections
- - Detailed collection history
- - Historical PDF records excluded
- - From 2026-11-08
- - No changes to payment records
+ Verified Cash / UPI collections.
+ Publishes privacy-safe member summary.
 
  Members:
- - Read-only public summary
- - No access to private members database
- - No access to private payment requests
+ Read-only published collections.
 
- Important:
- Public summary must be created by a trusted
- server-side process or securely validated
- admin publishing workflow.
+ Historical PDF records excluded.
+ Collection start: 08-11-2026.
 
- This module does not publish financial data.
+ No existing payment records are modified.
 */
 
 import {
@@ -42,7 +34,8 @@ import {
   getDatabase,
   ref,
   get,
-  onValue
+  onValue,
+  set
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
 import { firebaseConfig } from "./firebase-config.js";
@@ -51,195 +44,125 @@ const app = getApps()[0] || initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-const START_AT = Date.parse(
-  "2026-11-08T00:00:00+05:30"
-);
-
-const MONTHLY_FEE = 50;
-const YEARLY_FEE = 600;
-
-const PUBLIC_PATH =
-  "accounts/publicMembershipIncome";
+const START_AT = Date.parse("2026-11-08T00:00:00+05:30");
+const PUBLIC_PATH = "accounts/publicMembershipIncome";
 
 const $ = id => document.getElementById(id);
 
 let admin = false;
 let generation = 0;
-
 let members = {};
 let requests = {};
 let corrections = {};
-
-let publicSummary = null;
-
+let publicData = null;
+let unsubs = [];
+let publishing = false;
+let publishedSignature = "";
 let loaded = {
   members: false,
   requests: false,
   corrections: false
 };
 
-let listeners = [];
-let loadError = "";
+const money = n =>
+  "₹" + Number(n || 0).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
 
-const money = amount =>
-  "₹" + Number(amount || 0).toLocaleString(
-    "en-IN",
-    {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }
-  );
+const safe = v =>
+  String(v ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[c]));
 
-const safe = value =>
-  String(value ?? "").replace(
-    /[&<>"']/g,
-    character => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    }[character])
-  );
-
-function validPeriod(period) {
-  return /^\d{4}-(0[1-9]|1[0-2])$/.test(
-    String(period)
-  );
+function validPeriod(p) {
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(String(p));
 }
 
-function validTimestamp(value) {
-  const timestamp = Number(value);
-
-  return Number.isFinite(timestamp) &&
-    timestamp >= START_AT &&
-    timestamp <= Date.now() + 300000;
+function validTime(t) {
+  const n = Number(t);
+  return Number.isFinite(n) &&
+    n >= START_AT &&
+    n <= Date.now() + 300000;
 }
 
-function localDate(timestamp) {
-  const date = new Date(Number(timestamp));
-
-  const parts = new Intl.DateTimeFormat(
-    "en-GB",
-    {
-      timeZone: "Asia/Kolkata",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit"
-    }
-  ).formatToParts(date);
-
-  const value = type =>
-    parts.find(part => part.type === type)
-      ?.value || "";
-
-  return (
-    value("year") + "-" +
-    value("month") + "-" +
-    value("day")
-  );
+function localDate(t) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(new Date(Number(t)));
 }
 
-function paymentMonths(plan, period) {
+function periodsFor(plan, period) {
   if (!validPeriod(period)) return [];
 
-  if (plan === "monthly") {
-    return [period];
-  }
+  if (plan === "monthly") return [period];
 
   if (plan === "yearly") {
     const year = period.slice(0, 4);
-
-    return Array.from(
-      { length: 12 },
-      (_, index) =>
-        year + "-" +
-        String(index + 1).padStart(2, "0")
+    return Array.from({ length: 12 }, (_, i) =>
+      year + "-" + String(i + 1).padStart(2, "0")
     );
   }
 
   return [];
 }
 
-function isCancelled(number, period) {
-  return corrections?.[String(number)]
-    ?.[period]?.state === "cancelled";
+function cancelled(number, period) {
+  return corrections?.[String(number)]?.[period]?.state === "cancelled";
 }
 
-function buildSection(
-  parent,
-  id,
-  prefix,
-  heading
-) {
+function buildSection(parent, id, prefix, heading) {
   if (!parent || $(id)) return;
 
-  const section =
-    document.createElement("section");
-
+  const section = document.createElement("section");
   section.id = id;
   section.className = "panel";
 
   section.innerHTML = `
     <h3>${heading}</h3>
-
     <p class="muted">
-      Verified Cash and UPI membership collections
-      from 08-11-2026 onward.
-      Historical PDF payments are excluded.
+      Verified membership collections from 08-11-2026.
+      Historical PDF payments excluded.
     </p>
 
-    <label for="${prefix}Year">
-      Collection Year
-    </label>
-
+    <label for="${prefix}Year">Collection Year</label>
     <select id="${prefix}Year">
       <option value="all">All Years</option>
     </select>
 
     <div class="grid">
-
       <div class="stat">
         <span>Total Membership Income</span>
-        <strong id="${prefix}Total">₹0.00</strong>
+        <strong id="${prefix}Total">—</strong>
       </div>
-
       <div class="stat">
         <span>Cash</span>
-        <strong id="${prefix}Cash">₹0.00</strong>
+        <strong id="${prefix}Cash">—</strong>
       </div>
-
       <div class="stat">
         <span>UPI</span>
-        <strong id="${prefix}Upi">₹0.00</strong>
+        <strong id="${prefix}Upi">—</strong>
       </div>
-
     </div>
 
-    <p id="${prefix}Status" role="status">
-      Loading...
-    </p>
-
-    <div id="${prefix}History" class="scroll">
-    </div>
+    <p id="${prefix}Status" role="status">Loading...</p>
+    <div id="${prefix}History" class="scroll"></div>
 
     <p class="muted">
-      Collection totals are not bank reconciliation.
-      Cancelled payments may require separate
-      refund or adjustment entries.
+      Payment corrections and refunds require financial
+      reconciliation. This report is not a bank statement.
     </p>
   `;
 
   parent.append(section);
-
-  const select = $(`${prefix}Year`);
-
-  if (select) {
-    select.addEventListener(
-      "change",
-      render
-    );
-  }
+  $(`${prefix}Year`).addEventListener("change", render);
 }
 
 function setupUI() {
@@ -263,26 +186,16 @@ function setupUI() {
 function collectCash() {
   const groups = new Map();
 
-  for (
-    const [number, member]
-    of Object.entries(members)
-  ) {
-    for (
-      const [period, payment]
-      of Object.entries(
-        member?.payments || {}
-      )
-    ) {
+  for (const [number, member] of Object.entries(members)) {
+    for (const [period, payment] of Object.entries(member?.payments || {})) {
       if (
         !validPeriod(period) ||
         payment?.status !== "paid" ||
-        payment?.method !== "cash" ||
-        !validTimestamp(payment.verifiedAt) ||
-        isCancelled(number, period) ||
-        Number(payment.amount) !== MONTHLY_FEE
-      ) {
-        continue;
-      }
+        payment.method !== "cash" ||
+        Number(payment.amount) !== 50 ||
+        !validTime(payment.verifiedAt) ||
+        cancelled(number, period)
+      ) continue;
 
       const key = [
         number,
@@ -296,23 +209,18 @@ function collectCash() {
         groups.set(key, {
           id: key,
           memberNumber: number,
-          memberName:
-            member.name || "Member",
+          memberName: member.name || "Member",
           method: "Cash",
-          date: localDate(
-            payment.verifiedAt
-          ),
+          date: localDate(payment.verifiedAt),
           amount: 0,
           periods: [],
-          timestamp:
-            Number(payment.verifiedAt),
+          timestamp: Number(payment.verifiedAt),
           cancelledPeriods: []
         });
       }
 
       const group = groups.get(key);
-
-      group.amount += MONTHLY_FEE;
+      group.amount += 50;
       group.periods.push(period);
     }
   }
@@ -323,261 +231,131 @@ function collectCash() {
 function collectUPI() {
   const result = [];
 
-  for (
-    const [requestId, request]
-    of Object.entries(requests)
-  ) {
+  for (const [id, request] of Object.entries(requests)) {
     if (
       request?.status !== "approved" ||
-      !validTimestamp(request.reviewedAt)
-    ) {
-      continue;
-    }
+      !validTime(request.reviewedAt)
+    ) continue;
 
-    const number = String(
-      request.memberNumber || ""
-    );
-
+    const number = String(request.memberNumber || "");
     const member = members[number];
-
     if (!member) continue;
 
-    const periods = paymentMonths(
-      request.plan,
-      request.period
-    );
+    const periods = periodsFor(request.plan, request.period);
+    const amount = request.plan === "yearly" ? 600 : 50;
 
-    const amount =
-      request.plan === "yearly"
-        ? YEARLY_FEE
-        : MONTHLY_FEE;
-
-    if (
-      !periods.length ||
-      Number(request.amount) !== amount
-    ) {
+    if (!periods.length || Number(request.amount) !== amount) {
       continue;
     }
 
-    const verified = periods.every(
-      period => {
-        const payment =
-          member.payments?.[period];
+    const verified = periods.every(period => {
+      const payment = member.payments?.[period];
 
-        return (
-          payment?.status === "paid" &&
-          payment.requestId === requestId &&
-          validTimestamp(
-            payment.verifiedAt
-          )
-        );
-      }
-    );
+      return payment?.status === "paid" &&
+        payment.requestId === id &&
+        validTime(payment.verifiedAt);
+    });
 
     if (!verified) continue;
 
     result.push({
-      id: requestId,
+      id,
       memberNumber: number,
-      memberName:
-        member.name || "Member",
+      memberName: member.name || "Member",
       method: "UPI",
-      date: localDate(
-        request.reviewedAt
-      ),
+      date: localDate(request.reviewedAt),
       amount,
       periods,
-      timestamp:
-        Number(request.reviewedAt),
-      cancelledPeriods:
-        periods.filter(
-          period =>
-            isCancelled(number, period)
-        )
+      timestamp: Number(request.reviewedAt),
+      cancelledPeriods: periods.filter(p => cancelled(number, p))
     });
   }
 
   return result;
 }
 
-function collectEntries() {
-  return [
-    ...collectCash(),
-    ...collectUPI()
-  ].sort(
-    (a, b) =>
-      b.timestamp - a.timestamp
-  );
+function collections() {
+  return [...collectCash(), ...collectUPI()]
+    .sort((a, b) => b.timestamp - a.timestamp);
 }
 
-function fillYearSelect(
-  select,
-  entries
-) {
-  if (!select) return "all";
-
-  const previous =
-    select.value || "all";
-
-  const years = [
-    ...new Set(
-      entries.map(
-        entry =>
-          String(entry.date).slice(0, 4)
-      )
-    )
-  ].filter(
-    year => /^\d{4}$/.test(year)
-  ).sort().reverse();
+function fillYears(select, entries) {
+  const old = select.value || "all";
+  const years = [...new Set(entries.map(e => e.date.slice(0, 4)))]
+    .sort().reverse();
 
   select.replaceChildren(
-    new Option(
-      "All Years",
-      "all"
-    ),
-    ...years.map(
-      year =>
-        new Option(year, year)
-    )
+    new Option("All Years", "all"),
+    ...years.map(y => new Option(y, y))
   );
 
-  select.value =
-    years.includes(previous)
-      ? previous
-      : "all";
-
+  select.value = years.includes(old) ? old : "all";
   return select.value;
 }
 
-function renderReport(
-  prefix,
-  entries,
-  options = {}
-) {
-  const select =
-    $(`${prefix}Year`);
+function renderReport(prefix, entries, isPublic = false) {
+  const select = $(`${prefix}Year`);
+  const history = $(`${prefix}History`);
+  const status = $(`${prefix}Status`);
 
-  const history =
-    $(`${prefix}History`);
+  if (!select || !history || !status) return;
 
-  const status =
-    $(`${prefix}Status`);
-
-  if (
-    !select ||
-    !history ||
-    !status
-  ) {
-    return;
-  }
-
-  const year = fillYearSelect(
-    select,
-    entries
+  const year = fillYears(select, entries);
+  const filtered = entries.filter(e =>
+    year === "all" || e.date.startsWith(year)
   );
 
-  const filtered =
-    entries.filter(
-      entry =>
-        year === "all" ||
-        String(entry.date).startsWith(year)
-    );
+  const cash = filtered
+    .filter(e => e.method === "Cash")
+    .reduce((sum, e) => sum + Number(e.amount), 0);
 
-  const cash =
-    filtered
-      .filter(
-        entry =>
-          entry.method === "Cash"
-      )
-      .reduce(
-        (sum, entry) =>
-          sum + Number(entry.amount || 0),
-        0
-      );
+  const upi = filtered
+    .filter(e => e.method === "UPI")
+    .reduce((sum, e) => sum + Number(e.amount), 0);
 
-  const upi =
-    filtered
-      .filter(
-        entry =>
-          entry.method === "UPI"
-      )
-      .reduce(
-        (sum, entry) =>
-          sum + Number(entry.amount || 0),
-        0
-      );
-
-  $(`${prefix}Cash`).textContent =
-    money(cash);
-
-  $(`${prefix}Upi`).textContent =
-    money(upi);
-
-  $(`${prefix}Total`).textContent =
-    money(cash + upi);
+  $(`${prefix}Cash`).textContent = money(cash);
+  $(`${prefix}Upi`).textContent = money(upi);
+  $(`${prefix}Total`).textContent = money(cash + upi);
 
   status.textContent =
-    options.status ||
-    `${filtered.length} verified collection(s)`;
+    `${filtered.length} verified collection(s)` +
+    (isPublic && publicData?.updatedAt
+      ? " | Last published: " +
+        new Date(publicData.updatedAt).toLocaleString("en-IN")
+      : "");
 
   if (!filtered.length) {
-    history.textContent =
-      "No verified collections for this period.";
+    history.textContent = "No verified collections.";
     return;
   }
-
-  const showMember =
-    options.showMember !== false;
 
   history.innerHTML = `
     <table>
       <thead>
         <tr>
           <th>Date</th>
-          ${showMember ? "<th>Member</th>" : ""}
+          ${isPublic ? "" : "<th>Member</th>"}
           <th>Method</th>
-          <th>Payment Period</th>
+          <th>Period</th>
           <th>Amount</th>
           <th>Correction</th>
         </tr>
       </thead>
-
       <tbody>
-        ${filtered.map(entry => `
+        ${filtered.map(e => `
           <tr>
-            <td>${safe(entry.date)}</td>
-
-            ${showMember ? `
-              <td>
-                #${safe(entry.memberNumber)}
-                ${safe(entry.memberName)}
-              </td>
-            ` : ""}
-
-            <td>${safe(entry.method)}</td>
-
-            <td>
-              ${safe(
-                (entry.periods || [])
-                  .join(", ")
-              )}
-            </td>
-
-            <td>
-              ${money(entry.amount)}
-            </td>
-
-            <td>
-              ${
-                entry.cancelledPeriods?.length
-                  ? safe(
-                      "Review: " +
-                      entry.cancelledPeriods
-                        .join(", ")
-                    )
-                  : "—"
-              }
-            </td>
+            <td>${safe(e.date)}</td>
+            ${isPublic ? "" : `
+              <td>#${safe(e.memberNumber)} ${safe(e.memberName)}</td>
+            `}
+            <td>${safe(e.method)}</td>
+            <td>${safe((e.periods || []).join(", "))}</td>
+            <td>${money(e.amount)}</td>
+            <td>${safe(
+              e.cancelledPeriods?.length
+                ? "Review: " + e.cancelledPeriods.join(", ")
+                : "—"
+            )}</td>
           </tr>
         `).join("")}
       </tbody>
@@ -585,180 +363,94 @@ function renderReport(
   `;
 }
 
-function renderAdmin() {
-  if (!admin) return;
+function publicEntries(entries) {
+  const result = {};
 
-  if (
-    !loaded.members ||
-    !loaded.requests ||
-    !loaded.corrections
-  ) {
-    const status =
-      $("automaticIncomeStatus");
+  entries.forEach((e, i) => {
+    result["collection_" + String(i + 1).padStart(6, "0")] = {
+      date: e.date,
+      method: e.method,
+      amount: e.amount,
+      periods: e.periods,
+      timestamp: e.timestamp
+    };
+  });
 
+  return result;
+}
+
+async function publishSummary(entries, id) {
+  if (!admin || publishing || id !== generation) return;
+  if (!Object.values(loaded).every(Boolean)) return;
+
+  const publicRows = publicEntries(entries);
+  const signature = JSON.stringify(publicRows);
+
+  if (signature === publishedSignature) return;
+
+  publishing = true;
+
+  try {
+    const uid = auth.currentUser?.uid;
+    if (!uid || id !== generation) return;
+
+    await set(ref(db, PUBLIC_PATH), {
+      entries: publicRows,
+      updatedAt: Date.now(),
+      publishedBy: uid
+    });
+
+    if (id === generation) {
+      publishedSignature = signature;
+    }
+  } catch (error) {
+    const status = $("automaticIncomeStatus");
     if (status) {
       status.textContent =
-        loadError ||
-        "Loading verified collections...";
+        "Member summary publish failed: " + error.message;
     }
-
-    return;
+  } finally {
+    publishing = false;
   }
-
-  const entries =
-    collectEntries();
-
-  renderReport(
-    "automaticIncome",
-    entries
-  );
-}
-
-function normalizePublicSummary(value) {
-  if (
-    !value ||
-    typeof value !== "object" ||
-    Array.isArray(value)
-  ) {
-    return null;
-  }
-
-  const rawEntries =
-    Array.isArray(value.entries)
-      ? value.entries
-      : value.entries &&
-        typeof value.entries === "object"
-        ? Object.values(value.entries)
-        : [];
-
-  const entries = [];
-
-  for (const item of rawEntries) {
-    if (
-      !item ||
-      typeof item !== "object" ||
-      !/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(
-        String(item.date || "")
-      ) ||
-      !["Cash", "UPI"].includes(
-        item.method
-      )
-    ) {
-      continue;
-    }
-
-    const amount =
-      Number(item.amount);
-
-    if (
-      !Number.isFinite(amount) ||
-      amount <= 0 ||
-      amount > 100000000
-    ) {
-      continue;
-    }
-
-    entries.push({
-      date: item.date,
-      method: item.method,
-      amount,
-      periods: Array.isArray(
-        item.periods
-      )
-        ? item.periods
-            .filter(validPeriod)
-            .slice(0, 12)
-        : [],
-      cancelledPeriods: [],
-      timestamp:
-        Number(item.timestamp || 0)
-    });
-  }
-
-  entries.sort(
-    (a, b) =>
-      b.date.localeCompare(a.date)
-  );
-
-  return {
-    entries,
-    updatedAt:
-      Number(value.updatedAt || 0)
-  };
-}
-
-function renderMember() {
-  if (admin) return;
-
-  const status =
-    $("memberIncomeStatus");
-
-  if (!status) return;
-
-  if (!publicSummary) {
-    status.textContent =
-      "Verified membership income summary " +
-      "has not been published yet.";
-
-    return;
-  }
-
-  const entries =
-    publicSummary.entries;
-
-  const updatedAt =
-    publicSummary.updatedAt;
-
-  const updatedText =
-    Number.isFinite(updatedAt) &&
-    updatedAt > 0
-      ? " | Updated: " +
-        new Date(updatedAt)
-          .toLocaleString(
-            "en-IN",
-            {
-              timeZone:
-                "Asia/Kolkata"
-            }
-          )
-      : "";
-
-  renderReport(
-    "memberIncome",
-    entries,
-    {
-      showMember: false,
-      status:
-        `${entries.length} published collection(s)` +
-        updatedText
-    }
-  );
 }
 
 function render() {
   setupUI();
 
   if (admin) {
-    renderAdmin();
+    if (!Object.values(loaded).every(Boolean)) return;
+
+    const entries = collections();
+    renderReport("automaticIncome", entries);
+
+    publishSummary(entries, generation);
   } else {
-    renderMember();
+    if (!publicData) {
+      const status = $("memberIncomeStatus");
+      if (status) {
+        status.textContent =
+          "Membership income summary not published yet.";
+      }
+      return;
+    }
+
+    const entries = Object.values(publicData.entries || {});
+    renderReport("memberIncome", entries, true);
   }
 }
 
 function stopListening() {
-  for (const unsubscribe of listeners) {
-    try {
-      unsubscribe();
-    } catch (_) {}
-  }
+  unsubs.forEach(fn => {
+    try { fn(); } catch (_) {}
+  });
 
-  listeners = [];
-
+  unsubs = [];
   members = {};
   requests = {};
   corrections = {};
-  publicSummary = null;
-  loadError = "";
+  publicData = null;
+  publishing = false;
+  publishedSignature = "";
 
   loaded = {
     members: false,
@@ -767,178 +459,74 @@ function stopListening() {
   };
 }
 
-function listenAdmin(
-  path,
-  key,
-  setter,
-  id
-) {
-  const unsubscribe = onValue(
-    ref(db, path),
-    snapshot => {
-      if (id !== generation) return;
+onAuthStateChanged(auth, async account => {
+  const id = ++generation;
+  stopListening();
+  admin = false;
 
-      setter(snapshot.val() || {});
-      loaded[key] = true;
-      loadError = "";
+  if (!account) return;
 
-      render();
-    },
-    error => {
-      if (id !== generation) return;
+  try {
+    const adminSnap = await get(ref(db, `admins/${account.uid}`));
 
-      loadError =
-        `${key} read failed: ${error.message}`;
+    if (id !== generation) return;
 
-      const status =
-        $("automaticIncomeStatus");
+    admin = adminSnap.val() === true;
+    setupUI();
 
-      if (status) {
-        status.textContent =
-          loadError;
-      }
-    }
-  );
+    if (admin) {
+      const listen = (path, key, setter) => {
+        unsubs.push(onValue(
+          ref(db, path),
+          snapshot => {
+            if (id !== generation) return;
 
-  listeners.push(unsubscribe);
-}
-
-function listenMember(id) {
-  const unsubscribe = onValue(
-    ref(db, PUBLIC_PATH),
-    snapshot => {
-      if (id !== generation) return;
-
-      publicSummary =
-        normalizePublicSummary(
-          snapshot.val()
-        );
-
-      renderMember();
-    },
-    error => {
-      if (id !== generation) return;
-
-      const status =
-        $("memberIncomeStatus");
-
-      if (status) {
-        status.textContent =
-          "Public membership income unavailable: " +
-          error.message;
-      }
-    }
-  );
-
-  listeners.push(unsubscribe);
-}
-
-onAuthStateChanged(
-  auth,
-  async account => {
-    const id = ++generation;
-
-    stopListening();
-
-    admin = false;
-
-    if (!account) return;
-
-    try {
-      const snapshot = await get(
-        ref(
-          db,
-          `admins/${account.uid}`
-        )
-      );
-
-      if (
-        id !== generation ||
-        auth.currentUser?.uid !==
-          account.uid
-      ) {
-        return;
-      }
-
-      admin =
-        snapshot.val() === true;
-
-      setupUI();
-
-      if (admin) {
-        listenAdmin(
-          "members",
-          "members",
-          value => {
-            members = value;
+            setter(snapshot.val() || {});
+            loaded[key] = true;
+            render();
           },
-          id
-        );
+          error => {
+            const status = $("automaticIncomeStatus");
+            if (status && id === generation) {
+              status.textContent = error.message;
+            }
+          }
+        ));
+      };
 
-        listenAdmin(
-          "paymentRequests",
-          "requests",
-          value => {
-            requests = value;
-          },
-          id
-        );
+      listen("members", "members", v => { members = v; });
+      listen("paymentRequests", "requests", v => { requests = v; });
+      listen("paymentCorrections", "corrections", v => {
+        corrections = v;
+      });
 
-        listenAdmin(
-          "paymentCorrections",
-          "corrections",
-          value => {
-            corrections = value;
-          },
-          id
-        );
-      } else {
-        const userSnapshot =
-          await get(
-            ref(
-              db,
-              `users/${account.uid}`
-            )
-          );
+    } else {
+      const userSnap = await get(ref(db, `users/${account.uid}`));
+      if (id !== generation) return;
 
-        if (
-          id !== generation ||
-          auth.currentUser?.uid !==
-            account.uid
-        ) {
-          return;
+      if (userSnap.val()?.status !== "approved") return;
+
+      unsubs.push(onValue(
+        ref(db, PUBLIC_PATH),
+        snapshot => {
+          if (id !== generation) return;
+          publicData = snapshot.val();
+          render();
+        },
+        error => {
+          const status = $("memberIncomeStatus");
+          if (status && id === generation) {
+            status.textContent = error.message;
+          }
         }
-
-        if (
-          userSnapshot.val()?.status ===
-          "approved"
-        ) {
-          listenMember(id);
-        }
-      }
-
-      render();
-    } catch (error) {
-      if (id !== generation) return;
-
-      console.error(
-        "Membership income:",
-        error
-      );
-
-      const status = admin
-        ? $("automaticIncomeStatus")
-        : $("memberIncomeStatus");
-
-      if (status) {
-        status.textContent =
-          "Unable to load membership income: " +
-          error.message;
-      }
+      ));
     }
+
+  } catch (error) {
+    console.error("Membership income:", error);
   }
-);
+});
 
 setupUI();
 
-/* END MEMBERSHIP INCOME v85.0 */
+/* END v86.0 */
