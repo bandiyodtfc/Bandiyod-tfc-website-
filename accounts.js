@@ -1,6 +1,5 @@
-
 /*
- TFC BANDIYOD — ACCOUNTS v85.0
+ TFC BANDIYOD — ACCOUNTS v86.0
 
  Database:
    accounts/entries
@@ -26,6 +25,12 @@
    + Other Income
    + Automatic Membership Income
    - Expenses
+
+ v86.0:
+   Compatible with existing index.html.
+   Fix Accounts panel initialization.
+   Fix Accounts tab click handling.
+   Restore Edit and Delete actions.
 */
 
 import {
@@ -127,15 +132,7 @@ function message(text, error = false) {
 }
 
 /*
- Recognize the actual opening balance record.
-
- The existing database record has:
- Date: 2026-11-08
- Amount: 221914
- Category: Last committee balance
- Particulars: Opening balance
-
- Older supported labels are retained.
+ Recognize existing opening balance.
 */
 
 function opening(item) {
@@ -173,16 +170,26 @@ function opening(item) {
   );
 }
 
+/*
+ VERSION 86.0 UI INITIALIZATION
+
+ Existing HTML contains accountsPanel
+ and memberAccountsPanel.
+
+ Build content inside those panels.
+ Do not create duplicate panels.
+*/
+
 function buildUI() {
   if (!$("admin") || !$("member")) return;
 
-  if (!$("accountsPanel")) {
-    const panel = document.createElement("section");
+  const adminPanel = $("accountsPanel");
+  const memberPanel = $("memberAccountsPanel");
 
-    panel.id = "accountsPanel";
-    panel.className = "panel hide";
+  if (!adminPanel || !memberPanel) return;
 
-    panel.innerHTML = `
+  if (!$("accForm")) {
+    adminPanel.innerHTML = `
       <h2>TFC Accounts</h2>
 
       <p class="muted">
@@ -319,17 +326,10 @@ function buildUI() {
 
       <div id="accAuditTable" class="scroll"></div>
     `;
-
-    $("admin").append(panel);
   }
 
-  if (!$("memberAccountsPanel")) {
-    const panel = document.createElement("section");
-
-    panel.id = "memberAccountsPanel";
-    panel.className = "panel hide";
-
-    panel.innerHTML = `
+  if (!$("memberAccTable")) {
+    memberPanel.innerHTML = `
       <h2>TFC Accounts</h2>
 
       <p class="muted">
@@ -374,8 +374,6 @@ function buildUI() {
       <div id="memberAccTable"
         class="scroll"></div>
     `;
-
-    $("member").append(panel);
   }
 
   $("accDate").value = today();
@@ -387,6 +385,10 @@ function buildUI() {
 
   $("accCancelEdit").onclick = resetForm;
   $("accYear").onchange = render;
+
+  /*
+   Admin Edit / Delete actions.
+  */
 
   $("accTable").addEventListener(
     "click",
@@ -409,19 +411,29 @@ function buildUI() {
     }
   );
 
+  /*
+   VERSION 86.0:
+   Attach click handler to existing
+   Accounts button in index.html.
+  */
+
   const tabs = $("tabMembers")?.parentElement;
 
-  if (tabs && !$("tabAccounts")) {
-    const b = document.createElement("button");
+  let accountsButton = $("tabAccounts");
 
-    b.id = "tabAccounts";
-    b.type = "button";
-    b.className = "secondary";
-    b.textContent = "Accounts";
+  if (tabs && !accountsButton) {
+    accountsButton = document.createElement("button");
 
-    tabs.append(b);
+    accountsButton.id = "tabAccounts";
+    accountsButton.type = "button";
+    accountsButton.className = "secondary";
+    accountsButton.textContent = "Accounts";
 
-    b.onclick = () => {
+    tabs.append(accountsButton);
+  }
+
+  if (tabs && accountsButton) {
+    accountsButton.onclick = () => {
       if (!admin) return;
 
       [
@@ -437,16 +449,16 @@ function buildUI() {
         $(id)?.classList.add("hide");
       });
 
-      $("accountsPanel").classList.remove("hide");
+      adminPanel.classList.remove("hide");
     };
 
     tabs.addEventListener(
       "click",
       event => {
-        if (
-          event.target.closest("button") !== b
-        ) {
-          $("accountsPanel").classList.add("hide");
+        const clicked = event.target.closest("button");
+
+        if (clicked && clicked !== accountsButton) {
+          adminPanel.classList.add("hide");
         }
       }
     );
@@ -471,11 +483,7 @@ function rows() {
 }
 
 /*
- Public membership income is the only source
- for the automatic membership total.
-
- No membership payment is written into
- accounts/entries by this file.
+ Automatic membership income.
 */
 
 function membershipSummary() {
@@ -656,11 +664,6 @@ function render() {
       value === null ? "—" : money(value);
   };
 
-  /*
-   Admin summary:
-   All years, not selected-year totals.
-  */
-
   put("accOpening", openingAmount);
   put("accOtherIncome", allOtherIncome);
   put("accExpenses", allExpenses);
@@ -673,11 +676,6 @@ function render() {
   );
 
   put("accBalance", finalBalance);
-
-  /*
-   Member summary:
-   Same totals as admin.
-  */
 
   put("memberAccOpening", openingAmount);
   put("memberAccIncome", allOtherIncome);
@@ -718,11 +716,6 @@ function render() {
         ? "error"
         : "muted";
   }
-
-  /*
-   Admin history year filter.
-   Does not change the Final Balance.
-  */
 
   const years = [
     ...new Set(
@@ -1313,13 +1306,6 @@ onAuthStateChanged(
         )
       );
 
-      /*
-       Automatic membership income listener.
-
-       Admin and approved members read the
-       same published Firebase records.
-      */
-
       unsubscribers.push(
         onValue(
           ref(db, PUBLIC_INCOME_PATH),
@@ -1381,4 +1367,4 @@ onAuthStateChanged(
 buildUI();
 render();
 
-/* END TFC ACCOUNTS v85.0 */
+/* END TFC ACCOUNTS v86.0 */
