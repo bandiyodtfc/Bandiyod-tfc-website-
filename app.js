@@ -5644,5 +5644,48 @@ autoRefreshPreview();
 console.info(
   'TFC Bandiyod v88.2 Step 1 loaded.'
 );
+/*
+ TFC BANDIYOD — v88.3
+ Member Payment Preview Refresh Fix
+*/
 
+const originalLoadMemberListenersV883 =
+  loadMemberListeners;
+
+loadMemberListeners = function(number, uid) {
+  originalLoadMemberListenersV883(number, uid);
+
+  const refresh = () => {
+    if (
+      String(memberNumber) === String(number) &&
+      current?.uid === uid
+    ) {
+      autoRefreshPreview();
+    }
+  };
+
+  unsubscribers.push(
+    onValue(
+      ref(db, `paymentHistory/${number}`),
+      refresh,
+      error => console.error(
+        'Preview history refresh failed:',
+        error
+      )
+    )
+  );
+
+  unsubscribers.push(
+    onValue(
+      ref(db, `paymentCorrections/${number}`),
+      refresh,
+      error => console.error(
+        'Preview correction refresh failed:',
+        error
+      )
+    )
+  );
+};
+
+console.info('TFC v88.3 loaded');
 
