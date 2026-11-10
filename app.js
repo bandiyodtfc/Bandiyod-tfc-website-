@@ -5689,3 +5689,89 @@ loadMemberListeners = function(number, uid) {
 
 console.info('TFC v88.3 loaded');
 
+/*
+ TFC BANDIYOD — v88.4
+ Auto Payment Diagnostic & Selection
+
+ Append after v88.3.
+ Does not modify Firebase records.
+*/
+
+autoSelectMonths = function(
+  member,
+  history,
+  corrections,
+  requests,
+  memberNo,
+  count
+) {
+  if (
+    !Number.isInteger(count) ||
+    count < 1 ||
+    count > 12
+  ) {
+    throw Error('Invalid month count.');
+  }
+
+  if (!member || !history) {
+    throw Error('Payment history not ready.');
+  }
+
+  const joiningMonth = autoFirstMonth(member);
+
+  const effectivePaid = new Set(
+    paidMonths(member, history, corrections)
+  );
+
+  const reserved = new Set();
+
+  for (const request of Object.values(requests || {})) {
+    if (
+      request?.status !== 'pending' ||
+      String(request.memberNumber) !== String(memberNo)
+    ) continue;
+
+    for (const month of autoRequestMonths(request)) {
+      reserved.add(month);
+    }
+  }
+
+  const selected = [];
+  let month = joiningMonth;
+
+  for (
+    let i = 0;
+    i < 1200 && selected.length < count;
+    i++
+  ) {
+    if (
+      !effectivePaid.has(month) &&
+      !reserved.has(month)
+    ) {
+      selected.push(month);
+    }
+
+    month = autoNextMonth(month);
+  }
+
+  if (selected.length !== count) {
+    throw Error('Not enough available months.');
+  }
+
+  console.info('TFC AUTO PAYMENT v88.4', {
+    memberNumber: memberNo,
+    joiningDate: member.joiningDate,
+    joiningMonth,
+    paidMonths: [...effectivePaid].sort(),
+    reservedMonths: [...reserved].sort(),
+    selectedMonths: selected
+  });
+
+  return selected;
+};
+
+autoRefreshPreview();
+
+console.info('TFC v88.4 loaded');
+
+
