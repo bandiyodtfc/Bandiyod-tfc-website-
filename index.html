@@ -5,7 +5,7 @@
 <meta name="google-site-verification" content="i8klDfAWXKj0KWwW6eay-Y0i4h78a7Jy2bn0r8gqvY0">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TFC Bandiyod | Member Portal v85.1</title>
+<title>TFC Bandiyod | Member Portal v88.0</title>
 <link rel="stylesheet" href="./login-theme.css">
 <style>
 :root{font-family:system-ui,-apple-system,sans-serif;color:#1b2330;background:#f6f7fa}
@@ -64,6 +64,26 @@ footer{text-align:center;color:#777;padding:30px}
 .accounts-table{width:100%;min-width:480px}
 .accounts-table th{background:#fff8dc}
 .accounts-note{font-size:13px;color:#667085;line-height:1.6}
+
+/* v88 automatic payment */
+#autoPaymentControls{
+  background:#fffbea;
+  border:1px solid #f2da75;
+  border-radius:12px;
+  padding:16px;
+  margin:16px 0;
+}
+#autoPaymentAmount{max-width:260px;font-size:20px;font-weight:700}
+#autoPaymentMonths{
+  background:#fff;
+  border:1px solid #e4d9a3;
+  border-radius:8px;
+  padding:12px;
+  line-height:1.7;
+  overflow-wrap:anywhere;
+}
+.auto-payment-note{font-size:13px;color:#667085;line-height:1.6}
+
 @media(max-width:600px){
 header{padding:12px;gap:8px}
 .brand{gap:7px}
@@ -140,7 +160,7 @@ td,th{padding:8px;font-size:13px}
 </div>
 <div class="stat">
 <span data-t="fee">Membership fee</span>
-<strong>₹50 / ₹600</strong>
+<strong>₹50 / month</strong>
 </div>
 </div>
 
@@ -169,21 +189,44 @@ Unmarked months are not automatically treated as outstanding dues.
 
 <div class="payment-status">
 <strong>UPI Membership Payment</strong>
-<p>Choose monthly or yearly membership payment. Submit your transaction reference only after a successful transfer. Payment status will remain pending until admin verification.</p>
+<p>Enter the amount you wish to pay. Available membership months will be selected automatically, starting from your earliest unpaid eligible month. Payment remains Pending until admin verifies the bank transfer.</p>
 </div>
 
-<div class="paygrid">
-<div>
-<label for="paymentPlan">Payment Plan</label>
-<select id="paymentPlan">
-<option value="monthly">Monthly — ₹50</option>
-<option value="yearly">Yearly — ₹600</option>
+<!-- Legacy fields retained for app.js compatibility -->
+<div class="hide" aria-hidden="true">
+<select id="paymentPlan" tabindex="-1">
+<option value="monthly">Monthly</option>
+<option value="yearly">Yearly</option>
 </select>
+<input id="paymentPeriod" type="month" tabindex="-1">
 </div>
-<div>
-<label for="paymentPeriod">Payment Month / Year</label>
-<input id="paymentPeriod" type="month">
-</div>
+
+<!-- v88 automatic amount and month preview -->
+<div id="autoPaymentControls">
+<h3>Automatic Month Selection</h3>
+<label for="autoPaymentAmount">Payment Amount (₹)</label>
+<input
+  id="autoPaymentAmount"
+  type="number"
+  min="50"
+  max="600"
+  step="50"
+  value="50"
+  inputmode="numeric"
+>
+<p class="auto-payment-note">
+Enter an amount from ₹50 to ₹600 in multiples of ₹50.
+</p>
+<p><strong>Selected Months:</strong></p>
+<p id="autoPaymentMonths" aria-live="polite">
+Loading payment records...
+</p>
+<p class="auto-payment-note">
+₹50 = 1 month · ₹100 = 2 months · ₹150 = 3 months ·
+₹300 = 6 months · ₹600 = 12 months.
+Already paid and pending months will be skipped.
+New members start from their joining month.
+</p>
 </div>
 
 <div class="payment-box">
@@ -203,14 +246,16 @@ Unmarked months are not automatically treated as outstanding dues.
 Open UPI App — Enter ₹50
 </a>
 
-<p class="muted">Verify the recipient name and amount inside your UPI app before transferring money. This website does not automatically confirm bank payments.</p>
+<p class="muted">
+Verify the recipient name and amount inside your UPI app before transferring money. This website does not automatically confirm bank payments.
+</p>
 </div>
 
 <ol class="payment-instructions">
-<li>Select Monthly or Yearly payment.</li>
-<li>Select the applicable payment period.</li>
+<li>Enter the amount in multiples of ₹50.</li>
+<li>Review the automatically selected months.</li>
 <li>Open your UPI app and verify the recipient.</li>
-<li>Transfer the correct amount.</li>
+<li>Transfer the exact amount.</li>
 <li>Copy the successful transaction reference number.</li>
 <li>Enter the reference below and submit for admin verification.</li>
 </ol>
@@ -232,7 +277,7 @@ Payments require admin verification before being marked Paid.
 <div id="myPaymentList" class="scroll"></div>
 </div>
 
-<!-- VERSION 85.1 MEMBER ACCOUNTS -->
+<!-- MEMBER ACCOUNTS -->
 <div id="memberAccountsPanel" class="panel">
 <h2>TFC Accounts — Income & Expenses</h2>
 <p class="notice">
@@ -394,7 +439,7 @@ I understand that this member will be moved to the admin-only archive.
 <p id="importStatusText">Import not completed.</p>
 </div>
 
-<!-- VERSION 85.1 ADMIN ACCOUNTS -->
+<!-- ADMIN ACCOUNTS -->
 <div id="accountsPanel" class="panel hide">
 <h2>Accounts — Income & Expenses</h2>
 <p class="notice">
@@ -415,36 +460,50 @@ Historical records and opening balance must be preserved.
 <script>
 (function(){
   const UPI_ID = 'waheedwahi84-1@oksbi';
-  const plan = document.getElementById('paymentPlan');
-  const amount = document.getElementById('displayPaymentAmount');
+  const amountInput = document.getElementById('autoPaymentAmount');
+  const amountDisplay = document.getElementById('displayPaymentAmount');
   const copyButton = document.getElementById('copyUpiId');
   const googlePayButton = document.getElementById('openGooglePay');
   const copyStatus = document.getElementById('copyStatus');
 
-  function updateAmount(){
-    amount.textContent = plan.value === 'yearly' ? '₹600' : '₹50';
+  function updateAmountDisplay(){
+    const amount = Number(amountInput.value);
+    const valid =
+      Number.isInteger(amount) &&
+      amount >= 50 &&
+      amount <= 600 &&
+      amount % 50 === 0;
+
+    amountDisplay.textContent =
+      valid ? '₹' + amount : 'Invalid amount';
   }
 
-  plan.addEventListener('change', updateAmount);
+  amountInput.addEventListener(
+    'input',
+    updateAmountDisplay
+  );
 
   copyButton.addEventListener('click', async function(){
     try {
       await navigator.clipboard.writeText(UPI_ID);
-      copyStatus.textContent = 'UPI ID copied successfully.';
+      copyStatus.textContent =
+        'UPI ID copied successfully.';
     } catch(e) {
-      copyStatus.textContent = 'Copy unavailable. Please copy the UPI ID manually.';
+      copyStatus.textContent =
+        'Copy unavailable. Please copy the UPI ID manually.';
     }
   });
 
   googlePayButton.addEventListener('click', function(){
-    copyStatus.textContent = 'Payment activation is pending final verification. Please do not transfer money yet.';
+    copyStatus.textContent =
+      'Payment activation is pending final verification. Please do not transfer money yet.';
   });
 
-  updateAmount();
+  updateAmountDisplay();
 })();
 </script>
 
-<script type="module" src="./app.js?v=82.0"></script>
+<script type="module" src="./app.js?v=88.0"></script>
 <script type="module" src="./accounts.js?v=84.0"></script>
 <script type="module" src="./membership-income.js?v=87.0"></script>
 <script type="module" src="./member-photos.js?v=1.0"></script>
