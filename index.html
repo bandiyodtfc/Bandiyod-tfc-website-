@@ -5,7 +5,7 @@
 <meta name="google-site-verification" content="i8klDfAWXKj0KWwW6eay-Y0i4h78a7Jy2bn0r8gqvY0">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TFC Bandiyod | Member Portal v85.0</title>
+<title>TFC Bandiyod | Member Portal v85.1</title>
 <link rel="stylesheet" href="./login-theme.css">
 <style>
 :root{font-family:system-ui,-apple-system,sans-serif;color:#1b2330;background:#f6f7fa}
@@ -124,8 +124,8 @@ td,th{padding:8px;font-size:13px}
 <div class="panel">
 <h2>My Profile Photo</h2>
 <div class="feature-pending">
-<p class="muted">Profile photo upload will be available soon.</p>
-<button id="memberPhotoUpload" disabled>Upload My Photo (Coming Soon)</button>
+<p class="muted">Upload or change your profile photo.</p>
+<button id="memberPhotoUpload" disabled>Upload My Photo</button>
 </div>
 </div>
 
@@ -232,7 +232,7 @@ Payments require admin verification before being marked Paid.
 <div id="myPaymentList" class="scroll"></div>
 </div>
 
-<!-- VERSION 85.0 MEMBER ACCOUNTS -->
+<!-- VERSION 85.1 MEMBER ACCOUNTS -->
 <div id="memberAccountsPanel" class="panel">
 <h2>TFC Accounts — Income & Expenses</h2>
 <p class="notice">
@@ -379,12 +379,12 @@ I understand that this member will be moved to the admin-only archive.
 
 <div id="memberPhotosPanel" class="panel hide">
 <h2>Member Profile Photos</h2>
-<p class="muted">Admin photo management will be available after photo storage is configured.</p>
+<p class="muted">Admin can upload, change and delete active member profile photos.</p>
 <label for="photoMemberSearch">Search Member</label>
 <input id="photoMemberSearch" type="search" placeholder="Search member number or name">
 <div id="photoMembersList" class="scroll"></div>
 <div class="feature-pending">
-<button id="adminPhotoUpload" disabled>Upload Member Photo (Coming Soon)</button>
+<button id="adminPhotoUpload" disabled>Upload Member Photo</button>
 </div>
 </div>
 
@@ -394,7 +394,7 @@ I understand that this member will be moved to the admin-only archive.
 <p id="importStatusText">Import not completed.</p>
 </div>
 
-<!-- VERSION 85.0 ADMIN ACCOUNTS -->
+<!-- VERSION 85.1 ADMIN ACCOUNTS -->
 <div id="accountsPanel" class="panel hide">
 <h2>Accounts — Income & Expenses</h2>
 <p class="notice">
@@ -447,6 +447,7 @@ Historical records and opening balance must be preserved.
 <script type="module" src="./app.js?v=82.0"></script>
 <script type="module" src="./accounts.js?v=84.0"></script>
 <script type="module" src="./membership-income.js?v=87.0"></script>
+<script type="module" src="./member-photos.js?v=1.0"></script>
 
 </body>
 </html>
