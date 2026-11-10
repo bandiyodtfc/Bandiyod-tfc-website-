@@ -5511,3 +5511,55 @@ console.info(
 // END OF v88.0 AUTO MONTH PAYMENT UPGRADE
 // ============================================================
 
+/*
+ TFC BANDIYOD — v88.1
+ Automatic Month Preview Fix
+
+ Fix:
+ - Refresh selected months when amount changes.
+ - Recalculate after member payment data loads.
+ - Keep existing admin, cash and correction features.
+*/
+
+function initializeAutoPaymentV881() {
+  const amountInput = document.getElementById(
+    'autoPaymentAmount'
+  );
+
+  if (!amountInput) {
+    console.error(
+      'v88.1: Payment amount input not found.'
+    );
+    return;
+  }
+
+  // Avoid registering the same listener twice.
+  if (amountInput.dataset.autoV881 === 'ready') {
+    return;
+  }
+
+  amountInput.dataset.autoV881 = 'ready';
+
+  amountInput.addEventListener(
+    'input',
+    () => {
+      autoRefreshPreview();
+    }
+  );
+
+  amountInput.addEventListener(
+    'change',
+    () => {
+      autoRefreshPreview();
+    }
+  );
+
+  autoRefreshPreview();
+
+  console.info(
+    'TFC Bandiyod v88.1 Auto Preview Fix loaded.'
+  );
+}
+
+initializeAutoPaymentV881();
+
