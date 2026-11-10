@@ -4393,3 +4393,1121 @@ setupPaymentCorrections();
 // use on real financial records.
 //
 // END OF TFC BANDIYOD PORTAL VERSION 82.0
+
+// ============================================================
+// TFC BANDIYOD — v88.0 AUTO MONTH PAYMENT UPGRADE
+//
+// ADD THIS CODE AT THE VERY END OF EXISTING app.js v82.0
+//
+// Preserves existing login, members, admin, cash,
+// correction, archive and history functions.
+//
+// IMPORTANT: Requires matching Firebase Rules update.
+// Do not enable live payments until Rules are updated.
+// ============================================================
+
+const AUTO_PAYMENT_MIN = 50;
+const AUTO_PAYMENT_MAX = 600;
+const AUTO_PAYMENT_FIRST = '2024-01';
+
+let autoMemberRequests = {};
+let autoRequestsReady = false;
+let autoRequestsError = false;
+let autoSubmitting = false;
+
+function autoNextMonth(period) {
+  if (!validPeriod(period)) {
+    throw Error('Invalid month.');
+  }
+
+  const year = Number(period.slice(0, 4));
+  const month = Number(period.slice(5, 7));
+
+  if (year >= 9999 && month === 12) {
+    throw Error('Maximum payment year reached.');
+  }
+
+  return month === 12
+    ? `${year + 1}-01`
+    : `${year}-${String(month + 1).padStart(2, '0')}`;
+}
+
+function autoFirstMonth(member) {
+  const joined = String(
+    member?.joiningDate || ''
+  ).slice(0, 7);
+
+  if (
+    validPeriod(joined) &&
+    joined > AUTO_PAYMENT_FIRST
+  ) {
+    return joined;
+  }
+
+  return AUTO_PAYMENT_FIRST;
+}
+
+function autoReadAmount() {
+  const input = $('autoPaymentAmount');
+
+  const amount = Number(input?.value);
+
+  if (
+    !Number.isInteger(amount) ||
+    amount < AUTO_PAYMENT_MIN ||
+    amount > AUTO_PAYMENT_MAX ||
+    amount % MONTHLY_FEE !== 0
+  ) {
+    throw Error(
+      'Enter ₹50–₹600 in multiples of ₹50.'
+    );
+  }
+
+  return amount;
+}
+
+// Support both existing monthly/yearly requests
+// and new automatic requests.
+
+function autoRequestMonths(request) {
+  if (!request || typeof request !== 'object') {
+    throw Error('Invalid payment request.');
+  }
+
+  if (request.plan !== 'auto') {
+    return paymentMonthKeys(
+      request.plan,
+      request.period
+    );
+  }
+
+  const months = request.months;
+
+  if (
+    !months ||
+    typeof months !== 'object' ||
+    Array.isArray(months)
+  ) {
+    throw Error('Payment month data missing.');
+  }
+
+  const periods = Object.keys(months).sort();
+
+  if (
+    !periods.length ||
+    periods.length > 12 ||
+    periods.length !== request.monthCount ||
+    request.amount !== periods.length * MONTHLY_FEE ||
+    request.period !== periods[0] ||
+    periods.some(
+      period =>
+        !validPeriod(period) ||
+        months[period] !== true
+    )
+  ) {
+    throw Error('Invalid automatic payment months.');
+  }
+
+  return periods;
+}
+
+function autoSelectMonths(
+  member,
+  history,
+  corrections,
+  requests,
+  memberNo,
+  count
+) {
+  if (
+    !Number.isInteger(count) ||
+    count < 1 ||
+    count > 12
+  ) {
+    throw Error('Invalid number of months.');
+  }
+
+  const paid = new Set(
+    originalPaidMonths(member, history)
+  );
+
+  const reserved = new Set();
+
+  for (const request of Object.values(requests || {})) {
+    if (
+      request?.status !== 'pending' ||
+      String(request.memberNumber) !==
+        String(memberNo)
+    ) {
+      continue;
+    }
+
+    // Fail closed if a pending request is malformed.
+    for (const period of autoRequestMonths(request)) {
+      reserved.add(period);
+    }
+  }
+
+  const result = [];
+  let period = autoFirstMonth(member);
+
+  for (
+    let index = 0;
+    index < 1200 && result.length < count;
+    index++
+  ) {
+    const cancelled =
+      corrections?.[period]?.state === 'cancelled';
+
+    if (
+      !paid.has(period) &&
+      !reserved.has(period) &&
+      !cancelled
+    ) {
+      result.push(period);
+    }
+
+    period = autoNextMonth(period);
+  }
+
+  if (result.length !== count) {
+    throw Error(
+      'Not enough available payment months.'
+    );
+  }
+
+  return result;
+}
+
+// ------------------------------------------------------------
+// MEMBER PAYMENT FORM
+// Reuse the existing payment area.
+// ------------------------------------------------------------
+
+function setupAutoPaymentForm() {
+  if ($('autoPaymentAmount')) return;
+
+  const oldPlan = $('paymentPlan');
+  const oldPeriod = $('paymentPeriod');
+
+  const anchor = oldPlan || oldPeriod;
+
+  if (!anchor) {
+    notify(
+      'Payment form elements not found in index.html.',
+      true
+    );
+    return;
+  }
+
+  const wrapper = document.createElement('div');
+  wrapper.id = 'autoPaymentControls';
+
+  const title = document.createElement('h3');
+  title.textContent = 'Automatic Month Selection';
+
+  const label = document.createElement('label');
+  label.htmlFor = 'autoPaymentAmount';
+  label.textContent = 'Payment Amount (₹)';
+
+  const input = document.createElement('input');
+  input.id = 'autoPaymentAmount';
+  input.type = 'number';
+  input.min = '50';
+  input.max = '600';
+  input.step = '50';
+  input.value = '50';
+  input.inputMode = 'numeric';
+
+  const previewTitle = document.createElement('p');
+  previewTitle.textContent = 'Selected Months:';
+
+  const preview = document.createElement('p');
+  preview.id = 'autoPaymentMonths';
+  preview.textContent = 'Loading payment records...';
+
+  const explanation = document.createElement('p');
+  explanation.className = 'muted';
+  explanation.textContent =
+    '₹50 = 1 month, ₹100 = 2 months, ' +
+    '₹300 = 6 months, ₹600 = 12 months. ' +
+    'Months are selected automatically.';
+
+  wrapper.append(
+    title,
+    label,
+    input,
+    previewTitle,
+    preview,
+    explanation
+  );
+
+  anchor.parentElement.insertBefore(
+    wrapper,
+    anchor
+  );
+
+  // Hide old controls without deleting them.
+  // Their existing HTML can be cleaned up later.
+  if (oldPlan) {
+    oldPlan.style.display = 'none';
+
+    const label = document.querySelector(
+      'label[for="paymentPlan"]'
+    );
+
+    if (label) label.style.display = 'none';
+  }
+
+  if (oldPeriod) {
+    oldPeriod.style.display = 'none';
+
+    const label = document.querySelector(
+      'label[for="paymentPeriod"]'
+    );
+
+    if (label) label.style.display = 'none';
+  }
+
+  input.addEventListener(
+    'input',
+    autoRefreshPreview
+  );
+
+  autoRefreshPreview();
+}
+
+function autoRefreshPreview() {
+  const target = $('autoPaymentMonths');
+
+  if (!target) return;
+
+  try {
+    const amount = autoReadAmount();
+    const count = amount / MONTHLY_FEE;
+
+    const link = $('upiPayLink');
+
+    if (link) {
+      const params = new URLSearchParams({
+        pa: UPI_ID,
+        pn: UPI_NAME,
+        cu: 'INR'
+      });
+
+      link.href = `upi://pay?${params}`;
+      link.textContent =
+        `Open UPI app — Enter ₹${amount}`;
+    }
+
+    if ($('displayPaymentAmount')) {
+      $('displayPaymentAmount').textContent =
+        `₹${amount}`;
+    }
+
+    if (
+      !current ||
+      admin ||
+      !memberNumber ||
+      !currentMemberData
+    ) {
+      target.textContent =
+        'Member login required.';
+      return;
+    }
+
+    if (
+      !historyLoaded ||
+      historyError ||
+      !correctionsLoaded ||
+      correctionsError ||
+      !autoRequestsReady ||
+      autoRequestsError
+    ) {
+      target.textContent =
+        'Loading payment records...';
+      return;
+    }
+
+    const months = autoSelectMonths(
+      currentMemberData,
+      historicalPayments,
+      paymentCorrections,
+      autoMemberRequests,
+      memberNumber,
+      count
+    );
+
+    target.textContent =
+      months.join(', ');
+
+  } catch (error) {
+    target.textContent = error.message;
+
+    if ($('upiPayLink')) {
+      $('upiPayLink').removeAttribute('href');
+    }
+  }
+}
+
+// Keep original member rendering and refresh preview.
+
+const originalRenderMemberV82 = renderMember;
+
+renderMember = function(member) {
+  originalRenderMemberV82(member);
+  autoRefreshPreview();
+};
+
+// Keep original payment history rendering.
+
+const originalRenderMyPaymentsV82 =
+  renderMyPayments;
+
+renderMyPayments = function(data) {
+  autoMemberRequests = data || {};
+  autoRequestsReady = true;
+  autoRequestsError = false;
+
+  originalRenderMyPaymentsV82(data);
+
+  // Replace the request history table with one that
+  // shows all selected months for automatic requests.
+  const root = $('myPaymentList');
+
+  if (root) {
+    const entries = Object.values(data || {})
+      .sort(
+        (a, b) =>
+          (b.createdAt || 0) -
+          (a.createdAt || 0)
+      );
+
+    if (entries.length) {
+      const table = document.createElement('table');
+
+      table.innerHTML =
+        '<thead><tr>' +
+        '<th>Months</th>' +
+        '<th>Amount</th>' +
+        '<th>Status</th>' +
+        '</tr></thead>';
+
+      const body = document.createElement('tbody');
+
+      for (const request of entries) {
+        const row = document.createElement('tr');
+
+        let monthsText;
+
+        try {
+          monthsText =
+            autoRequestMonths(request).join(', ');
+        } catch (_) {
+          monthsText = 'Invalid payment months';
+        }
+
+        for (const value of [
+          monthsText,
+          `₹${request.amount}`,
+          request.status || ''
+        ]) {
+          const cell = document.createElement('td');
+          cell.textContent = value;
+          row.append(cell);
+        }
+
+        body.append(row);
+      }
+
+      table.append(body);
+      root.replaceChildren(table);
+    }
+  }
+
+  autoRefreshPreview();
+};
+
+// ------------------------------------------------------------
+// MEMBER SUBMISSION
+// ------------------------------------------------------------
+
+async function autoSubmitPayment() {
+  if (
+    !PAYMENT_V76_ENABLED ||
+    !current ||
+    admin ||
+    !memberNumber ||
+    autoSubmitting ||
+    paymentBusy
+  ) {
+    return;
+  }
+
+  const transactionId =
+    $('transactionId')?.value.trim() || '';
+
+  if (
+    !/^[A-Za-z0-9-]{6,100}$/.test(transactionId)
+  ) {
+    return notify(
+      'Enter a valid UPI transaction reference.',
+      true
+    );
+  }
+
+  if (
+    !historyLoaded ||
+    historyError ||
+    !correctionsLoaded ||
+    correctionsError ||
+    !autoRequestsReady ||
+    autoRequestsError
+  ) {
+    return notify(
+      'Payment records are not ready.',
+      true
+    );
+  }
+
+  let amount;
+
+  try {
+    amount = autoReadAmount();
+  } catch (error) {
+    return notify(error.message, true);
+  }
+
+  const buttonElement = $('submitPayment');
+
+  autoSubmitting = true;
+  paymentBusy = true;
+
+  buttonElement.disabled = true;
+
+  try {
+    const uid = current.uid;
+    const number = String(memberNumber);
+    const count = amount / MONTHLY_FEE;
+
+    const member = (
+      await get(
+        ref(db, `members/${number}`)
+      )
+    ).val();
+
+    if (
+      !member ||
+      member.status !== 'active' ||
+      member.uid !== uid
+    ) {
+      throw Error('Active membership required.');
+    }
+
+    const history = (
+      await get(
+        ref(db, `paymentHistory/${number}`)
+      )
+    ).val() || {};
+
+    const corrections = (
+      await get(
+        ref(db, `paymentCorrections/${number}`)
+      )
+    ).val() || {};
+
+    const requests = (
+      await get(
+        query(
+          ref(db, 'paymentRequests'),
+          orderByChild('uid'),
+          equalTo(uid)
+        )
+      )
+    ).val() || {};
+
+    if (
+      Object.values(requests).some(request =>
+        String(request.transactionId || '')
+          .toLowerCase() ===
+        transactionId.toLowerCase()
+      )
+    ) {
+      throw Error(
+        'Transaction reference already submitted.'
+      );
+    }
+
+    const months = autoSelectMonths(
+      member,
+      history,
+      corrections,
+      requests,
+      number,
+      count
+    );
+
+    const confirmed = confirm(
+      `Submit payment for verification?\n\n` +
+      `Member: #${number}\n` +
+      `Amount: ₹${amount}\n` +
+      `Months: ${months.join(', ')}\n` +
+      `UPI Ref: ${transactionId}\n\n` +
+      `Submit only after completing payment.`
+    );
+
+    if (!confirmed) return;
+
+    const monthMap = {};
+
+    for (const period of months) {
+      monthMap[period] = true;
+    }
+
+    await set(
+      push(ref(db, 'paymentRequests')),
+      {
+        uid,
+        memberNumber: Number(number),
+        plan: 'auto',
+        amount,
+        period: months[0],
+        monthCount: count,
+        months: monthMap,
+        transactionId,
+        status: 'pending',
+        createdAt: Date.now()
+      }
+    );
+
+    $('transactionId').value = '';
+
+    notify(
+      'Payment submitted for admin verification. ' +
+      'Paid ticks will appear only after approval.'
+    );
+
+  } catch (error) {
+    notify(
+      'Payment submission failed: ' +
+      error.message,
+      true
+    );
+
+  } finally {
+    autoSubmitting = false;
+    paymentBusy = false;
+    buttonElement.disabled = false;
+
+    autoRefreshPreview();
+  }
+}
+
+// Replace old submit handler.
+
+if ($('submitPayment')) {
+  $('submitPayment').onclick = autoSubmitPayment;
+}
+
+// ------------------------------------------------------------
+// ADMIN PAYMENT LIST
+// ------------------------------------------------------------
+
+renderAdminPayments = function() {
+  const root = $('adminPaymentList');
+
+  if (!root) return;
+
+  root.replaceChildren();
+
+  const entries = Object.entries(payments)
+    .filter(([, request]) =>
+      request?.status === 'pending'
+    )
+    .sort(
+      (a, b) =>
+        (a[1].createdAt || 0) -
+        (b[1].createdAt || 0)
+    );
+
+  if (!entries.length) {
+    root.textContent =
+      'No pending payment submissions.';
+    return;
+  }
+
+  for (const [id, request] of entries) {
+    const panel = document.createElement('div');
+    panel.className = 'panel';
+
+    const info = document.createElement('p');
+
+    let monthsText;
+
+    try {
+      monthsText =
+        autoRequestMonths(request).join(', ');
+    } catch (_) {
+      monthsText = 'INVALID MONTHS';
+    }
+
+    info.textContent =
+      `#${request.memberNumber} — ` +
+      `${memberList[request.memberNumber]?.name || ''} | ` +
+      `₹${request.amount} | ` +
+      `Months: ${monthsText} | ` +
+      `UPI Ref: ${request.transactionId}`;
+
+    panel.append(
+      info,
+      button(
+        'Approve after bank verification',
+        () => verifyPayment(id, request, true)
+      ),
+      document.createTextNode(' '),
+      button(
+        'Reject',
+        () => verifyPayment(id, request, false),
+        'secondary'
+      )
+    );
+
+    root.append(panel);
+  }
+};
+
+// ------------------------------------------------------------
+// ADMIN VERIFICATION
+// ------------------------------------------------------------
+
+verifyPayment = async function(
+  id,
+  request,
+  accept
+) {
+  if (
+    !isAdmin() ||
+    paymentBusy ||
+    request.status !== 'pending'
+  ) return;
+
+  const confirmed = confirm(
+    accept
+      ? (
+        `BANK VERIFICATION REQUIRED\n\n` +
+        `Member: #${request.memberNumber}\n` +
+        `Amount: ₹${request.amount}\n` +
+        `Transaction: ${request.transactionId}\n\n` +
+        `Have you confirmed receipt in the bank?`
+      )
+      : (
+        `Reject payment request for ` +
+        `member #${request.memberNumber}?`
+      )
+  );
+
+  if (!confirmed) return;
+
+  paymentBusy = true;
+
+  try {
+    const requestRef = ref(
+      db,
+      `paymentRequests/${id}`
+    );
+
+    const fresh = (
+      await get(requestRef)
+    ).val();
+
+    if (
+      !fresh ||
+      fresh.status !== 'pending'
+    ) {
+      throw Error('Request already reviewed.');
+    }
+
+    const number = String(fresh.memberNumber);
+    const memberRef = ref(
+      db,
+      `members/${number}`
+    );
+
+    const member = (
+      await get(memberRef)
+    ).val();
+
+    const recorded =
+      recordedMonthsForRequest(member, id);
+
+    if (!accept) {
+      if (recorded.length) {
+        throw Error(
+          'Paid records already exist. ' +
+          'Manual reconciliation required.'
+        );
+      }
+
+      const result = await runTransaction(
+        requestRef,
+        value => {
+          if (
+            !value ||
+            value.status !== 'pending'
+          ) return;
+
+          return {
+            ...value,
+            status: 'rejected',
+            reviewedAt: Date.now(),
+            reviewedBy: current.uid
+          };
+        },
+        { applyLocally: false }
+      );
+
+      if (!result.committed) {
+        throw Error('Request changed.');
+      }
+
+      notify('Payment rejected.');
+      return;
+    }
+
+    const months = autoRequestMonths(fresh);
+
+    if (
+      !member ||
+      member.status !== 'active' ||
+      member.uid !== fresh.uid
+    ) {
+      throw Error(
+        'Member inactive or account mismatch.'
+      );
+    }
+
+    if (
+      fresh.plan === 'auto' &&
+      months.some(
+        period =>
+          period < autoFirstMonth(member)
+      )
+    ) {
+      throw Error(
+        'Payment period is before joining month.'
+      );
+    }
+
+    if (
+      fresh.amount !==
+      months.length * MONTHLY_FEE
+    ) {
+      throw Error(
+        'Amount does not match payment months.'
+      );
+    }
+
+    const history = (
+      await get(
+        ref(db, `paymentHistory/${number}`)
+      )
+    ).val() || {};
+
+    const corrections = (
+      await get(
+        ref(db, `paymentCorrections/${number}`)
+      )
+    ).val() || {};
+
+    if (
+      cancelledPeriods(corrections, months).length
+    ) {
+      throw Error(
+        'Cancelled month requires reconciliation.'
+      );
+    }
+
+    if (recorded.length) {
+      if (!samePeriods(recorded, months)) {
+        throw Error(
+          'Partial payment mismatch. ' +
+          'Manual reconciliation required.'
+        );
+      }
+
+      const recovery = await runTransaction(
+        requestRef,
+        value => {
+          if (
+            !value ||
+            value.status !== 'pending'
+          ) return;
+
+          return {
+            ...value,
+            status: 'approved',
+            reviewedAt: Date.now(),
+            reviewedBy: current.uid,
+            recovered: true
+          };
+        },
+        { applyLocally: false }
+      );
+
+      if (!recovery.committed) {
+        throw Error('Recovery failed.');
+      }
+
+      notify('Payment record reconciled.');
+      return;
+    }
+
+    const verifiedAt = Date.now();
+    const reviewer = current.uid;
+
+    const result = await runTransaction(
+      memberRef,
+      value => {
+        if (
+          !value ||
+          value.status !== 'active' ||
+          value.uid !== fresh.uid
+        ) return;
+
+        const existing = value.payments || {};
+
+        if (
+          months.some(period =>
+            existing[period] != null ||
+            isHistoricalPaid(
+              history,
+              Number(period.slice(0, 4)),
+              Number(period.slice(5, 7))
+            )
+          )
+        ) {
+          return;
+        }
+
+        const next = {
+          ...value,
+          payments: {
+            ...existing
+          }
+        };
+
+        for (const period of months) {
+          next.payments[period] = {
+            status: 'paid',
+            amount: MONTHLY_FEE,
+            method: 'upi',
+            transactionId:
+              fresh.transactionId,
+            requestId: id,
+            verifiedAt,
+            verifiedBy: reviewer
+          };
+        }
+
+        return next;
+      },
+      { applyLocally: false }
+    );
+
+    if (!result.committed) {
+      throw Error(
+        'Paid month conflict. ' +
+        'Check Cash and Historical records.'
+      );
+    }
+
+    const completed = await runTransaction(
+      requestRef,
+      value => {
+        if (
+          !value ||
+          value.status !== 'pending'
+        ) return;
+
+        return {
+          ...value,
+          status: 'approved',
+          reviewedAt: verifiedAt,
+          reviewedBy: reviewer
+        };
+      },
+      { applyLocally: false }
+    );
+
+    if (!completed.committed) {
+      throw Error(
+        'Paid months may be recorded but ' +
+        'request status is incomplete. ' +
+        'Review the same request again.'
+      );
+    }
+
+    notify(
+      'Payment approved. Paid months recorded.'
+    );
+
+  } catch (error) {
+    notify(
+      'Payment verification needs attention: ' +
+      error.message,
+      true
+    );
+
+  } finally {
+    paymentBusy = false;
+  }
+};
+
+// ------------------------------------------------------------
+// ADMIN CASH AND CORRECTION SAFETY
+// Check automatic pending requests before cash/correction.
+// ------------------------------------------------------------
+
+async function autoCheckPendingOverlap(
+  number,
+  periods
+) {
+  const all = (
+    await get(ref(db, 'paymentRequests'))
+  ).val() || {};
+
+  for (const request of Object.values(all)) {
+    if (
+      request?.status !== 'pending' ||
+      String(request.memberNumber) !==
+        String(number)
+    ) {
+      continue;
+    }
+
+    const requested = autoRequestMonths(request);
+
+    if (
+      requested.some(
+        period => periods.includes(period)
+      )
+    ) {
+      throw Error(
+        'Pending UPI request overlaps: ' +
+        requested.filter(
+          period => periods.includes(period)
+        ).join(', ')
+      );
+    }
+  }
+}
+
+const originalSaveCashV82 = saveCashPayment;
+
+saveCashPayment = async function() {
+  try {
+    const number = String(
+      Number($('cashMemberNumber')?.value)
+    );
+
+    const periods = selectedCashPeriods();
+
+    await autoCheckPendingOverlap(
+      number,
+      periods
+    );
+
+    return await originalSaveCashV82();
+
+  } catch (error) {
+    notify(
+      'Cash payment blocked: ' +
+      error.message,
+      true
+    );
+  }
+};
+
+if ($('saveCash')) {
+  $('saveCash').onclick = saveCashPayment;
+}
+
+const originalCorrectPaidV82 =
+  correctPaidTick;
+
+correctPaidTick = async function(action) {
+  try {
+    const number = String(
+      Number($('correctionMemberNumber')?.value)
+    );
+
+    const period = selectedCorrectionPeriod();
+
+    await autoCheckPendingOverlap(
+      number,
+      [period]
+    );
+
+    return await originalCorrectPaidV82(action);
+
+  } catch (error) {
+    notify(
+      'Correction blocked: ' +
+      error.message,
+      true
+    );
+  }
+};
+
+if ($('cancelPaidTick')) {
+  $('cancelPaidTick').onclick =
+    () => correctPaidTick('cancel');
+}
+
+if ($('restorePaidTick')) {
+  $('restorePaidTick').onclick =
+    () => correctPaidTick('restore');
+}
+
+// ------------------------------------------------------------
+// LISTENER AND SESSION REFRESH
+// ------------------------------------------------------------
+
+const originalStopListenersV82 = stopListeners;
+
+stopListeners = function() {
+  originalStopListenersV82();
+
+  autoMemberRequests = {};
+  autoRequestsReady = false;
+  autoRequestsError = false;
+  autoSubmitting = false;
+
+  autoRefreshPreview();
+};
+
+// Rebind member listener after each member login.
+// Existing v82 listener already calls renderMyPayments,
+// so the wrapped function receives live request updates.
+
+// ------------------------------------------------------------
+// INITIALIZE
+// ------------------------------------------------------------
+
+setupAutoPaymentForm();
+
+if ($('submitPayment')) {
+  $('submitPayment').onclick =
+    autoSubmitPayment;
+}
+
+autoRefreshPreview();
+
+console.info(
+  'TFC Bandiyod v88.0 Auto Payment Upgrade loaded.'
+);
+
+// ============================================================
+// END OF v88.0 AUTO MONTH PAYMENT UPGRADE
+// ============================================================
+
