@@ -5563,3 +5563,86 @@ function initializeAutoPaymentV881() {
 
 initializeAutoPaymentV881();
 
+/*
+ TFC BANDIYOD — v88.2 STEP 1
+ Earliest Unpaid Month Selection
+
+ - Start from earliest unpaid month
+ - Include cancelled months as dues
+ - Skip effective paid months
+ - Skip months reserved by pending requests
+ - Respect joining month
+ - Preserve historical payment data
+
+ This patch changes month selection only.
+ Repayment approval and income accounting
+ require the next coordinated update.
+*/
+
+autoSelectMonths = function(
+  member,
+  history,
+  corrections,
+  requests,
+  memberNo,
+  count
+) {
+  if (
+    !Number.isInteger(count) ||
+    count < 1 ||
+    count > 12
+  ) {
+    throw Error('Invalid number of months.');
+  }
+
+  const effectivePaid = new Set(
+    paidMonths(member, history, corrections)
+  );
+
+  const reserved = new Set();
+
+  for (const request of Object.values(requests || {})) {
+    if (
+      request?.status !== 'pending' ||
+      String(request.memberNumber) !== String(memberNo)
+    ) {
+      continue;
+    }
+
+    for (const period of autoRequestMonths(request)) {
+      reserved.add(period);
+    }
+  }
+
+  const result = [];
+  let period = autoFirstMonth(member);
+
+  for (
+    let index = 0;
+    index < 1200 && result.length < count;
+    index++
+  ) {
+    if (
+      !effectivePaid.has(period) &&
+      !reserved.has(period)
+    ) {
+      result.push(period);
+    }
+
+    period = autoNextMonth(period);
+  }
+
+  if (result.length !== count) {
+    throw Error('Not enough available payment months.');
+  }
+
+  return result;
+};
+
+autoRefreshPreview();
+
+console.info(
+  'TFC Bandiyod v88.2 Step 1 loaded.'
+);
+
+
