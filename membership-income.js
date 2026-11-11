@@ -1,19 +1,20 @@
 
 /*
  TFC BANDIYOD
- MEMBERSHIP INCOME v87.0
+ MEMBERSHIP INCOME v88.0
 
- Compatible:
- app.js v82.0
- accounts.js v84.0
+ Supports:
+ - Cash payments
+ - Approved UPI monthly payments
+ - Approved UPI yearly payments
+ - Approved UPI automatic multi-month payments
+ - Payment corrections
+ - Duplicate prevention
+ - Public membership income
+ - Automatic Firebase publication
 
- Verified collections from 08-11-2026.
  Historical PDF payments excluded.
-
- Admin publishes verified collections.
- Approved members read published collections.
-
- Does not change original payment records.
+ Original payment records unchanged.
 */
 
 import {
@@ -146,6 +147,55 @@ function periodsFor(plan, period) {
   return [];
 }
 
+// VERSION 88.0
+// Supports automatic multi-month payment requests.
+
+function incomeRequestPeriods(request) {
+  if (
+    !request ||
+    typeof request !== "object"
+  ) {
+    return [];
+  }
+
+  if (request.plan === "auto") {
+    const map = request.months;
+
+    if (
+      !map ||
+      typeof map !== "object" ||
+      Array.isArray(map)
+    ) {
+      return [];
+    }
+
+    const periods = Object.keys(map).sort();
+
+    if (
+      !periods.length ||
+      periods.length > 12 ||
+      periods.length !== Number(request.monthCount) ||
+      periods.some(
+        p =>
+          !validPeriod(p) ||
+          map[p] !== true
+      ) ||
+      request.period !== periods[0] ||
+      Number(request.amount) !==
+        periods.length * FEE
+    ) {
+      return [];
+    }
+
+    return periods;
+  }
+
+  return periodsFor(
+    request.plan,
+    request.period
+  );
+}
+
 function buildSection(parent, id, prefix, heading) {
   if (!parent || $(id)) return;
 
@@ -221,6 +271,8 @@ function setupUI() {
   );
 }
 
+// CASH COLLECTIONS
+
 function collectCash() {
   const groups = new Map();
 
@@ -271,6 +323,8 @@ function collectCash() {
   return [...groups.values()];
 }
 
+// UPI COLLECTIONS — VERSION 88.0
+
 function collectUPI() {
   const result = [];
 
@@ -282,32 +336,40 @@ function collectUPI() {
       continue;
     }
 
-    const number = String(request.memberNumber || "");
+    const number = String(
+      request.memberNumber || ""
+    );
+
     const member = members[number];
 
     if (!member) continue;
 
-    const periods = periodsFor(
-      request.plan,
-      request.period
-    );
-
-    const amount =
-      request.plan === "yearly" ? 600 : FEE;
+    const periods = incomeRequestPeriods(request);
 
     if (
       !periods.length ||
-      Number(request.amount) !== amount
+      Number(request.amount) !==
+        periods.length * FEE
     ) {
       continue;
     }
 
+    // Every month must be verified and linked
+    // to the same approved payment request.
+
     const verified = periods.every(period => {
       const payment = member.payments?.[period];
 
-      return payment?.status === "paid" &&
+      return (
+        payment?.status === "paid" &&
         payment.requestId === id &&
-        validTime(payment.verifiedAt);
+        validTime(payment.verifiedAt) &&
+        Number(payment.amount) === FEE &&
+        (
+          payment.method === "upi" ||
+          !payment.method
+        )
+      );
     });
 
     if (!verified) continue;
@@ -316,8 +378,6 @@ function collectUPI() {
       period => cancelled(number, period)
     );
 
-    // A cancelled month is excluded from
-    // effective membership income.
     const activePeriods = periods.filter(
       period => !cancelled(number, period)
     );
@@ -480,11 +540,11 @@ function renderReport(prefix, entries, isPublic = false) {
   `;
 }
 
+// PUBLIC DATA
+
 function publicEntries(entries) {
   const result = {};
 
-  // Stable IDs prevent unnecessary changes
-  // when collection ordering changes.
   for (const entry of entries) {
     const source = String(entry.id);
 
@@ -526,6 +586,8 @@ function updateAdminStatus(text, error = false) {
   }
 }
 
+// AUTOMATIC FIREBASE PUBLICATION
+
 async function publishSummary(entries, id) {
   if (!admin || id !== generation) return;
 
@@ -549,11 +611,10 @@ async function publishSummary(entries, id) {
 
     if (!uid || id !== generation) return;
 
-    updateAdminStatus("Publishing to Firebase...");
+    updateAdminStatus(
+      "Publishing to Firebase..."
+    );
 
-    // Firebase RTDB removes empty objects.
-    // Do not publish an empty collection because
-    // current Rules require an entries child.
     if (!Object.keys(publicRows).length) {
       updateAdminStatus(
         "No verified collections to publish."
@@ -569,6 +630,7 @@ async function publishSummary(entries, id) {
 
     if (id === generation) {
       publishedSignature = signature;
+
       updateAdminStatus(
         "Published successfully to Firebase."
       );
@@ -599,6 +661,8 @@ async function publishSummary(entries, id) {
     }
   }
 }
+
+// RENDER
 
 function render() {
   setupUI();
@@ -644,6 +708,8 @@ function render() {
   }
 }
 
+// LISTENER CLEANUP
+
 function stopListening() {
   unsubs.forEach(fn => {
     try {
@@ -670,6 +736,8 @@ function stopListening() {
     corrections: false
   };
 }
+
+// AUTHENTICATION AND LIVE DATA
 
 onAuthStateChanged(auth, async account => {
   const id = ++generation;
@@ -793,4 +861,8 @@ onAuthStateChanged(auth, async account => {
 
 setupUI();
 
-/* END MEMBERSHIP INCOME v87.0 */
+console.info(
+  "TFC Bandiyod Membership Income v88.0 loaded."
+);
+
+/* END MEMBERSHIP INCOME v88.0 */
