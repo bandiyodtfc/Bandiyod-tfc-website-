@@ -5774,4 +5774,160 @@ autoRefreshPreview();
 
 console.info('TFC v88.4 loaded');
 
+/*
+ TFC BANDIYOD — v88.5
+ Extended Automatic Payment Amount
+
+ ₹50 to ₹3000
+ Maximum 60 months
+ Existing records preserved
+*/
+
+const AUTO_PAYMENT_MAX_V885 = 3000;
+const AUTO_PAYMENT_MONTHS_V885 = 60;
+
+autoReadAmount = function() {
+  const amount = Number(
+    $('autoPaymentAmount')?.value
+  );
+
+  if (
+    !Number.isSafeInteger(amount) ||
+    amount < MONTHLY_FEE ||
+    amount > AUTO_PAYMENT_MAX_V885 ||
+    amount % MONTHLY_FEE !== 0
+  ) {
+    throw Error(
+      'Enter ₹50–₹3000 in multiples of ₹50.'
+    );
+  }
+
+  return amount;
+};
+
+autoRequestMonths = function(request) {
+  if (!request || typeof request !== 'object') {
+    throw Error('Invalid payment request.');
+  }
+
+  if (request.plan !== 'auto') {
+    return paymentMonthKeys(
+      request.plan,
+      request.period
+    );
+  }
+
+  const months = request.months;
+
+  if (
+    !months ||
+    typeof months !== 'object' ||
+    Array.isArray(months)
+  ) {
+    throw Error('Payment months missing.');
+  }
+
+  const periods = Object.keys(months).sort();
+
+  if (
+    periods.length < 1 ||
+    periods.length > AUTO_PAYMENT_MONTHS_V885 ||
+    periods.length !== request.monthCount ||
+    request.amount !== periods.length * MONTHLY_FEE ||
+    request.period !== periods[0] ||
+    periods.some(p =>
+      !validPeriod(p) ||
+      months[p] !== true
+    )
+  ) {
+    throw Error('Invalid automatic payment months.');
+  }
+
+  return periods;
+};
+
+autoSelectMonths = function(
+  member,
+  history,
+  corrections,
+  requests,
+  memberNo,
+  count
+) {
+  if (
+    !Number.isInteger(count) ||
+    count < 1 ||
+    count > AUTO_PAYMENT_MONTHS_V885
+  ) {
+    throw Error('Invalid number of months.');
+  }
+
+  if (!member || !history) {
+    throw Error('Payment history not ready.');
+  }
+
+  const paid = new Set(
+    paidMonths(member, history, corrections)
+  );
+
+  const reserved = new Set();
+
+  for (const request of Object.values(requests || {})) {
+    if (
+      request?.status !== 'pending' ||
+      String(request.memberNumber) !== String(memberNo)
+    ) continue;
+
+    for (const p of autoRequestMonths(request)) {
+      reserved.add(p);
+    }
+  }
+
+  const selected = [];
+  let period = autoFirstMonth(member);
+
+  for (
+    let i = 0;
+    i < 1200 && selected.length < count;
+    i++
+  ) {
+    if (
+      !paid.has(period) &&
+      !reserved.has(period)
+    ) {
+      selected.push(period);
+    }
+
+    period = autoNextMonth(period);
+  }
+
+  if (selected.length !== count) {
+    throw Error('Not enough available months.');
+  }
+
+  return selected;
+};
+
+const autoAmountInputV885 = $('autoPaymentAmount');
+
+if (autoAmountInputV885) {
+  autoAmountInputV885.min = '50';
+  autoAmountInputV885.max = '3000';
+  autoAmountInputV885.step = '50';
+
+  const explanation =
+    $('autoPaymentControls')?.querySelector('.muted');
+
+  if (explanation) {
+    explanation.textContent =
+      '₹50 = 1 month · ₹600 = 12 months · ' +
+      '₹1200 = 24 months · ₹3000 = 60 months. ' +
+      'Months selected automatically.';
+  }
+
+  autoRefreshPreview();
+}
+
+console.info('TFC v88.5 loaded');
+
 
