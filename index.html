@@ -5,8 +5,9 @@
 <meta name="google-site-verification" content="i8klDfAWXKj0KWwW6eay-Y0i4h78a7Jy2bn0r8gqvY0">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TFC Bandiyod | Member Portal v89.3</title>
-<link rel="stylesheet" href="./login-theme.css">
+<title>TFC Bandiyod | Member Portal v89.4</title>
+
+<link rel="stylesheet" href="./login-theme.css?v=89.4">
 
 <style>
 :root{
@@ -246,7 +247,7 @@ footer{
   line-height:1.6;
 }
 
-/* v88.5 AUTOMATIC PAYMENT */
+/* AUTOMATIC PAYMENT ₹50 - ₹3000 */
 
 #autoPaymentControls{
   background:#fffbea;
@@ -274,7 +275,7 @@ footer{
   line-height:1.6;
 }
 
-/* MEMBER DASHBOARD v89.3 */
+/* MEMBER DASHBOARD */
 
 .tfc-dashboard-hidden{
   display:none!important;
@@ -312,10 +313,55 @@ footer{
   outline-offset:2px;
 }
 
+/*
+ TFC MEMBER BACKGROUND v89.4
+
+ Same background as the Login Page.
+ Only visible when an approved member
+ is logged in.
+
+ Admin and Login backgrounds unchanged.
+*/
+
+body:has(#member:not(.hide)){
+  background:
+    linear-gradient(
+      rgba(0,0,0,0.25),
+      rgba(0,0,0,0.35)
+    ),
+    url("./tfc-login-bg.jpg")
+    center center / cover fixed no-repeat;
+
+  min-height:100vh;
+}
+
+/* Transparent member panels */
+
+body:has(#member:not(.hide)) #member .panel{
+  background:rgba(255,255,255,0.94);
+}
+
+/* Dashboard readability */
+
+body:has(#member:not(.hide)) #tfcMemberMenu{
+  background:rgba(255,255,255,0.95);
+}
+
+/* Footer on background */
+
+body:has(#member:not(.hide)) footer{
+  color:white;
+}
+
+/* MOBILE */
+
 @media(max-width:600px){
   header{padding:12px;gap:8px}
   .brand{gap:7px}
-  .brand-logo{width:48px;height:48px}
+  .brand-logo{
+    width:48px;
+    height:48px;
+  }
   h1{font-size:17px}
   header small{font-size:10px}
   header select{
@@ -328,7 +374,10 @@ footer{
     font-size:12px;
   }
   .panel{padding:16px}
-  td,th{padding:8px;font-size:13px}
+  td,th{
+    padding:8px;
+    font-size:13px;
+  }
   .accounts-actions button{flex:1}
 
   .tfc-dashboard-grid{
@@ -342,6 +391,11 @@ footer{
   }
   .tfc-dashboard-button span{
     font-size:25px;
+  }
+
+  body:has(#member:not(.hide)){
+    background-attachment:scroll;
+    background-position:center center;
   }
 }
 </style>
@@ -404,12 +458,14 @@ Your Google account needs approval from the TFC admin.
 <label data-t="memberNumber" for="claimNumber">
 Membership number
 </label>
+
 <input
   id="claimNumber"
   type="number"
   min="1"
   placeholder="e.g. 25"
 >
+
 <button id="requestApproval" data-t="request">
 Request approval
 </button>
@@ -426,14 +482,16 @@ Request approval
 <p id="memberMeta"></p>
 </div>
 
-<!-- PROFILE PHOTO INSIDE MY PROFILE MENU -->
+<!-- PROFILE PHOTO -->
 
 <div class="panel">
 <h2>My Profile Photo</h2>
+
 <div class="feature-pending">
 <p class="muted">
 Upload or change your profile photo.
 </p>
+
 <button id="memberPhotoUpload" disabled>
 Upload My Photo
 </button>
@@ -507,13 +565,14 @@ Payment remains Pending until admin verifies the bank transfer.
 </p>
 </div>
 
-<!-- LEGACY FIELDS RETAINED -->
+<!-- LEGACY PAYMENT FIELDS -->
 
 <div class="hide" aria-hidden="true">
 <select id="paymentPlan" tabindex="-1">
 <option value="monthly">Monthly</option>
 <option value="yearly">Yearly</option>
 </select>
+
 <input
   id="paymentPeriod"
   type="month"
@@ -521,9 +580,10 @@ Payment remains Pending until admin verifies the bank transfer.
 >
 </div>
 
-<!-- AUTOMATIC PAYMENT ₹50 - ₹3000 -->
+<!-- AUTOMATIC PAYMENT ₹50 TO ₹3000 -->
 
 <div id="autoPaymentControls">
+
 <h3>Automatic Month Selection</h3>
 
 <label for="autoPaymentAmount">
@@ -541,7 +601,8 @@ Payment Amount (₹)
 >
 
 <p class="auto-payment-note">
-Enter an amount from ₹50 to ₹3000 in multiples of ₹50.
+Enter an amount from ₹50 to ₹3000
+in multiples of ₹50.
 </p>
 
 <p>
@@ -563,6 +624,7 @@ Months are selected automatically.
 Already paid and pending months will be skipped.
 New members start from their joining month.
 </p>
+
 </div>
 
 <!-- UPI PAYMENT DETAILS -->
@@ -587,7 +649,6 @@ Membership Amount:
 </p>
 
 <div class="payment-actions">
-
 <button id="copyUpiId" type="button">
 Copy UPI ID
 </button>
@@ -595,7 +656,6 @@ Copy UPI ID
 <button id="openGooglePay" type="button">
 Open Google Pay
 </button>
-
 </div>
 
 <p id="copyStatus" role="status"></p>
@@ -648,6 +708,7 @@ Payments require admin verification before being marked Paid.
 
 <h3>Your Payment Submissions</h3>
 <div id="myPaymentList" class="scroll"></div>
+
 </div>
 
 <!-- MEMBER ACCOUNTS -->
@@ -663,6 +724,7 @@ Only admins can manage account entries.
 </p>
 
 <div id="accountsMemberContent"></div>
+
 </div>
 
 </section>
@@ -685,7 +747,7 @@ Only admins can manage account entries.
 </div>
 </div>
 
-<!-- ADMIN APPROVAL REQUESTS -->
+<!-- APPROVAL REQUESTS -->
 
 <div id="requestsPanel" class="panel">
 <h2>Pending Requests</h2>
@@ -705,9 +767,10 @@ Only admins can manage account entries.
 
 <div id="membersList" class="scroll"></div>
 
-<!-- ADMIN MEMBER HISTORY -->
+<!-- ADMIN PAYMENT HISTORY -->
 
 <div id="adminMemberHistory" class="panel hide">
+
 <h3 id="adminHistoryTitle">
 Member Payment History
 </h3>
@@ -728,7 +791,6 @@ Select Year
 <!-- EDIT MEMBER -->
 
 <div id="editMemberPanel" class="panel hide">
-
 <h3>Edit Member</h3>
 
 <p class="muted">
@@ -779,12 +841,14 @@ Joining Date
 <label for="editMemberStatus">
 Membership Status
 </label>
+
 <select id="editMemberStatus">
 <option value="active">Active</option>
 <option value="inactive">Inactive</option>
 </select>
 
 <div class="form-actions">
+
 <button id="saveEditMember" type="submit">
 Save Changes
 </button>
@@ -796,8 +860,8 @@ Save Changes
 >
 Cancel
 </button>
-</div>
 
+</div>
 </form>
 </div>
 
@@ -826,6 +890,7 @@ Old Google login access and pending payment requests must be handled safely.
 <label for="archiveMemberNumber">
 Member Number
 </label>
+
 <input
   id="archiveMemberNumber"
   type="number"
@@ -888,6 +953,7 @@ Cancel
 </div>
 </form>
 </div>
+
 </div>
 
 <!-- PAYMENT VERIFICATION -->
@@ -921,6 +987,7 @@ Previously used numbers must not be reused without safe archival.
 <label for="newMemberNumber">
 Member Number
 </label>
+
 <input
   id="newMemberNumber"
   type="number"
@@ -932,6 +999,7 @@ Member Number
 <label for="newMemberName">
 Full Name
 </label>
+
 <input
   id="newMemberName"
   type="text"
@@ -942,6 +1010,7 @@ Full Name
 <label for="newMemberPhone">
 Mobile Number
 </label>
+
 <input
   id="newMemberPhone"
   type="tel"
@@ -951,6 +1020,7 @@ Mobile Number
 <label for="newMemberDate">
 Joining Date
 </label>
+
 <input
   id="newMemberDate"
   type="date"
@@ -960,6 +1030,7 @@ Joining Date
 <label for="newMemberStatus">
 Membership Status
 </label>
+
 <select id="newMemberStatus">
 <option value="active">Active</option>
 <option value="inactive">Inactive</option>
@@ -1080,7 +1151,7 @@ Historical records and opening balance must be preserved.
 © TFC Bandiyod · Private Member Portal
 </footer>
 
-<!-- UPI INTERFACE SCRIPT: ₹50 TO ₹3000 -->
+<!-- UPI INTERFACE SCRIPT -->
 
 <script>
 (function(){
@@ -1153,7 +1224,7 @@ Historical records and opening balance must be preserved.
 <script type="module" src="./membership-income.js?v=87.0"></script>
 <script type="module" src="./member-photos.js?v=1.0"></script>
 
-<!-- TFC MEMBER DASHBOARD v89.3 -->
+<!-- TFC MEMBER DASHBOARD v89.4 -->
 <!-- FIVE MENUS; PHOTO INSIDE MY PROFILE -->
 
 <script>
@@ -1196,7 +1267,7 @@ Historical records and opening balance must be preserved.
    - Member mobile profile
    - Member profile photo
 
-   All existing sections remain in the HTML.
+   Original sections remain unchanged.
   */
 
   const views = [
@@ -1239,8 +1310,6 @@ Historical records and opening balance must be preserved.
       icon: '📊'
     }
   ];
-
-  // Preserve original page if any section is missing.
 
   if (
     views.some(view =>
@@ -1350,7 +1419,7 @@ Historical records and opening balance must be preserved.
     grid.append(btn);
   }
 
-  // Malayalam / English menu labels.
+  // Malayalam / English
 
   function translateMenu() {
     const isMalayalam =
@@ -1384,8 +1453,6 @@ Historical records and opening balance must be preserved.
     }
   }
 
-  // Insert menu without moving existing panels.
-
   member.insertBefore(
     menu,
     member.firstChild
@@ -1398,12 +1465,12 @@ Historical records and opening balance must be preserved.
 
   translateMenu();
 
-  // Profile and photo are visible together.
+  // Profile and photo visible together.
 
   openView('profile');
 
   console.info(
-    'TFC Bandiyod Member Dashboard v89.3 loaded.'
+    'TFC Bandiyod Member Dashboard v89.4 loaded.'
   );
 })();
 </script>
