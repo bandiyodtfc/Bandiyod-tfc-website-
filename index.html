@@ -1,1598 +1,298 @@
-
 <!doctype html>
-<html lang="en">
+<html lang="ml">
 <head>
-<meta name="google-site-verification" content="i8klDfAWXKj0KWwW6eay-Y0i4h78a7Jy2bn0r8gqvY0">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TFC Bandiyod | Member Portal v89.4</title>
-
-<link rel="stylesheet" href="./login-theme.css?v=89.4">
-
-<style>
-:root{
-  font-family:system-ui,-apple-system,sans-serif;
-  color:#1b2330;
-  background:#f6f7fa;
-}
-*{box-sizing:border-box}
-body{margin:0}
-header{
-  background:#f8ce23;
-  padding:15px 5%;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-}
-.brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  min-width:0;
-}
-.brand-logo{
-  width:65px;
-  height:65px;
-  object-fit:contain;
-}
-h1{font-size:24px;margin:0}
-h2{font-size:21px}
-small,.muted{color:#667085}
-.wrap{
-  max-width:1050px;
-  margin:28px auto;
-  padding:0 16px;
-}
-.panel{
-  background:white;
-  border-radius:16px;
-  padding:22px;
-  margin:15px 0;
-  box-shadow:0 2px 12px #17233a10;
-}
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:14px;
-}
-.stat{
-  background:#fff9d9;
-  border-radius:12px;
-  padding:16px;
-}
-.stat strong{
-  font-size:25px;
-  display:block;
-}
-button,.paylink{
-  background:#f3c916;
-  border:0;
-  border-radius:9px;
-  padding:12px 17px;
-  font-weight:700;
-  cursor:pointer;
-  color:#1b2330;
-  text-decoration:none;
-  display:inline-block;
-}
-button.secondary{background:#e8ebef}
-button.danger{
-  background:#b42318;
-  color:white;
-}
-button:disabled{
-  opacity:.5;
-  cursor:not-allowed;
-}
-input,select,textarea{
-  padding:12px;
-  border:1px solid #d1d5db;
-  border-radius:8px;
-  max-width:100%;
-  width:100%;
-  font:inherit;
-}
-label{
-  display:block;
-  margin:10px 0 5px;
-  font-size:14px;
-}
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-td,th{
-  text-align:left;
-  padding:10px;
-  border-bottom:1px solid #e7e7e7;
-}
-.scroll{overflow:auto}
-.hide{display:none!important}
-.flex{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  flex-wrap:wrap;
-}
-.notice{
-  background:#fff4d1;
-  padding:12px;
-  border-radius:8px;
-}
-.ok{color:#187044}
-.error{color:#b42318}
-footer{
-  text-align:center;
-  color:#777;
-  padding:30px;
-}
-#msg{margin:10px 0}
-.paygrid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
-  gap:12px;
-}
-#adminMemberHistory{
-  margin-top:20px;
-  border:1px solid #e7e7e7;
-}
-#adminHistorySummary{
-  font-weight:600;
-  color:#344054;
-}
-.history-paid{
-  color:#187044;
-  font-weight:600;
-}
-.history-unverified{color:#667085}
-.form-actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-top:18px;
-}
-.archive-warning{
-  background:#fff1f0;
-  border:1px solid #f3b4ae;
-  border-radius:10px;
-  padding:14px;
-}
-.archive-warning strong{color:#b42318}
-#editMemberPanel,
-#archiveMemberPanel,
-#archivedMembersPanel{
-  border:1px solid #e7e7e7;
-}
-.feature-pending{
-  background:#f2f4f7;
-  border-radius:10px;
-  padding:14px;
-  margin-top:12px;
-}
-.year-select{
-  max-width:220px;
-  margin-bottom:14px;
-}
-.payment-box{
-  background:#fffbea;
-  border:1px solid #f2da75;
-  border-radius:12px;
-  padding:16px;
-  margin:16px 0;
-}
-.payment-actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin:12px 0;
-}
-.payment-actions button{
-  flex:1;
-  min-width:150px;
-}
-.payment-id{
-  background:white;
-  border:1px solid #e4d9a3;
-  border-radius:8px;
-  padding:12px;
-  font-weight:600;
-  overflow-wrap:anywhere;
-}
-#copyStatus{
-  font-weight:600;
-  margin:8px 0;
-}
-.payment-instructions{
-  line-height:1.7;
-  padding-left:23px;
-}
-.payment-status{
-  background:#fff8df;
-  padding:12px;
-  border-radius:8px;
-  margin-top:12px;
-}
-#accountsPanel,
-#memberAccountsPanel{
-  border:1px solid #e7e7e7;
-}
-#accAuditTable{
-  max-height:400px;
-  overflow:auto;
-}
-.accounts-summary{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-  gap:12px;
-  margin:15px 0;
-}
-.accounts-summary .stat{
-  background:#fff9d9;
-}
-.accounts-actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin:14px 0;
-}
-.accounts-table{
-  width:100%;
-  min-width:480px;
-}
-.accounts-table th{background:#fff8dc}
-.accounts-note{
-  font-size:13px;
-  color:#667085;
-  line-height:1.6;
-}
-
-/* AUTOMATIC PAYMENT ₹50 - ₹3000 */
-
-#autoPaymentControls{
-  background:#fffbea;
-  border:1px solid #f2da75;
-  border-radius:12px;
-  padding:16px;
-  margin:16px 0;
-}
-#autoPaymentAmount{
-  max-width:260px;
-  font-size:20px;
-  font-weight:700;
-}
-#autoPaymentMonths{
-  background:#fff;
-  border:1px solid #e4d9a3;
-  border-radius:8px;
-  padding:12px;
-  line-height:1.7;
-  overflow-wrap:anywhere;
-}
-.auto-payment-note{
-  font-size:13px;
-  color:#667085;
-  line-height:1.6;
-}
-
-/* MEMBER DASHBOARD */
-
-.tfc-dashboard-hidden{
-  display:none!important;
-}
-#tfcMemberMenu{
-  border:1px solid #e7e7e7;
-}
-.tfc-dashboard-grid{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:12px;
-  margin-top:16px;
-}
-.tfc-dashboard-button{
-  background:#f2f4f7;
-  border:1px solid #e4e7ec;
-  min-height:100px;
-  width:100%;
-  text-align:center;
-  line-height:1.4;
-  border-radius:14px;
-  padding:14px 9px;
-}
-.tfc-dashboard-button span{
-  display:block;
-  font-size:27px;
-  margin-bottom:7px;
-}
-.tfc-dashboard-button[aria-pressed="true"]{
-  background:#f8ce23;
-  border-color:#d8ab00;
-}
-.tfc-dashboard-button:focus-visible{
-  outline:3px solid #344054;
-  outline-offset:2px;
-}
-
-/*
- TFC MEMBER BACKGROUND v89.4
-
- Same background as the Login Page.
- Only visible when an approved member
- is logged in.
-
- Admin and Login backgrounds unchanged.
-*/
-
-body:has(#member:not(.hide)){
-  background:
-    linear-gradient(
-      rgba(0,0,0,0.25),
-      rgba(0,0,0,0.35)
-    ),
-    url("./tfc-login-bg.jpg")
-    center center / cover fixed no-repeat;
-
-  min-height:100vh;
-}
-
-/* Transparent member panels */
-
-body:has(#member:not(.hide)) #member .panel{
-  background:rgba(255,255,255,0.94);
-}
-
-/* Dashboard readability */
-
-body:has(#member:not(.hide)) #tfcMemberMenu{
-  background:rgba(255,255,255,0.95);
-}
-
-/* Footer on background */
-
-body:has(#member:not(.hide)) footer{
-  color:white;
-}
-
-/* MOBILE */
-
-@media(max-width:600px){
-  header{padding:12px;gap:8px}
-  .brand{gap:7px}
-  .brand-logo{
-    width:48px;
-    height:48px;
-  }
-  h1{font-size:17px}
-  header small{font-size:10px}
-  header select{
-    max-width:100px;
-    font-size:12px;
-    padding:8px;
-  }
-  header button{
-    padding:9px;
-    font-size:12px;
-  }
-  .panel{padding:16px}
-  td,th{
-    padding:8px;
-    font-size:13px;
-  }
-  .accounts-actions button{flex:1}
-
-  .tfc-dashboard-grid{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:9px;
-  }
-  .tfc-dashboard-button{
-    min-height:90px;
-    padding:12px 8px;
-    font-size:13px;
-  }
-  .tfc-dashboard-button span{
-    font-size:25px;
-  }
-
-  body:has(#member:not(.hide)){
-    background-attachment:scroll;
-    background-position:center center;
-  }
-}
-
-/*
- TFC BANDIYOD PREMIUM HEADER v89.5
-
- Header graphics only.
- Original logo image and all functionality retained.
-*/
-
-header{
-  background:linear-gradient(
-    135deg,
-    #ffe56b 0%,
-    #f8ce23 48%,
-    #d99d08 100%
-  );
-  border-bottom:3px solid #242424;
-  padding:13px 4%;
-  box-shadow:0 4px 18px rgba(0,0,0,0.22);
-}
-
-header .brand{
-  display:flex;
-  align-items:center;
-  gap:14px;
-}
-
-header .brand-logo{
-  width:78px;
-  height:78px;
-  object-fit:contain;
-  padding:5px;
-  border-radius:16px;
-  background:rgba(255,255,255,0.65);
-  border:2px solid #9e7500;
-  box-shadow:0 3px 10px rgba(0,0,0,0.2);
-}
-
-header .brand h1{
-  font-size:27px;
-  font-weight:900;
-  letter-spacing:1.2px;
-  color:#171717;
-  line-height:1.15;
-  text-shadow:1px 1px 0 rgba(255,255,255,0.45);
-}
-
-header .brand small{
-  display:block;
-  margin-top:6px;
-  font-size:11px;
-  font-weight:800;
-  letter-spacing:2px;
-  color:#493500;
-}
-
-header select,
-header #logout{
-  border-radius:9px;
-  font-weight:700;
-}
-
-@media(max-width:600px){
-  header{
-    padding:10px 12px;
-    gap:6px;
-  }
-
-  header .brand{
-    gap:8px;
-  }
-
-  header .brand-logo{
-    width:55px;
-    height:55px;
-    padding:3px;
-    border-radius:11px;
-  }
-
-  header .brand h1{
-    font-size:18px;
-    letter-spacing:0.1px;
-  }
-
-  header .brand small{
-    font-size:8px;
-    letter-spacing:0.7px;
-    margin-top:4px;
-  }
-
-  header .flex{
-    gap:5px;
-  }
-
-  header select,
-  header #logout{
-    padding:7px 6px;
-    font-size:11px;
-  }
-}
-
-@media(max-width:380px){
-  header .brand-logo{
-    width:46px;
-    height:46px;
-  }
-
-  header .brand h1{
-    font-size:15px;
-  }
-
-  header .brand small{
-    font-size:7px;
-  }
-
-  header select{
-    max-width:76px;
-  }
-}
-
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google-site-verification" content="i8klDfAWXKj0KWwW6eay-Y0i4h78a7Jy2bn0r8gqvY0">
+  <meta name="theme-color" content="#111719">
+  <meta name="description" content="TFC Bandiyod — One Team One Dream. Official club website, updates, activities and secure member portal.">
+  <meta property="og:title" content="TFC Bandiyod | One Team One Dream">
+  <meta property="og:description" content="Welcome to TFC Bandiyod. One Team One Dream.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://bandiyodtfc.github.io/Bandiyod-tfc-website-/tfc-logo.jpeg">
+  <link rel="icon" href="./tfc-logo.jpeg" type="image/jpeg">
+  <title>TFC BANDIYOD | One Team One Dream</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink:#111719;--ink2:#1d2528;--gold:#f4ce28;--gold2:#ffdf62;
+      --paper:#f7f7f2;--muted:#a9b4b5;--white:#ffffff;
+      font-family:system-ui,-apple-system,"Noto Sans Malayalam","Segoe UI",sans-serif;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;scroll-padding-top:92px}
+    body{margin:0;background:var(--ink);color:var(--white);line-height:1.6}
+    a{color:inherit;text-decoration:none}
+    button{font:inherit}
+    img{max-width:100%}
+    .container{width:min(1180px,calc(100% - 42px));margin:auto}
+    .skip{position:absolute;left:12px;top:-70px;background:#fff;color:#111;padding:10px;z-index:100}
+    .skip:focus{top:10px}
+    .topline{height:5px;background:linear-gradient(90deg,#f6cf19,#ffe890,#f6cf19)}
+    .site-header{position:sticky;top:0;z-index:10;background:rgba(17,23,25,.96);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.1)}
+    .nav{height:84px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .brand{display:flex;align-items:center;gap:13px;min-width:0}
+    .brand img{width:58px;height:58px;object-fit:contain;filter:drop-shadow(0 2px 4px #0005)}
+    .brand-name{font-size:clamp(17px,2.2vw,22px);line-height:1.1;font-weight:900;letter-spacing:.045em;white-space:nowrap}
+    .brand-sub{font-size:10px;letter-spacing:.19em;color:var(--gold);font-weight:800;margin-top:5px}
+    .nav-actions{display:flex;align-items:center;gap:20px}
+    .nav-links{display:flex;align-items:center;gap:22px}
+    .nav-links a{font-weight:650;font-size:13px;color:#d9dfdc;transition:color .15s}
+    .nav-links a:hover,.nav-links a:focus-visible{color:var(--gold)}
+    .lang-btn{background:transparent;border:1px solid #576062;border-radius:10px;color:white;padding:10px 11px;cursor:pointer;font-size:12px;font-weight:700}
+    .btn{display:inline-flex;justify-content:center;align-items:center;gap:9px;min-height:45px;border:1px solid transparent;border-radius:11px;padding:11px 18px;font-size:13px;font-weight:850;cursor:pointer;transition:transform .2s,background .2s}
+    .btn:hover{transform:translateY(-2px)}
+    .btn-gold{background:var(--gold);color:#151912}
+    .btn-gold:hover{background:var(--gold2)}
+    .btn-outline{border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.07);color:white}
+    .btn-outline:hover{background:rgba(255,255,255,.14)}
+    .menu-btn{display:none;border:1px solid #4b5758;color:white;background:transparent;border-radius:10px;width:42px;height:42px;align-items:center;justify-content:center;cursor:pointer;font-size:24px}
+    .hero{min-height:630px;position:relative;overflow:hidden;display:flex;align-items:center;background:#10191b}
+    .hero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(9,16,18,.94) 0%,rgba(9,16,18,.81) 38%,rgba(9,16,18,.45) 75%,rgba(9,16,18,.58) 100%),linear-gradient(0deg,#111719,transparent 25%),url('./tfc-login-bg.jpg') center/cover no-repeat;transform:scale(1.01)}
+    .hero:after{content:"";position:absolute;right:-80px;bottom:-240px;width:520px;height:520px;border:1px solid rgba(244,206,40,.15);border-radius:50%;box-shadow:0 0 0 80px rgba(244,206,40,.03),0 0 0 160px rgba(244,206,40,.02);pointer-events:none}
+    .hero-inner{position:relative;z-index:1;padding:100px 0 112px}
+    .eyebrow{display:inline-flex;align-items:center;gap:10px;color:var(--gold);font-weight:850;letter-spacing:.2em;font-size:12px;text-transform:uppercase}
+    .eyebrow:before{content:"";width:28px;height:2px;background:var(--gold)}
+    .hero h1{font-size:clamp(46px,8vw,96px);line-height:1.02;letter-spacing:-.042em;margin:22px 0 15px;font-weight:1000;max-width:890px}
+    .hero h1 span{color:var(--gold)}
+    .hero-slogan{font-weight:900;letter-spacing:.15em;font-size:clamp(15px,2.2vw,23px);margin:0;color:#f6eee0}
+    .hero-text{max-width:590px;color:#d2dbd8;font-size:clamp(14px,1.7vw,17px);margin:25px 0 30px}
+    .hero-cta{display:flex;gap:12px;flex-wrap:wrap}
+    .hero-underline{width:90px;height:5px;background:var(--gold);margin-top:37px;border-radius:20px}
+    .strip{background:var(--gold);color:#161b18}
+    .strip-inner{display:flex;align-items:center;justify-content:center;gap:18px;padding:18px 15px;text-align:center;font-size:13px;font-weight:900;letter-spacing:.13em}
+    .strip-dot{font-size:8px;opacity:.55}
+    section{padding:94px 0}
+    .section-kicker{font-size:12px;text-transform:uppercase;letter-spacing:.17em;font-weight:900;color:#bc9b16;margin-bottom:13px}
+    .section-title{font-size:clamp(30px,4.5vw,48px);font-weight:900;letter-spacing:-.035em;line-height:1.15;margin:0 0 22px}
+    .section-copy{color:#c1cdca;max-width:690px;margin:0;font-size:15px}
+    .about-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:64px;align-items:center}
+    .about-panel{position:relative;border:1px solid #364245;background:linear-gradient(140deg,#242e2f,#172123);border-radius:23px;padding:44px 35px;text-align:center;overflow:hidden}
+    .about-panel:before{content:"";position:absolute;background:var(--gold);width:200px;height:200px;filter:blur(135px);opacity:.24;top:-80px;right:-50px}
+    .about-panel img{position:relative;display:block;width:180px;height:180px;object-fit:contain;margin:0 auto 24px}
+    .about-panel strong{display:block;font-size:28px;letter-spacing:.06em}
+    .about-panel span{display:block;color:var(--gold);font-size:13px;font-weight:800;letter-spacing:.15em;margin-top:5px}
+    .features-section{background:var(--paper);color:#152021}
+    .features-section .section-copy{color:#536262}
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:38px}
+    .feature-card{background:#fff;border:1px solid #e7e9e1;border-radius:18px;padding:29px;min-height:228px;box-shadow:0 10px 25px rgba(0,0,0,.03)}
+    .feature-icon{width:55px;height:55px;background:#fff5c7;display:grid;place-items:center;border-radius:15px;font-size:25px;margin-bottom:22px}
+    .feature-card h3{font-size:18px;line-height:1.35;margin:0 0 12px}
+    .feature-card p{font-size:14px;color:#5e6a68;margin:0}
+    .membership-section{background:linear-gradient(145deg,#1f2a2c,#111719)}
+    .member-box{border:1px solid #404a49;border-radius:23px;padding:46px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:25px;background:rgba(255,255,255,.03)}
+    .member-box h2{font-size:clamp(25px,3.6vw,37px);line-height:1.2;margin:0 0 15px}
+    .member-box p{margin:0;color:#bdc8c5;max-width:625px;font-size:14px}
+    .fees{font-size:13px;color:var(--gold);font-weight:850;margin-top:18px}
+    .updates-section{background:var(--paper);color:var(--ink)}
+    .updates-note{background:white;border-radius:18px;border:1px solid #e5e7df;padding:27px;display:flex;gap:16px;align-items:center;margin-top:25px}
+    .updates-note .feature-icon{margin:0;flex:0 0 55px}
+    .updates-note strong{display:block;margin-bottom:3px}
+    .updates-note p{margin:0;font-size:13px;color:#5e6a68}
+    .contact-grid{display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap}
+    .contact-grid .section-copy{max-width:600px}
+    .footer{border-top:1px solid #384041;background:#0d1314}
+    .footer-inner{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;padding:30px 0;color:#b4c0bf;font-size:12px}
+    .footer strong{color:#fff;font-size:15px}
+    .footer small{display:block;color:var(--gold);letter-spacing:.15em;margin-top:3px}
+    .footer-links{display:flex;gap:17px}
+    :focus-visible{outline:3px solid #ffe578;outline-offset:3px}
+    @media(max-width:970px){
+      .nav-links{gap:11px}.nav-links a{font-size:12px}
+      .nav-actions{gap:10px}.nav-actions>.btn{padding:10px 12px}
+      .about-grid{gap:28px}
+    }
+    @media(max-width:760px){
+      .container{width:min(100% - 30px,1180px)}
+      .nav{height:75px;gap:9px}
+      .brand img{width:46px;height:46px}.brand-name{font-size:17px}.brand-sub{font-size:8px}
+      .menu-btn{display:flex}
+      .nav-actions>.btn{display:none}
+      .nav-links{display:none;position:absolute;top:80px;left:0;right:0;flex-direction:column;align-items:stretch;background:#141c1e;gap:0;padding:10px 15px 16px;border-bottom:1px solid #3a4848;box-shadow:0 12px 18px #0006}
+      .nav-links.is-open{display:flex}
+      .nav-links a{padding:14px 10px;border-bottom:1px solid #2b3436;font-size:14px}
+      .nav-links .mobile-login{display:block}
+      .hero{min-height:590px}
+      .hero:before{background:linear-gradient(90deg,rgba(9,16,18,.92),rgba(9,16,18,.56)),linear-gradient(0deg,#111719,transparent 36%),url('./tfc-login-bg.jpg') center/cover no-repeat}
+      .hero-inner{padding:80px 0 98px}
+      .hero h1{font-size:clamp(45px,12vw,73px)}
+      section{padding:70px 0}
+      .about-grid,.member-box{grid-template-columns:1fr}
+      .about-panel{padding:35px 20px}
+      .cards{grid-template-columns:1fr;gap:12px;margin-top:30px}
+      .feature-card{min-height:auto}
+      .member-box{padding:28px}
+      .strip-inner{gap:9px;letter-spacing:.06em;font-size:10px}
+      .contact-grid{align-items:flex-start;flex-direction:column}
+    }
+    @media(min-width:761px){.nav-links .mobile-login{display:none}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
+  </style>
 </head>
-
 <body>
-
-<header>
-<div class="brand">
-<img
-  src="./tfc-logo.jpeg"
-  alt="TFC Bandiyod Logo"
-  class="brand-logo"
->
-<div>
-<h1>TFC BANDIYOD</h1>
-<small>ONE TEAM ONE DREAM</small>
-</div>
-</div>
-
-<div class="flex">
-<select id="lang" style="width:auto">
-<option value="en">English</option>
-<option value="ml">മലയാളം</option>
-</select>
-<button id="logout" class="secondary hide">
-Sign out
-</button>
-</div>
-</header>
-
-<main class="wrap">
-<div id="msg" role="status"></div>
-
-<!-- LOGIN -->
-
-<section id="login" class="panel">
-<h2 data-t="welcome">
-Welcome to TFC Bandiyod
-</h2>
-<p data-t="loginText">
-Members can sign in with Google.
-New accounts require admin approval.
-</p>
-<button id="signIn" data-t="signIn">
-Continue with Google
-</button>
-</section>
-
-<!-- PENDING APPROVAL -->
-
-<section id="pending" class="panel hide">
-<h2 data-t="pending">
-Membership approval pending
-</h2>
-<p data-t="pendingText">
-Your Google account needs approval from the TFC admin.
-</p>
-
-<label data-t="memberNumber" for="claimNumber">
-Membership number
-</label>
-
-<input
-  id="claimNumber"
-  type="number"
-  min="1"
-  placeholder="e.g. 25"
->
-
-<button id="requestApproval" data-t="request">
-Request approval
-</button>
-</section>
-
-<!-- MEMBER PORTAL -->
-
-<section id="member" class="hide">
-
-<!-- MY PROFILE -->
-
-<div class="panel">
-<h2 id="memberTitle"></h2>
-<p id="memberMeta"></p>
-</div>
-
-<!-- PROFILE PHOTO -->
-
-<div class="panel">
-<h2>My Profile Photo</h2>
-
-<div class="feature-pending">
-<p class="muted">
-Upload or change your profile photo.
-</p>
-
-<button id="memberPhotoUpload" disabled>
-Upload My Photo
-</button>
-</div>
-</div>
-
-<!-- MEMBERSHIP INFORMATION -->
-
-<div class="grid">
-
-<div class="stat">
-<span data-t="due">Outstanding dues</span>
-<strong id="dueAmount">—</strong>
-</div>
-
-<div class="stat">
-<span data-t="paid">Paid months</span>
-<strong id="paidCount">—</strong>
-</div>
-
-<div class="stat">
-<span data-t="fee">Membership fee</span>
-<strong>₹50 / month</strong>
-</div>
-
-</div>
-
-<!-- PAYMENT HISTORY -->
-
-<div class="panel">
-<h2 data-t="history">Payment history</h2>
-
-<label for="memberHistoryYear">
-Select Year
-</label>
-
-<select id="memberHistoryYear" class="year-select">
-<option value="all">All Years</option>
-</select>
-
-<p class="muted">
-Historical payments are based on recorded membership card marks.
-Unmarked months are not automatically treated as outstanding dues.
-</p>
-
-<div class="scroll">
-<table>
-<thead>
-<tr>
-<th data-t="month">Month</th>
-<th data-t="status">Status</th>
-</tr>
-</thead>
-<tbody id="historyBody"></tbody>
-</table>
-</div>
-</div>
-
-<!-- PAY MEMBERSHIP -->
-
-<div class="panel">
-<h2 data-t="pay">Pay membership fee</h2>
-
-<div class="payment-status">
-<strong>UPI Membership Payment</strong>
-<p>
-Enter the amount you wish to pay.
-Available membership months will be selected automatically,
-starting from your earliest unpaid eligible month.
-Payment remains Pending until admin verifies the bank transfer.
-</p>
-</div>
-
-<!-- LEGACY PAYMENT FIELDS -->
-
-<div class="hide" aria-hidden="true">
-<select id="paymentPlan" tabindex="-1">
-<option value="monthly">Monthly</option>
-<option value="yearly">Yearly</option>
-</select>
-
-<input
-  id="paymentPeriod"
-  type="month"
-  tabindex="-1"
->
-</div>
-
-<!-- AUTOMATIC PAYMENT ₹50 TO ₹3000 -->
-
-<div id="autoPaymentControls">
-
-<h3>Automatic Month Selection</h3>
-
-<label for="autoPaymentAmount">
-Payment Amount (₹)
-</label>
-
-<input
-  id="autoPaymentAmount"
-  type="number"
-  min="50"
-  max="3000"
-  step="50"
-  value="50"
-  inputmode="numeric"
->
-
-<p class="auto-payment-note">
-Enter an amount from ₹50 to ₹3000
-in multiples of ₹50.
-</p>
-
-<p>
-<strong>Selected Months:</strong>
-</p>
-
-<p id="autoPaymentMonths" aria-live="polite">
-Loading payment records...
-</p>
-
-<p class="auto-payment-note">
-₹50 = 1 month ·
-₹100 = 2 months ·
-₹300 = 6 months ·
-₹600 = 12 months ·
-₹1200 = 24 months ·
-₹3000 = 60 months.
-Months are selected automatically.
-Already paid and pending months will be skipped.
-New members start from their joining month.
-</p>
-
-</div>
-
-<!-- UPI PAYMENT DETAILS -->
-
-<div class="payment-box">
-<h3>UPI Payment Details</h3>
-
-<p>UPI ID</p>
-
-<div id="displayUpiId" class="payment-id">
-waheedwahi84-1@oksbi
-</div>
-
-<p>
-Beneficiary:
-<strong>MOOSA WAHEED M B</strong>
-</p>
-
-<p>
-Membership Amount:
-<strong id="displayPaymentAmount">₹50</strong>
-</p>
-
-<div class="payment-actions">
-<button id="copyUpiId" type="button">
-Copy UPI ID
-</button>
-
-<button id="openGooglePay" type="button">
-Open Google Pay
-</button>
-</div>
-
-<p id="copyStatus" role="status"></p>
-
-<a
-  id="upiPayLink"
-  class="paylink"
-  href="#"
-  rel="noopener"
->
-Open UPI App — Enter ₹50
-</a>
-
-<p class="muted">
-Verify the recipient name and amount inside your UPI app before transferring money.
-This website does not automatically confirm bank payments.
-</p>
-</div>
-
-<ol class="payment-instructions">
-<li>Enter the amount in multiples of ₹50.</li>
-<li>Review the automatically selected months.</li>
-<li>Open your UPI app and verify the recipient.</li>
-<li>Transfer the exact amount.</li>
-<li>Copy the successful transaction reference number.</li>
-<li>Enter the reference below and submit for admin verification.</li>
-</ol>
-
-<label for="transactionId">
-UPI Transaction / Reference ID
-</label>
-
-<input
-  id="transactionId"
-  type="text"
-  maxlength="100"
-  autocomplete="off"
-  placeholder="Enter transaction reference"
->
-
-<p>
-<button id="submitPayment" type="button">
-Submit Payment for Verification
-</button>
-</p>
-
-<p class="muted">
-Payments require admin verification before being marked Paid.
-</p>
-
-<h3>Your Payment Submissions</h3>
-<div id="myPaymentList" class="scroll"></div>
-
-</div>
-
-<!-- MEMBER ACCOUNTS -->
-
-<div id="memberAccountsPanel" class="panel">
-
-<h2>TFC Accounts — Income & Expenses</h2>
-
-<p class="notice">
-Approved members can view the club's income,
-expenses and balance.
-Only admins can manage account entries.
-</p>
-
-<div id="accountsMemberContent"></div>
-
-</div>
-
-</section>
-
-<!-- ADMIN PORTAL -->
-
-<section id="admin" class="hide">
-
-<div class="panel">
-<h2 data-t="admin">Admin dashboard</h2>
-
-<div class="flex">
-<button id="tabRequests">Approval requests</button>
-<button id="tabMembers" class="secondary">Members</button>
-<button id="tabPayments" class="secondary">Payment verification</button>
-<button id="tabAddMember" class="secondary">+ Add Member</button>
-<button id="tabArchivedMembers" class="secondary">Archived Members</button>
-<button id="tabMemberPhotos" class="secondary">Member Photos</button>
-<button id="tabAccounts" class="secondary" type="button">Accounts</button>
-</div>
-</div>
-
-<!-- APPROVAL REQUESTS -->
-
-<div id="requestsPanel" class="panel">
-<h2>Pending Requests</h2>
-<div id="requestsList"></div>
-</div>
-
-<!-- ADMIN MEMBERS -->
-
-<div id="membersPanel" class="panel hide">
-
-<h2>Members</h2>
-
-<input
-  id="search"
-  placeholder="Search name or member number"
->
-
-<div id="membersList" class="scroll"></div>
-
-<!-- ADMIN PAYMENT HISTORY -->
-
-<div id="adminMemberHistory" class="panel hide">
-
-<h3 id="adminHistoryTitle">
-Member Payment History
-</h3>
-
-<p id="adminHistorySummary"></p>
-
-<label for="adminHistoryYear">
-Select Year
-</label>
-
-<select id="adminHistoryYear" class="year-select">
-<option value="all">All Years</option>
-</select>
-
-<div id="adminHistoryTable" class="scroll"></div>
-</div>
-
-<!-- EDIT MEMBER -->
-
-<div id="editMemberPanel" class="panel hide">
-<h3>Edit Member</h3>
-
-<p class="muted">
-Update member details without changing the membership number
-or existing payment history.
-</p>
-
-<form id="editMemberForm">
-
-<label for="editMemberNumber">
-Member Number
-</label>
-<input
-  id="editMemberNumber"
-  type="number"
-  readonly
-  required
->
-
-<label for="editMemberName">
-Full Name
-</label>
-<input
-  id="editMemberName"
-  type="text"
-  maxlength="100"
-  required
->
-
-<label for="editMemberPhone">
-Mobile Number
-</label>
-<input
-  id="editMemberPhone"
-  type="tel"
-  maxlength="15"
->
-
-<label for="editMemberDate">
-Joining Date
-</label>
-<input
-  id="editMemberDate"
-  type="date"
-  required
->
-
-<label for="editMemberStatus">
-Membership Status
-</label>
-
-<select id="editMemberStatus">
-<option value="active">Active</option>
-<option value="inactive">Inactive</option>
-</select>
-
-<div class="form-actions">
-
-<button id="saveEditMember" type="submit">
-Save Changes
-</button>
-
-<button
-  id="cancelEditMember"
-  type="button"
-  class="secondary"
->
-Cancel
-</button>
-
-</div>
-</form>
-</div>
-
-<!-- ARCHIVE MEMBER -->
-
-<div id="archiveMemberPanel" class="panel hide">
-
-<h3>Archive Member</h3>
-
-<div class="archive-warning">
-<strong>
-Important: Archive is not permanent deletion.
-</strong>
-<p>
-Member records and payment history must be preserved before archival.
-</p>
-<p>
-Old Google login access and pending payment requests must be handled safely.
-</p>
-</div>
-
-<p id="archiveMemberSummary"></p>
-
-<form id="archiveMemberForm">
-
-<label for="archiveMemberNumber">
-Member Number
-</label>
-
-<input
-  id="archiveMemberNumber"
-  type="number"
-  readonly
-  required
->
-
-<label for="archiveMemberReason">
-Reason for Archiving
-</label>
-
-<select id="archiveMemberReason" required>
-<option value="">Select reason</option>
-<option value="resigned">Resigned</option>
-<option value="inactive">Inactive Membership</option>
-<option value="deceased">Deceased</option>
-<option value="duplicate">Duplicate Record</option>
-<option value="other">Other</option>
-</select>
-
-<label for="archiveMemberNotes">
-Notes (Optional)
-</label>
-
-<input
-  id="archiveMemberNotes"
-  type="text"
-  maxlength="250"
->
-
-<label class="flex">
-<input
-  id="archiveMemberConfirm"
-  type="checkbox"
-  style="width:auto"
-  required
->
-I understand that this member will be moved to the admin-only archive.
-</label>
-
-<div class="form-actions">
-
-<button
-  id="confirmArchiveMember"
-  type="submit"
-  class="danger"
-  disabled
->
-Confirm Archive
-</button>
-
-<button
-  id="cancelArchiveMember"
-  type="button"
-  class="secondary"
->
-Cancel
-</button>
-
-</div>
-</form>
-</div>
-
-</div>
-
-<!-- PAYMENT VERIFICATION -->
-
-<div id="paymentsPanel" class="panel hide">
-
-<h2>Payment Verification</h2>
-
-<p class="notice">
-Verify the actual bank credit before approving a payment.
-A transaction reference alone is not proof of payment.
-</p>
-
-<div id="adminPaymentList"></div>
-
-</div>
-
-<!-- ADD MEMBER -->
-
-<div id="addMemberPanel" class="panel hide">
-
-<h2>Add New Member</h2>
-
-<p class="notice">
-Admin only. Enter an available member number.
-Previously used numbers must not be reused without safe archival.
-</p>
-
-<form id="addMemberForm">
-
-<label for="newMemberNumber">
-Member Number
-</label>
-
-<input
-  id="newMemberNumber"
-  type="number"
-  min="1"
-  step="1"
-  required
->
-
-<label for="newMemberName">
-Full Name
-</label>
-
-<input
-  id="newMemberName"
-  type="text"
-  maxlength="100"
-  required
->
-
-<label for="newMemberPhone">
-Mobile Number
-</label>
-
-<input
-  id="newMemberPhone"
-  type="tel"
-  maxlength="15"
->
-
-<label for="newMemberDate">
-Joining Date
-</label>
-
-<input
-  id="newMemberDate"
-  type="date"
-  required
->
-
-<label for="newMemberStatus">
-Membership Status
-</label>
-
-<select id="newMemberStatus">
-<option value="active">Active</option>
-<option value="inactive">Inactive</option>
-</select>
-
-<p>
-<button id="saveNewMember" type="submit">
-Save Member
-</button>
-</p>
-
-</form>
-</div>
-
-<!-- ARCHIVED MEMBERS -->
-
-<div id="archivedMembersPanel" class="panel hide">
-
-<h2>Archived Members</h2>
-
-<p class="notice">
-Admin only. Former member records and payment history are retained here.
-</p>
-
-<label for="archivedMembersSearch">
-Search Archived Members
-</label>
-
-<input
-  id="archivedMembersSearch"
-  type="search"
-  placeholder="Search name, number or archive ID"
->
-
-<div id="archivedMembersList" class="scroll"></div>
-
-<div id="archivedMemberHistory" class="panel hide">
-
-<h3 id="archivedHistoryTitle">
-Archived Payment History
-</h3>
-
-<p id="archivedHistorySummary"></p>
-
-<div id="archivedHistoryTable" class="scroll"></div>
-
-</div>
-</div>
-
-<!-- MEMBER PHOTOS ADMIN -->
-
-<div id="memberPhotosPanel" class="panel hide">
-
-<h2>Member Profile Photos</h2>
-
-<p class="muted">
-Admin can upload, change and delete active member profile photos.
-</p>
-
-<label for="photoMemberSearch">
-Search Member
-</label>
-
-<input
-  id="photoMemberSearch"
-  type="search"
-  placeholder="Search member number or name"
->
-
-<div id="photoMembersList" class="scroll"></div>
-
-<div class="feature-pending">
-<button id="adminPhotoUpload" disabled>
-Upload Member Photo
-</button>
-</div>
-
-</div>
-
-<!-- IMPORT STATUS -->
-
-<div id="importStatusPanel" class="panel hide">
-
-<h2>2027 Payment Import</h2>
-
-<p class="notice">
-2027 membership card payments will be imported after validation.
-Existing 2024–2026 records will be preserved.
-</p>
-
-<p id="importStatusText">
-Import not completed.
-</p>
-
-</div>
-
-<!-- ADMIN ACCOUNTS -->
-
-<div id="accountsPanel" class="panel hide">
-
-<h2>Accounts — Income & Expenses</h2>
-
-<p class="notice">
-Admin Accounts Management.
-Membership income must not be entered twice.
-Historical records and opening balance must be preserved.
-</p>
-
-<div id="accountsAdminContent"></div>
-
-</div>
-
-</section>
-
-</main>
-
-<footer>
-© TFC Bandiyod · Private Member Portal
-</footer>
-
-<!-- UPI INTERFACE SCRIPT -->
-
-<script>
-(function(){
-  const UPI_ID = 'waheedwahi84-1@oksbi';
-
-  const amountInput =
-    document.getElementById('autoPaymentAmount');
-
-  const amountDisplay =
-    document.getElementById('displayPaymentAmount');
-
-  const copyButton =
-    document.getElementById('copyUpiId');
-
-  const googlePayButton =
-    document.getElementById('openGooglePay');
-
-  const copyStatus =
-    document.getElementById('copyStatus');
-
-  function updateAmountDisplay(){
-    const amount = Number(amountInput.value);
-
-    const valid =
-      Number.isInteger(amount) &&
-      amount >= 50 &&
-      amount <= 3000 &&
-      amount % 50 === 0;
-
-    amountDisplay.textContent =
-      valid ? '₹' + amount : 'Invalid amount';
-  }
-
-  amountInput.addEventListener(
-    'input',
-    updateAmountDisplay
-  );
-
-  copyButton.addEventListener(
-    'click',
-    async function(){
-      try {
-        await navigator.clipboard.writeText(UPI_ID);
-
-        copyStatus.textContent =
-          'UPI ID copied successfully.';
-      } catch(e) {
-        copyStatus.textContent =
-          'Copy unavailable. Please copy the UPI ID manually.';
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="topline"></div>
+  <header class="site-header">
+    <div class="container nav">
+      <a href="#home" class="brand" aria-label="TFC Bandiyod - Home">
+        <img src="./tfc-logo.jpeg" alt="TFC Bandiyod emblem" width="58" height="58">
+        <div><div class="brand-name">TFC BANDIYOD</div><div class="brand-sub">ONE TEAM ONE DREAM</div></div>
+      </a>
+      <nav class="nav-links" id="navLinks" aria-label="Primary navigation">
+        <a href="#home" data-i18n="navHome">ഹോം</a>
+        <a href="#about" data-i18n="navAbout">ഞങ്ങളെക്കുറിച്ച്</a>
+        <a href="#activities" data-i18n="navActivities">പ്രവർത്തനങ്ങൾ</a>
+        <a href="#updates" data-i18n="navUpdates">അറിയിപ്പുകൾ</a>
+        <a href="#contact" data-i18n="navContact">ബന്ധപ്പെടുക</a>
+        <a class="mobile-login" href="./portal.html" data-i18n="memberLogin">Member Login</a>
+      </nav>
+      <div class="nav-actions">
+        <button id="langBtn" class="lang-btn" type="button" aria-label="Switch language">EN</button>
+        <a class="btn btn-gold" href="./portal.html" data-i18n="memberLogin">Member Login</a>
+        <button id="menuBtn" class="menu-btn" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section id="home" class="hero" aria-labelledby="heroTitle">
+      <div class="container hero-inner">
+        <div class="eyebrow" data-i18n="welcome">Welcome to TFC Bandiyod</div>
+        <h1 id="heroTitle">TFC<br><span>BANDIYOD</span></h1>
+        <p class="hero-slogan">ONE TEAM ONE DREAM</p>
+        <p class="hero-text" data-i18n="heroText">ഒരുമയും സൗഹൃദവും കൂട്ടായ്മയും മുൻനിർത്തി മുന്നേറുന്ന നമ്മുടെ ക്ലബ്ബിന്റെ ഔദ്യോഗിക വെബ്‌സൈറ്റിലേക്ക് സ്വാഗതം.</p>
+        <div class="hero-cta">
+          <a class="btn btn-gold" href="./portal.html"><span data-i18n="memberPortal">Member Portal</span><span aria-hidden="true">↗</span></a>
+          <a class="btn btn-outline" href="#about" data-i18n="explore">കൂടുതൽ അറിയുക</a>
+        </div>
+        <div class="hero-underline" aria-hidden="true"></div>
+      </div>
+    </section>
+    <div class="strip" aria-label="Club motto">
+      <div class="container strip-inner"><span>UNITY</span><span class="strip-dot">◆</span><span>TEAMWORK</span><span class="strip-dot">◆</span><span>ONE TEAM ONE DREAM</span></div>
+    </div>
+    <section id="about" aria-labelledby="aboutTitle">
+      <div class="container about-grid">
+        <div>
+          <div class="section-kicker" data-i18n="aboutLabel">About us</div>
+          <h2 id="aboutTitle" class="section-title" data-i18n="aboutTitle">നമ്മുടെ കൂട്ടായ്മ, നമ്മുടെ അഭിമാനം</h2>
+          <p class="section-copy" data-i18n="aboutBody">TFC Bandiyod അംഗങ്ങളെ ഒരുമിപ്പിക്കുന്ന ഒരു കൂട്ടായ്മയാണ്. സൗഹൃദം, പരസ്പര സഹകരണം, ടീം സ്പിരിറ്റ് എന്നിവയാണ് നമ്മുടെ മുന്നേറ്റത്തിന്റെ അടിസ്ഥാനം.</p>
+        </div>
+        <div class="about-panel">
+          <img src="./tfc-logo.jpeg" alt="TFC Bandiyod logo" width="180" height="180" loading="lazy">
+          <strong>TFC BANDIYOD</strong>
+          <span>ONE TEAM ONE DREAM</span>
+        </div>
+      </div>
+    </section>
+    <section id="activities" class="features-section" aria-labelledby="activityTitle">
+      <div class="container">
+        <div class="section-kicker" data-i18n="activityLabel">Our community</div>
+        <h2 id="activityTitle" class="section-title" data-i18n="activityTitle">നമ്മുടെ പ്രവർത്തനങ്ങൾ</h2>
+        <p class="section-copy" data-i18n="activityIntro">ക്ലബ്ബിന്റെ പ്രവർത്തനങ്ങളും അംഗങ്ങൾക്കായുള്ള ഡിജിറ്റൽ സൗകര്യങ്ങളും ഒരു സ്ഥലത്ത്.</p>
+        <div class="cards">
+          <article class="feature-card"><div class="feature-icon" aria-hidden="true">⚽</div><h3 data-i18n="card1Title">ടീം സ്പിരിറ്റ്</h3><p data-i18n="card1Body">ഒരുമയും സൗഹൃദവും വളർത്തുന്ന ക്ലബ് പ്രവർത്തനങ്ങൾ.</p></article>
+          <article class="feature-card"><div class="feature-icon" aria-hidden="true">🤝</div><h3 data-i18n="card2Title">കൂട്ടായ്മ</h3><p data-i18n="card2Body">അംഗങ്ങൾ തമ്മിലുള്ള ബന്ധവും സഹകരണവും ശക്തിപ്പെടുത്തുക.</p></article>
+          <article class="feature-card"><div class="feature-icon" aria-hidden="true">📱</div><h3 data-i18n="card3Title">ഡിജിറ്റൽ മെമ്പർഷിപ്പ്</h3><p data-i18n="card3Body">അംഗത്വ വിവരങ്ങളും അംഗീകരിച്ച പേയ്‌മെന്റുകളും സുരക്ഷിതമായി കാണാം.</p></article>
+        </div>
+      </div>
+    </section>
+    <section id="membership" class="membership-section" aria-labelledby="memberTitle">
+      <div class="container">
+        <div class="member-box">
+          <div>
+            <div class="section-kicker" data-i18n="membersLabel">For members</div>
+            <h2 id="memberTitle" data-i18n="membersTitle">നിങ്ങളുടെ മെമ്പർഷിപ്പ് വിവരങ്ങൾ ഇവിടെ</h2>
+            <p data-i18n="membersBody">Google അക്കൗണ്ട് ഉപയോഗിച്ച് ലോഗിൻ ചെയ്യാം. അഡ്മിൻ അംഗീകരിച്ച അംഗങ്ങൾക്ക് പ്രൊഫൈലും പേയ്‌മെന്റ് ചരിത്രവും കാണാം.</p>
+            <div class="fees" data-i18n="fees">അംഗത്വ ഫീസ്: ₹50 / മാസം · ₹600 / വർഷം</div>
+          </div>
+          <a class="btn btn-gold" href="./portal.html" data-i18n="openPortal">Member Login തുറക്കുക</a>
+        </div>
+      </div>
+    </section>
+    <section id="updates" class="updates-section" aria-labelledby="updatesTitle">
+      <div class="container">
+        <div class="section-kicker" data-i18n="updatesLabel">Club news</div>
+        <h2 id="updatesTitle" class="section-title" data-i18n="updatesTitle">അറിയിപ്പുകൾ</h2>
+        <div class="updates-note">
+          <div class="feature-icon" aria-hidden="true">📢</div>
+          <div><strong data-i18n="updatesCardTitle">ഔദ്യോഗിക അറിയിപ്പുകൾ</strong><p data-i18n="updatesCardBody">പുതിയ വാർത്തകളും ക്ലബ് അറിയിപ്പുകളും ഇവിടെ ഉടൻ പ്രസിദ്ധീകരിക്കും.</p></div>
+        </div>
+      </div>
+    </section>
+    <section id="contact" aria-labelledby="contactTitle">
+      <div class="container contact-grid">
+        <div>
+          <div class="section-kicker" data-i18n="contactLabel">Get in touch</div>
+          <h2 id="contactTitle" class="section-title" data-i18n="contactTitle">ഞങ്ങളുമായി ബന്ധപ്പെടാം</h2>
+          <p class="section-copy" data-i18n="contactBody">TFC Bandiyod സംബന്ധിച്ച വിവരങ്ങൾക്കും അന്വേഷണങ്ങൾക്കും ഇമെയിൽ വഴി ബന്ധപ്പെടുക.</p>
+        </div>
+        <a class="btn btn-gold" href="mailto:bandiyodtfc@gmail.com">✉ bandiyodtfc@gmail.com</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div><strong>TFC BANDIYOD</strong><small>ONE TEAM ONE DREAM</small></div>
+      <div>© <span id="year">2026</span> TFC Bandiyod. <span data-i18n="rights">All rights reserved.</span></div>
+      <div class="footer-links"><a href="#home" data-i18n="navHome">ഹോം</a><a href="./portal.html" data-i18n="memberLogin">Member Login</a></div>
+    </div>
+  </footer>
+
+  <script>
+    const translations = {
+      ml: {
+        navHome:'ഹോം',navAbout:'ഞങ്ങളെക്കുറിച്ച്',navActivities:'പ്രവർത്തനങ്ങൾ',navUpdates:'അറിയിപ്പുകൾ',navContact:'ബന്ധപ്പെടുക',memberLogin:'മെമ്പർ ലോഗിൻ',
+        welcome:'TFC Bandiyod-ലേക്ക് സ്വാഗതം',heroText:'ഒരുമയും സൗഹൃദവും കൂട്ടായ്മയും മുൻനിർത്തി മുന്നേറുന്ന നമ്മുടെ ക്ലബ്ബിന്റെ ഔദ്യോഗിക വെബ്‌സൈറ്റിലേക്ക് സ്വാഗതം.',memberPortal:'മെമ്പർ പോർട്ടൽ',explore:'കൂടുതൽ അറിയുക',
+        aboutLabel:'ഞങ്ങളെക്കുറിച്ച്',aboutTitle:'നമ്മുടെ കൂട്ടായ്മ, നമ്മുടെ അഭിമാനം',aboutBody:'TFC Bandiyod അംഗങ്ങളെ ഒരുമിപ്പിക്കുന്ന ഒരു കൂട്ടായ്മയാണ്. സൗഹൃദം, പരസ്പര സഹകരണം, ടീം സ്പിരിറ്റ് എന്നിവയാണ് നമ്മുടെ മുന്നേറ്റത്തിന്റെ അടിസ്ഥാനം.',
+        activityLabel:'നമ്മുടെ കൂട്ടായ്മ',activityTitle:'നമ്മുടെ പ്രവർത്തനങ്ങൾ',activityIntro:'ക്ലബ്ബിന്റെ പ്രവർത്തനങ്ങളും അംഗങ്ങൾക്കായുള്ള ഡിജിറ്റൽ സൗകര്യങ്ങളും ഒരു സ്ഥലത്ത്.',
+        card1Title:'ടീം സ്പിരിറ്റ്',card1Body:'ഒരുമയും സൗഹൃദവും വളർത്തുന്ന ക്ലബ് പ്രവർത്തനങ്ങൾ.',card2Title:'കൂട്ടായ്മ',card2Body:'അംഗങ്ങൾ തമ്മിലുള്ള ബന്ധവും സഹകരണവും ശക്തിപ്പെടുത്തുക.',card3Title:'ഡിജിറ്റൽ മെമ്പർഷിപ്പ്',card3Body:'അംഗത്വ വിവരങ്ങളും അംഗീകരിച്ച പേയ്‌മെന്റുകളും സുരക്ഷിതമായി കാണാം.',
+        membersLabel:'അംഗങ്ങൾക്കായി',membersTitle:'നിങ്ങളുടെ മെമ്പർഷിപ്പ് വിവരങ്ങൾ ഇവിടെ',membersBody:'Google അക്കൗണ്ട് ഉപയോഗിച്ച് ലോഗിൻ ചെയ്യാം. അഡ്മിൻ അംഗീകരിച്ച അംഗങ്ങൾക്ക് പ്രൊഫൈലും പേയ്‌മെന്റ് ചരിത്രവും കാണാം.',fees:'അംഗത്വ ഫീസ്: ₹50 / മാസം · ₹600 / വർഷം',openPortal:'മെമ്പർ ലോഗിൻ തുറക്കുക',
+        updatesLabel:'ക്ലബ് വാർത്തകൾ',updatesTitle:'അറിയിപ്പുകൾ',updatesCardTitle:'ഔദ്യോഗിക അറിയിപ്പുകൾ',updatesCardBody:'പുതിയ വാർത്തകളും ക്ലബ് അറിയിപ്പുകളും ഇവിടെ ഉടൻ പ്രസിദ്ധീകരിക്കും.',
+        contactLabel:'ബന്ധപ്പെടുക',contactTitle:'ഞങ്ങളുമായി ബന്ധപ്പെടാം',contactBody:'TFC Bandiyod സംബന്ധിച്ച വിവരങ്ങൾക്കും അന്വേഷണങ്ങൾക്കും ഇമെയിൽ വഴി ബന്ധപ്പെടുക.',rights:'എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്തം.'
+      },
+      en: {
+        navHome:'Home',navAbout:'About',navActivities:'Activities',navUpdates:'Updates',navContact:'Contact',memberLogin:'Member Login',
+        welcome:'Welcome to TFC Bandiyod',heroText:'Welcome to the official website of TFC Bandiyod — united by friendship, teamwork and a shared dream.',memberPortal:'Member Portal',explore:'Explore More',
+        aboutLabel:'About us',aboutTitle:'One club. One family. One dream.',aboutBody:'TFC Bandiyod is a community that brings members together. Friendship, mutual support and team spirit drive us forward.',
+        activityLabel:'Our community',activityTitle:'What We Do',activityIntro:'Discover our club community and the digital services available to members.',
+        card1Title:'Team Spirit',card1Body:'Club activities that encourage unity and friendship.',card2Title:'Community',card2Body:'Stronger connections and cooperation among our members.',card3Title:'Digital Membership',card3Body:'Secure access to membership details and approved payment history.',
+        membersLabel:'For members',membersTitle:'Your membership, in one place',membersBody:'Sign in with Google. Admin-approved members can access their profile and payment history.',fees:'Membership fee: ₹50 / month · ₹600 / year',openPortal:'Open Member Login',
+        updatesLabel:'Club news',updatesTitle:'Latest Updates',updatesCardTitle:'Official Announcements',updatesCardBody:'Club news and official announcements will be published here soon.',
+        contactLabel:'Get in touch',contactTitle:'Contact Us',contactBody:'For club information and enquiries, please contact TFC Bandiyod by email.',rights:'All rights reserved.'
       }
-    }
-  );
-
-  googlePayButton.addEventListener(
-    'click',
-    function(){
-      copyStatus.textContent =
-        'Payment activation is pending final verification. Please do not transfer money yet.';
-    }
-  );
-
-  updateAmountDisplay();
-})();
-</script>
-
-<!-- EXISTING MODULES: UNCHANGED -->
-
-<script type="module" src="./app.js?v=88.4"></script>
-<script type="module" src="./accounts.js?v=84.0"></script>
-<script type="module" src="./membership-income.js?v=87.0"></script>
-<script type="module" src="./member-photos.js?v=1.0"></script>
-
-<!-- TFC MEMBER DASHBOARD v89.4 -->
-<!-- FIVE MENUS; PHOTO INSIDE MY PROFILE -->
-
-<script>
-(() => {
-  const member =
-    document.getElementById('member');
-
-  if (
-    !member ||
-    document.getElementById('tfcMemberMenu')
-  ) return;
-
-  const byId = id =>
-    document.getElementById(id);
-
-  const findSection = id =>
-    byId(id)?.closest('.panel');
-
-  const profilePanel =
-    findSection('memberTitle');
-
-  const photoPanel =
-    findSection('memberPhotoUpload');
-
-  const membershipPanel =
-    byId('paidCount')?.closest('.grid');
-
-  const historyPanel =
-    findSection('historyBody');
-
-  const paymentPanel =
-    findSection('submitPayment');
-
-  const accountsPanel =
-    byId('memberAccountsPanel');
-
-  /*
-   My Profile includes:
-   - Member name and number
-   - Member mobile profile
-   - Member profile photo
-
-   Original sections remain unchanged.
-  */
-
-  const views = [
-    {
-      id: 'profile',
-      elements: [
-        profilePanel,
-        photoPanel
-      ],
-      en: 'My Profile',
-      ml: 'എന്റെ പ്രൊഫൈൽ',
-      icon: '👤'
-    },
-    {
-      id: 'membership',
-      elements: [membershipPanel],
-      en: 'Membership',
-      ml: 'അംഗത്വ വിവരങ്ങൾ',
-      icon: '📋'
-    },
-    {
-      id: 'history',
-      elements: [historyPanel],
-      en: 'Payment History',
-      ml: 'പേയ്മെന്റ് ചരിത്രം',
-      icon: '🗓️'
-    },
-    {
-      id: 'payment',
-      elements: [paymentPanel],
-      en: 'Pay Membership',
-      ml: 'ഫീസ് അടയ്ക്കുക',
-      icon: '💳'
-    },
-    {
-      id: 'accounts',
-      elements: [accountsPanel],
-      en: 'TFC Accounts',
-      ml: 'TFC അക്കൗണ്ട്സ്',
-      icon: '📊'
-    }
-  ];
-
-  if (
-    views.some(view =>
-      view.elements.some(element => !element)
-    )
-  ) {
-    console.warn(
-      'TFC Dashboard: Original section missing. Layout retained.'
-    );
-    return;
-  }
-
-  const menu =
-    document.createElement('div');
-
-  menu.id = 'tfcMemberMenu';
-  menu.className = 'panel';
-
-  const heading =
-    document.createElement('h2');
-
-  heading.id = 'tfcMemberMenuTitle';
-
-  const description =
-    document.createElement('p');
-
-  description.className = 'muted';
-
-  const grid =
-    document.createElement('div');
-
-  grid.className = 'tfc-dashboard-grid';
-
-  menu.append(
-    heading,
-    description,
-    grid
-  );
-
-  function openView(id, scroll = false) {
-    const selectedView =
-      views.find(view => view.id === id);
-
-    if (!selectedView) return;
-
-    for (const view of views) {
-      const selected = view.id === id;
-
-      for (const element of view.elements) {
-        element.classList.toggle(
-          'tfc-dashboard-hidden',
-          !selected
-        );
-      }
-
-      view.button.setAttribute(
-        'aria-pressed',
-        String(selected)
-      );
-    }
-
-    member.dataset.tfcOpenView = id;
-
-    if (scroll) {
-      selectedView.elements[0].scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
+    };
+    const langBtn = document.getElementById('langBtn');
+    function setLanguage(lang){
+      const chosen = lang === 'en' ? 'en' : 'ml';
+      document.documentElement.lang = chosen;
+      document.querySelectorAll('[data-i18n]').forEach(el=>{
+        const translated = translations[chosen][el.dataset.i18n];
+        if(translated) el.textContent=translated;
       });
+      langBtn.textContent=chosen === 'ml' ? 'EN' : 'മല';
+      langBtn.setAttribute('aria-label',chosen === 'ml' ? 'Switch to English' : 'മലയാളത്തിലേക്ക് മാറ്റുക');
+      try{localStorage.setItem('tfc_home_lang',chosen)}catch(e){}
     }
-  }
-
-  // Create five dashboard buttons.
-
-  for (const view of views) {
-    view.elements.forEach((element, index) => {
-      if (!element.id) {
-        element.id =
-          'tfcSection_' + view.id + '_' + index;
-      }
+    let saved='ml';
+    try{saved=localStorage.getItem('tfc_home_lang') || 'ml'}catch(e){}
+    setLanguage(saved);
+    langBtn.addEventListener('click',()=>setLanguage(document.documentElement.lang==='ml'?'en':'ml'));
+    const menuBtn=document.getElementById('menuBtn');
+    const navLinks=document.getElementById('navLinks');
+    menuBtn.addEventListener('click',()=>{
+      const opened=navLinks.classList.toggle('is-open');
+      menuBtn.setAttribute('aria-expanded',String(opened));
+      menuBtn.textContent=opened?'×':'☰';
+      menuBtn.setAttribute('aria-label',opened?'Close menu':'Open menu');
     });
-
-    const btn =
-      document.createElement('button');
-
-    btn.type = 'button';
-    btn.className = 'tfc-dashboard-button';
-
-    btn.setAttribute(
-      'aria-controls',
-      view.elements
-        .map(element => element.id)
-        .join(' ')
-    );
-
-    btn.setAttribute(
-      'aria-pressed',
-      'false'
-    );
-
-    btn.addEventListener(
-      'click',
-      () => openView(view.id, true)
-    );
-
-    view.button = btn;
-
-    grid.append(btn);
-  }
-
-  // Malayalam / English
-
-  function translateMenu() {
-    const isMalayalam =
-      byId('lang')?.value === 'ml';
-
-    heading.textContent = isMalayalam
-      ? 'അംഗങ്ങളുടെ ഡാഷ്ബോർഡ്'
-      : 'Member Dashboard';
-
-    description.textContent = isMalayalam
-      ? 'താഴെയുള്ള വിഭാഗം തിരഞ്ഞെടുക്കുക.'
-      : 'Select a section to view its details.';
-
-    for (const view of views) {
-      const emoji =
-        document.createElement('span');
-
-      emoji.textContent = view.icon;
-
-      emoji.setAttribute(
-        'aria-hidden',
-        'true'
-      );
-
-      view.button.replaceChildren(
-        emoji,
-        document.createTextNode(
-          isMalayalam ? view.ml : view.en
-        )
-      );
-    }
-  }
-
-  member.insertBefore(
-    menu,
-    member.firstChild
-  );
-
-  byId('lang')?.addEventListener(
-    'change',
-    translateMenu
-  );
-
-  translateMenu();
-
-  // Profile and photo visible together.
-
-  openView('profile');
-
-  console.info(
-    'TFC Bandiyod Member Dashboard v89.4 loaded.'
-  );
-})();
-</script>
-
+    navLinks.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>{
+      navLinks.classList.remove('is-open');
+      menuBtn.setAttribute('aria-expanded','false');
+      menuBtn.textContent='☰';
+    }));
+    document.getElementById('year').textContent=new Date().getFullYear();
+  </script>
 </body>
 </html>
