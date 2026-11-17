@@ -5930,4 +5930,408 @@ if (autoAmountInputV885) {
 
 console.info('TFC v88.5 loaded');
 
+/*
+ TFC BANDIYOD — WhatsApp Receipt Add-on v89.0
+
+ Paste at the VERY END of existing app.js
+ (after v88.5).
+
+ Read-only:
+ - Does not write to Firebase
+ - Does not modify payment functions
+ - Admin-only receipt buttons
+ - WhatsApp opens with a prepared message
+ - Admin must press Send in WhatsApp
+*/
+
+(() => {
+  const memberPanel = $('membersPanel');
+  const memberTableRoot = $('membersList');
+
+  if (!memberPanel || !memberTableRoot) {
+    console.warn('TFC Receipt: Members panel not found.');
+    return;
+  }
+
+  if ($('tfcReceiptPanel')) return;
+
+  const panel = document.createElement('section');
+  panel.id = 'tfcReceiptPanel';
+  panel.className = 'panel hide';
+
+  panel.innerHTML =
+    '<h3>WhatsApp Payment Receipts</h3>' +
+    '<p id="tfcReceiptTitle"></p>' +
+    '<div id="tfcReceiptItems"></div>';
+
+  const close = button(
+    'Close Receipts',
+    () => {
+      show('tfcReceiptPanel', false);
+    },
+    'secondary'
+  );
+
+  panel.append(close);
+  memberPanel.append(panel);
+
+  function whatsappNumber(phone) {
+    const digits = String(phone || '')
+      .replace(/\D/g, '');
+
+    if (/^[6-9]\d{9}$/.test(digits)) {
+      return '91' + digits;
+    }
+
+    if (/^91[6-9]\d{9}$/.test(digits)) {
+      return digits;
+    }
+
+    return null;
+  }
+
+  function dateText(value) {
+    if (
+      typeof value === 'string' &&
+      validDate(value)
+    ) {
+      return value.split('-').reverse().join('/');
+    }
+
+    const time = Number(value);
+
+    return Number.isFinite(time) && time > 0
+      ? new Date(time).toLocaleDateString('en-IN')
+      : 'Date unavailable';
+  }
+
+  function availableReceipts(number) {
+    const member = memberList[number];
+
+    if (!member) return [];
+
+    const corrections =
+      adminCorrections[number] || {};
+
+    const groups = new Map();
+
+    for (const [period, record] of Object.entries(
+      member.payments || {}
+    )) {
+      if (
+        !validPeriod(period) ||
+        record?.status !== 'paid'
+      ) {
+        continue;
+      }
+
+      const isCash = record.method === 'cash';
+
+      const requestId =
+        String(record.requestId || '');
+
+      const isUpi =
+        !isCash &&
+        requestId &&
+        payments[requestId]?.status === 'approved' &&
+        String(
+          payments[requestId]?.memberNumber
+        ) === number;
+
+      if (!isCash && !isUpi) continue;
+
+      const verifiedAt =
+        Number(record.verifiedAt);
+
+      if (
+        !Number.isFinite(verifiedAt) ||
+        verifiedAt <= 0
+      ) {
+        continue;
+      }
+
+      const key = isCash
+        ? `cash:${verifiedAt}:${String(record.verifiedBy || '')}`
+        : `upi:${requestId}`;
+
+      if (!groups.has(key)) {
+        groups.set(key, {
+          key,
+          kind: isCash ? 'cash' : 'upi',
+          requestId,
+          at: verifiedAt,
+          receivedDate: record.receivedDate || '',
+          periods: [],
+          amount: 0,
+          invalid: false
+        });
+      }
+
+      const group = groups.get(key);
+
+      group.periods.push(period);
+      group.amount += Number(record.amount);
+
+      if (
+        corrections[period]?.state === 'cancelled'
+      ) {
+        group.invalid = true;
+      }
+    }
+
+    return [...groups.values()]
+      .filter(group => {
+        group.periods.sort();
+
+        if (
+          group.invalid ||
+          !Number.isSafeInteger(group.amount) ||
+          group.amount !==
+            group.periods.length * MONTHLY_FEE
+        ) {
+          return false;
+        }
+
+        if (group.kind === 'upi') {
+          const request =
+            payments[group.requestId];
+
+          if (
+            !request ||
+            Number(request.amount) !== group.amount
+          ) {
+            return false;
+          }
+
+          try {
+            if (
+              !samePeriods(
+                autoRequestMonths(request),
+                group.periods
+              )
+            ) {
+              return false;
+            }
+          } catch (_) {
+            return false;
+          }
+
+          group.at =
+            Number(request.reviewedAt) || group.at;
+        }
+
+        return true;
+      })
+      .sort((a, b) => b.at - a.at);
+  }
+
+  function receiptMessage(number, group) {
+    const member = memberList[number];
+
+    const receiptId = group.kind === 'upi'
+      ? `TFC-UPI-${number}-${group.requestId}`
+      : `TFC-CASH-${number}-${group.key.split(':')[1]}`;
+
+    const receiptDate = group.kind === 'cash'
+      ? dateText(group.receivedDate || group.at)
+      : dateText(group.at);
+
+    return [
+      '*TFC BANDIYOD*',
+      '*MEMBERSHIP PAYMENT RECEIPT*',
+      '',
+      `Receipt No: ${receiptId}`,
+      `Member: ${member.name || 'Member'}`,
+      `Member No: #${number}`,
+      `Amount: ₹${group.amount}`,
+      `Payment Method: ${
+        group.kind === 'cash' ? 'Cash' : 'UPI'
+      }`,
+      `Payment Date: ${receiptDate}`,
+      `Paid Months: ${group.periods.join(', ')}`,
+      '',
+      'Payment recorded by TFC Bandiyod.',
+      'Thank you.'
+    ].join('\n');
+  }
+
+  function sendReceipt(number, key) {
+    if (!isAdmin()) return;
+
+    const member = memberList[number];
+
+    const phone =
+      whatsappNumber(member?.phone);
+
+    if (!phone) {
+      notify(
+        'Valid member mobile number missing. Add it using Edit.',
+        true
+      );
+      return;
+    }
+
+    // Recheck existing read-only payment data.
+
+    const group = availableReceipts(number)
+      .find(item => item.key === key);
+
+    if (!group) {
+      notify(
+        'Receipt is no longer available. Check payment status.',
+        true
+      );
+
+      showReceipts(number);
+      return;
+    }
+
+    const message =
+      receiptMessage(number, group);
+
+    const url =
+      `https://wa.me/${phone}?text=` +
+      encodeURIComponent(message);
+
+    window.open(
+      url,
+      '_blank',
+      'noopener,noreferrer'
+    );
+  }
+
+  function showReceipts(number) {
+    if (!isAdmin()) return;
+
+    if (
+      !membersLoaded ||
+      !paymentRequestsLoaded ||
+      !adminCorrectionsLoaded
+    ) {
+      notify(
+        'Payment records are still loading.',
+        true
+      );
+      return;
+    }
+
+    const member = memberList[number];
+
+    if (!member) return;
+
+    $('tfcReceiptTitle').textContent =
+      `#${number} — ${member.name || 'Member'} | ` +
+      `Mobile: ${member.phone || 'Not Added'}`;
+
+    const root = $('tfcReceiptItems');
+
+    root.replaceChildren();
+
+    const receipts =
+      availableReceipts(number);
+
+    if (!receipts.length) {
+      const p = document.createElement('p');
+
+      p.textContent =
+        'No eligible verified Cash/UPI receipts. ' +
+        'Historical PDF entries and cancelled payments are excluded.';
+
+      root.append(p);
+    }
+
+    for (const group of receipts) {
+      const item = document.createElement('div');
+      item.className = 'panel';
+
+      const description =
+        document.createElement('p');
+
+      description.textContent =
+        `${group.kind.toUpperCase()} | ` +
+        `₹${group.amount} | ` +
+        `${dateText(
+          group.kind === 'cash'
+            ? group.receivedDate || group.at
+            : group.at
+        )} | ` +
+        `Months: ${group.periods.join(', ')}`;
+
+      item.append(
+        description,
+        button(
+          'Send WhatsApp Receipt',
+          () => sendReceipt(number, group.key),
+          'secondary'
+        )
+      );
+
+      root.append(item);
+    }
+
+    show('tfcReceiptPanel', true);
+
+    panel.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  }
+
+  function addReceiptButtons() {
+    if (!isAdmin()) return;
+
+    const rows =
+      memberTableRoot.querySelectorAll(
+        'tbody tr'
+      );
+
+    for (const row of rows) {
+      if (row.cells.length !== 8) continue;
+
+      const number =
+        row.cells[0].textContent.trim();
+
+      if (!validNumber(number)) continue;
+
+      const actions = row.cells[7];
+
+      if (
+        actions.querySelector(
+          '[data-tfc-wa-receipt]'
+        )
+      ) {
+        continue;
+      }
+
+      const action = button(
+        'WhatsApp Receipt',
+        () => showReceipts(number),
+        'secondary'
+      );
+
+      action.dataset.tfcWaReceipt = '1';
+
+      actions.append(
+        document.createTextNode(' '),
+        action
+      );
+    }
+  }
+
+  const observer = new MutationObserver(
+    addReceiptButtons
+  );
+
+  observer.observe(memberTableRoot, {
+    childList: true,
+    subtree: true
+  });
+
+  addReceiptButtons();
+
+  console.info(
+    'TFC WhatsApp Receipt add-on v89.0 loaded (read-only).'
+  );
+})();
+
 
