@@ -5,68 +5,249 @@
 <meta name="google-site-verification" content="i8klDfAWXKj0KWwW6eay-Y0i4h78a7Jy2bn0r8gqvY0">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TFC Bandiyod | Member Portal v89.1</title>
+<title>TFC Bandiyod | Member Portal v89.3</title>
 <link rel="stylesheet" href="./login-theme.css">
 
 <style>
-:root{font-family:system-ui,-apple-system,sans-serif;color:#1b2330;background:#f6f7fa}
+:root{
+  font-family:system-ui,-apple-system,sans-serif;
+  color:#1b2330;
+  background:#f6f7fa;
+}
 *{box-sizing:border-box}
 body{margin:0}
-header{background:#f8ce23;padding:15px 5%;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.brand{display:flex;align-items:center;gap:12px;min-width:0}
-.brand-logo{width:65px;height:65px;object-fit:contain}
+header{
+  background:#f8ce23;
+  padding:15px 5%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+.brand-logo{
+  width:65px;
+  height:65px;
+  object-fit:contain;
+}
 h1{font-size:24px;margin:0}
 h2{font-size:21px}
 small,.muted{color:#667085}
-.wrap{max-width:1050px;margin:28px auto;padding:0 16px}
-.panel{background:white;border-radius:16px;padding:22px;margin:15px 0;box-shadow:0 2px 12px #17233a10}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
-.stat{background:#fff9d9;border-radius:12px;padding:16px}
-.stat strong{font-size:25px;display:block}
-button,.paylink{background:#f3c916;border:0;border-radius:9px;padding:12px 17px;font-weight:700;cursor:pointer;color:#1b2330;text-decoration:none;display:inline-block}
+.wrap{
+  max-width:1050px;
+  margin:28px auto;
+  padding:0 16px;
+}
+.panel{
+  background:white;
+  border-radius:16px;
+  padding:22px;
+  margin:15px 0;
+  box-shadow:0 2px 12px #17233a10;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:14px;
+}
+.stat{
+  background:#fff9d9;
+  border-radius:12px;
+  padding:16px;
+}
+.stat strong{
+  font-size:25px;
+  display:block;
+}
+button,.paylink{
+  background:#f3c916;
+  border:0;
+  border-radius:9px;
+  padding:12px 17px;
+  font-weight:700;
+  cursor:pointer;
+  color:#1b2330;
+  text-decoration:none;
+  display:inline-block;
+}
 button.secondary{background:#e8ebef}
-button.danger{background:#b42318;color:white}
-button:disabled{opacity:.5;cursor:not-allowed}
-input,select,textarea{padding:12px;border:1px solid #d1d5db;border-radius:8px;max-width:100%;width:100%;font:inherit}
-label{display:block;margin:10px 0 5px;font-size:14px}
-table{width:100%;border-collapse:collapse}
-td,th{text-align:left;padding:10px;border-bottom:1px solid #e7e7e7}
+button.danger{
+  background:#b42318;
+  color:white;
+}
+button:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+input,select,textarea{
+  padding:12px;
+  border:1px solid #d1d5db;
+  border-radius:8px;
+  max-width:100%;
+  width:100%;
+  font:inherit;
+}
+label{
+  display:block;
+  margin:10px 0 5px;
+  font-size:14px;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+td,th{
+  text-align:left;
+  padding:10px;
+  border-bottom:1px solid #e7e7e7;
+}
 .scroll{overflow:auto}
 .hide{display:none!important}
-.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.notice{background:#fff4d1;padding:12px;border-radius:8px}
+.flex{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.notice{
+  background:#fff4d1;
+  padding:12px;
+  border-radius:8px;
+}
 .ok{color:#187044}
 .error{color:#b42318}
-footer{text-align:center;color:#777;padding:30px}
+footer{
+  text-align:center;
+  color:#777;
+  padding:30px;
+}
 #msg{margin:10px 0}
-.paygrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
-#adminMemberHistory{margin-top:20px;border:1px solid #e7e7e7}
-#adminHistorySummary{font-weight:600;color:#344054}
-.history-paid{color:#187044;font-weight:600}
+.paygrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:12px;
+}
+#adminMemberHistory{
+  margin-top:20px;
+  border:1px solid #e7e7e7;
+}
+#adminHistorySummary{
+  font-weight:600;
+  color:#344054;
+}
+.history-paid{
+  color:#187044;
+  font-weight:600;
+}
 .history-unverified{color:#667085}
-.form-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-.archive-warning{background:#fff1f0;border:1px solid #f3b4ae;border-radius:10px;padding:14px}
+.form-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:18px;
+}
+.archive-warning{
+  background:#fff1f0;
+  border:1px solid #f3b4ae;
+  border-radius:10px;
+  padding:14px;
+}
 .archive-warning strong{color:#b42318}
-#editMemberPanel,#archiveMemberPanel,#archivedMembersPanel{border:1px solid #e7e7e7}
-.feature-pending{background:#f2f4f7;border-radius:10px;padding:14px;margin-top:12px}
-.year-select{max-width:220px;margin-bottom:14px}
-.payment-box{background:#fffbea;border:1px solid #f2da75;border-radius:12px;padding:16px;margin:16px 0}
-.payment-actions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
-.payment-actions button{flex:1;min-width:150px}
-.payment-id{background:white;border:1px solid #e4d9a3;border-radius:8px;padding:12px;font-weight:600;overflow-wrap:anywhere}
-#copyStatus{font-weight:600;margin:8px 0}
-.payment-instructions{line-height:1.7;padding-left:23px}
-.payment-status{background:#fff8df;padding:12px;border-radius:8px;margin-top:12px}
-#accountsPanel,#memberAccountsPanel{border:1px solid #e7e7e7}
-#accAuditTable{max-height:400px;overflow:auto}
-.accounts-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:15px 0}
-.accounts-summary .stat{background:#fff9d9}
-.accounts-actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
-.accounts-table{width:100%;min-width:480px}
+#editMemberPanel,
+#archiveMemberPanel,
+#archivedMembersPanel{
+  border:1px solid #e7e7e7;
+}
+.feature-pending{
+  background:#f2f4f7;
+  border-radius:10px;
+  padding:14px;
+  margin-top:12px;
+}
+.year-select{
+  max-width:220px;
+  margin-bottom:14px;
+}
+.payment-box{
+  background:#fffbea;
+  border:1px solid #f2da75;
+  border-radius:12px;
+  padding:16px;
+  margin:16px 0;
+}
+.payment-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:12px 0;
+}
+.payment-actions button{
+  flex:1;
+  min-width:150px;
+}
+.payment-id{
+  background:white;
+  border:1px solid #e4d9a3;
+  border-radius:8px;
+  padding:12px;
+  font-weight:600;
+  overflow-wrap:anywhere;
+}
+#copyStatus{
+  font-weight:600;
+  margin:8px 0;
+}
+.payment-instructions{
+  line-height:1.7;
+  padding-left:23px;
+}
+.payment-status{
+  background:#fff8df;
+  padding:12px;
+  border-radius:8px;
+  margin-top:12px;
+}
+#accountsPanel,
+#memberAccountsPanel{
+  border:1px solid #e7e7e7;
+}
+#accAuditTable{
+  max-height:400px;
+  overflow:auto;
+}
+.accounts-summary{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:12px;
+  margin:15px 0;
+}
+.accounts-summary .stat{
+  background:#fff9d9;
+}
+.accounts-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:14px 0;
+}
+.accounts-table{
+  width:100%;
+  min-width:480px;
+}
 .accounts-table th{background:#fff8dc}
-.accounts-note{font-size:13px;color:#667085;line-height:1.6}
+.accounts-note{
+  font-size:13px;
+  color:#667085;
+  line-height:1.6;
+}
 
-/* v88 automatic payment */
+/* v88.5 AUTOMATIC PAYMENT */
+
 #autoPaymentControls{
   background:#fffbea;
   border:1px solid #f2da75;
@@ -74,7 +255,11 @@ footer{text-align:center;color:#777;padding:30px}
   padding:16px;
   margin:16px 0;
 }
-#autoPaymentAmount{max-width:260px;font-size:20px;font-weight:700}
+#autoPaymentAmount{
+  max-width:260px;
+  font-size:20px;
+  font-weight:700;
+}
 #autoPaymentMonths{
   background:#fff;
   border:1px solid #e4d9a3;
@@ -83,26 +268,27 @@ footer{text-align:center;color:#777;padding:30px}
   line-height:1.7;
   overflow-wrap:anywhere;
 }
-.auto-payment-note{font-size:13px;color:#667085;line-height:1.6}
+.auto-payment-note{
+  font-size:13px;
+  color:#667085;
+  line-height:1.6;
+}
 
-/* MEMBER DASHBOARD v89.1 */
+/* MEMBER DASHBOARD v89.3 */
 
-.tfc-dashboard-hidden {
+.tfc-dashboard-hidden{
   display:none!important;
 }
-
-#tfcMemberMenu {
+#tfcMemberMenu{
   border:1px solid #e7e7e7;
 }
-
-.tfc-dashboard-grid {
+.tfc-dashboard-grid{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
   gap:12px;
   margin-top:16px;
 }
-
-.tfc-dashboard-button {
+.tfc-dashboard-button{
   background:#f2f4f7;
   border:1px solid #e4e7ec;
   min-height:100px;
@@ -112,47 +298,51 @@ footer{text-align:center;color:#777;padding:30px}
   border-radius:14px;
   padding:14px 9px;
 }
-
-.tfc-dashboard-button span {
+.tfc-dashboard-button span{
   display:block;
   font-size:27px;
   margin-bottom:7px;
 }
-
-.tfc-dashboard-button[aria-pressed="true"] {
+.tfc-dashboard-button[aria-pressed="true"]{
   background:#f8ce23;
   border-color:#d8ab00;
 }
-
-.tfc-dashboard-button:focus-visible {
+.tfc-dashboard-button:focus-visible{
   outline:3px solid #344054;
   outline-offset:2px;
 }
 
 @media(max-width:600px){
-header{padding:12px;gap:8px}
-.brand{gap:7px}
-.brand-logo{width:48px;height:48px}
-h1{font-size:17px}
-header small{font-size:10px}
-header select{max-width:100px;font-size:12px;padding:8px}
-header button{padding:9px;font-size:12px}
-.panel{padding:16px}
-td,th{padding:8px;font-size:13px}
-.accounts-actions button{flex:1}
+  header{padding:12px;gap:8px}
+  .brand{gap:7px}
+  .brand-logo{width:48px;height:48px}
+  h1{font-size:17px}
+  header small{font-size:10px}
+  header select{
+    max-width:100px;
+    font-size:12px;
+    padding:8px;
+  }
+  header button{
+    padding:9px;
+    font-size:12px;
+  }
+  .panel{padding:16px}
+  td,th{padding:8px;font-size:13px}
+  .accounts-actions button{flex:1}
 
-.tfc-dashboard-grid{
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:9px;
-}
-.tfc-dashboard-button{
-  min-height:90px;
-  padding:12px 8px;
-  font-size:13px;
-}
-.tfc-dashboard-button span{
-  font-size:25px;
-}
+  .tfc-dashboard-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:9px;
+  }
+  .tfc-dashboard-button{
+    min-height:90px;
+    padding:12px 8px;
+    font-size:13px;
+  }
+  .tfc-dashboard-button span{
+    font-size:25px;
+  }
 }
 </style>
 </head>
@@ -161,7 +351,11 @@ td,th{padding:8px;font-size:13px}
 
 <header>
 <div class="brand">
-<img src="./tfc-logo.jpeg" alt="TFC Bandiyod Logo" class="brand-logo">
+<img
+  src="./tfc-logo.jpeg"
+  alt="TFC Bandiyod Logo"
+  class="brand-logo"
+>
 <div>
 <h1>TFC BANDIYOD</h1>
 <small>ONE TEAM ONE DREAM</small>
@@ -173,7 +367,9 @@ td,th{padding:8px;font-size:13px}
 <option value="en">English</option>
 <option value="ml">മലയാളം</option>
 </select>
-<button id="logout" class="secondary hide">Sign out</button>
+<button id="logout" class="secondary hide">
+Sign out
+</button>
 </div>
 </header>
 
@@ -183,23 +379,37 @@ td,th{padding:8px;font-size:13px}
 <!-- LOGIN -->
 
 <section id="login" class="panel">
-<h2 data-t="welcome">Welcome to TFC Bandiyod</h2>
-<p data-t="loginText">Members can sign in with Google. New accounts require admin approval.</p>
-<button id="signIn" data-t="signIn">Continue with Google</button>
+<h2 data-t="welcome">
+Welcome to TFC Bandiyod
+</h2>
+<p data-t="loginText">
+Members can sign in with Google.
+New accounts require admin approval.
+</p>
+<button id="signIn" data-t="signIn">
+Continue with Google
+</button>
 </section>
 
 <!-- PENDING APPROVAL -->
 
 <section id="pending" class="panel hide">
-<h2 data-t="pending">Membership approval pending</h2>
-<p data-t="pendingText">Your Google account needs approval from the TFC admin.</p>
+<h2 data-t="pending">
+Membership approval pending
+</h2>
+<p data-t="pendingText">
+Your Google account needs approval from the TFC admin.
+</p>
 
 <label data-t="memberNumber" for="claimNumber">
 Membership number
 </label>
-
-<input id="claimNumber" type="number" min="1" placeholder="e.g. 25">
-
+<input
+  id="claimNumber"
+  type="number"
+  min="1"
+  placeholder="e.g. 25"
+>
 <button id="requestApproval" data-t="request">
 Request approval
 </button>
@@ -209,26 +419,28 @@ Request approval
 
 <section id="member" class="hide">
 
-<!-- MEMBER PROFILE -->
+<!-- MY PROFILE -->
 
 <div class="panel">
 <h2 id="memberTitle"></h2>
 <p id="memberMeta"></p>
 </div>
 
-<!-- MEMBER PHOTO -->
+<!-- PROFILE PHOTO INSIDE MY PROFILE MENU -->
 
 <div class="panel">
 <h2>My Profile Photo</h2>
 <div class="feature-pending">
-<p class="muted">Upload or change your profile photo.</p>
+<p class="muted">
+Upload or change your profile photo.
+</p>
 <button id="memberPhotoUpload" disabled>
 Upload My Photo
 </button>
 </div>
 </div>
 
-<!-- MEMBERSHIP STATS -->
+<!-- MEMBERSHIP INFORMATION -->
 
 <div class="grid">
 
@@ -249,12 +461,14 @@ Upload My Photo
 
 </div>
 
-<!-- MEMBER HISTORY -->
+<!-- PAYMENT HISTORY -->
 
 <div class="panel">
 <h2 data-t="history">Payment history</h2>
 
-<label for="memberHistoryYear">Select Year</label>
+<label for="memberHistoryYear">
+Select Year
+</label>
 
 <select id="memberHistoryYear" class="year-select">
 <option value="all">All Years</option>
@@ -286,22 +500,28 @@ Unmarked months are not automatically treated as outstanding dues.
 <div class="payment-status">
 <strong>UPI Membership Payment</strong>
 <p>
-Enter the amount you wish to pay. Available membership months will be selected automatically, starting from your earliest unpaid eligible month. Payment remains Pending until admin verifies the bank transfer.
+Enter the amount you wish to pay.
+Available membership months will be selected automatically,
+starting from your earliest unpaid eligible month.
+Payment remains Pending until admin verifies the bank transfer.
 </p>
 </div>
 
-<!-- Legacy fields retained for app.js compatibility -->
+<!-- LEGACY FIELDS RETAINED -->
 
 <div class="hide" aria-hidden="true">
 <select id="paymentPlan" tabindex="-1">
 <option value="monthly">Monthly</option>
 <option value="yearly">Yearly</option>
 </select>
-
-<input id="paymentPeriod" type="month" tabindex="-1">
+<input
+  id="paymentPeriod"
+  type="month"
+  tabindex="-1"
+>
 </div>
 
-<!-- AUTOMATIC AMOUNT AND MONTH PREVIEW -->
+<!-- AUTOMATIC PAYMENT ₹50 - ₹3000 -->
 
 <div id="autoPaymentControls">
 <h3>Automatic Month Selection</h3>
@@ -314,25 +534,32 @@ Payment Amount (₹)
   id="autoPaymentAmount"
   type="number"
   min="50"
-  max="600"
+  max="3000"
   step="50"
   value="50"
   inputmode="numeric"
 >
 
 <p class="auto-payment-note">
-Enter an amount from ₹50 to ₹600 in multiples of ₹50.
+Enter an amount from ₹50 to ₹3000 in multiples of ₹50.
 </p>
 
-<p><strong>Selected Months:</strong></p>
+<p>
+<strong>Selected Months:</strong>
+</p>
 
 <p id="autoPaymentMonths" aria-live="polite">
 Loading payment records...
 </p>
 
 <p class="auto-payment-note">
-₹50 = 1 month · ₹100 = 2 months · ₹150 = 3 months ·
-₹300 = 6 months · ₹600 = 12 months.
+₹50 = 1 month ·
+₹100 = 2 months ·
+₹300 = 6 months ·
+₹600 = 12 months ·
+₹1200 = 24 months ·
+₹3000 = 60 months.
+Months are selected automatically.
 Already paid and pending months will be skipped.
 New members start from their joining month.
 </p>
@@ -360,6 +587,7 @@ Membership Amount:
 </p>
 
 <div class="payment-actions">
+
 <button id="copyUpiId" type="button">
 Copy UPI ID
 </button>
@@ -367,6 +595,7 @@ Copy UPI ID
 <button id="openGooglePay" type="button">
 Open Google Pay
 </button>
+
 </div>
 
 <p id="copyStatus" role="status"></p>
@@ -381,9 +610,9 @@ Open UPI App — Enter ₹50
 </a>
 
 <p class="muted">
-Verify the recipient name and amount inside your UPI app before transferring money. This website does not automatically confirm bank payments.
+Verify the recipient name and amount inside your UPI app before transferring money.
+This website does not automatically confirm bank payments.
 </p>
-
 </div>
 
 <ol class="payment-instructions">
@@ -418,7 +647,6 @@ Payments require admin verification before being marked Paid.
 </p>
 
 <h3>Your Payment Submissions</h3>
-
 <div id="myPaymentList" class="scroll"></div>
 </div>
 
@@ -429,12 +657,12 @@ Payments require admin verification before being marked Paid.
 <h2>TFC Accounts — Income & Expenses</h2>
 
 <p class="notice">
-Approved members can view the club's income, expenses and balance.
+Approved members can view the club's income,
+expenses and balance.
 Only admins can manage account entries.
 </p>
 
 <div id="accountsMemberContent"></div>
-
 </div>
 
 </section>
@@ -455,10 +683,9 @@ Only admins can manage account entries.
 <button id="tabMemberPhotos" class="secondary">Member Photos</button>
 <button id="tabAccounts" class="secondary" type="button">Accounts</button>
 </div>
-
 </div>
 
-<!-- ADMIN APPROVALS -->
+<!-- ADMIN APPROVAL REQUESTS -->
 
 <div id="requestsPanel" class="panel">
 <h2>Pending Requests</h2>
@@ -471,21 +698,25 @@ Only admins can manage account entries.
 
 <h2>Members</h2>
 
-<input id="search" placeholder="Search name or member number">
+<input
+  id="search"
+  placeholder="Search name or member number"
+>
 
 <div id="membersList" class="scroll"></div>
 
-<!-- ADMIN HISTORY -->
+<!-- ADMIN MEMBER HISTORY -->
 
 <div id="adminMemberHistory" class="panel hide">
-
 <h3 id="adminHistoryTitle">
 Member Payment History
 </h3>
 
 <p id="adminHistorySummary"></p>
 
-<label for="adminHistoryYear">Select Year</label>
+<label for="adminHistoryYear">
+Select Year
+</label>
 
 <select id="adminHistoryYear" class="year-select">
 <option value="all">All Years</option>
@@ -501,41 +732,72 @@ Member Payment History
 <h3>Edit Member</h3>
 
 <p class="muted">
-Update member details without changing the membership number or existing payment history.
+Update member details without changing the membership number
+or existing payment history.
 </p>
 
 <form id="editMemberForm">
 
-<label for="editMemberNumber">Member Number</label>
-<input id="editMemberNumber" type="number" readonly required>
+<label for="editMemberNumber">
+Member Number
+</label>
+<input
+  id="editMemberNumber"
+  type="number"
+  readonly
+  required
+>
 
-<label for="editMemberName">Full Name</label>
-<input id="editMemberName" type="text" maxlength="100" required>
+<label for="editMemberName">
+Full Name
+</label>
+<input
+  id="editMemberName"
+  type="text"
+  maxlength="100"
+  required
+>
 
-<label for="editMemberPhone">Mobile Number</label>
-<input id="editMemberPhone" type="tel" maxlength="15">
+<label for="editMemberPhone">
+Mobile Number
+</label>
+<input
+  id="editMemberPhone"
+  type="tel"
+  maxlength="15"
+>
 
-<label for="editMemberDate">Joining Date</label>
-<input id="editMemberDate" type="date" required>
+<label for="editMemberDate">
+Joining Date
+</label>
+<input
+  id="editMemberDate"
+  type="date"
+  required
+>
 
-<label for="editMemberStatus">Membership Status</label>
-
+<label for="editMemberStatus">
+Membership Status
+</label>
 <select id="editMemberStatus">
 <option value="active">Active</option>
 <option value="inactive">Inactive</option>
 </select>
 
 <div class="form-actions">
-
 <button id="saveEditMember" type="submit">
 Save Changes
 </button>
 
-<button id="cancelEditMember" type="button" class="secondary">
+<button
+  id="cancelEditMember"
+  type="button"
+  class="secondary"
+>
 Cancel
 </button>
-
 </div>
+
 </form>
 </div>
 
@@ -546,29 +808,34 @@ Cancel
 <h3>Archive Member</h3>
 
 <div class="archive-warning">
-
 <strong>
 Important: Archive is not permanent deletion.
 </strong>
-
 <p>
 Member records and payment history must be preserved before archival.
 </p>
-
 <p>
 Old Google login access and pending payment requests must be handled safely.
 </p>
-
 </div>
 
 <p id="archiveMemberSummary"></p>
 
 <form id="archiveMemberForm">
 
-<label for="archiveMemberNumber">Member Number</label>
-<input id="archiveMemberNumber" type="number" readonly required>
+<label for="archiveMemberNumber">
+Member Number
+</label>
+<input
+  id="archiveMemberNumber"
+  type="number"
+  readonly
+  required
+>
 
-<label for="archiveMemberReason">Reason for Archiving</label>
+<label for="archiveMemberReason">
+Reason for Archiving
+</label>
 
 <select id="archiveMemberReason" required>
 <option value="">Select reason</option>
@@ -579,7 +846,9 @@ Old Google login access and pending payment requests must be handled safely.
 <option value="other">Other</option>
 </select>
 
-<label for="archiveMemberNotes">Notes (Optional)</label>
+<label for="archiveMemberNotes">
+Notes (Optional)
+</label>
 
 <input
   id="archiveMemberNotes"
@@ -621,14 +890,15 @@ Cancel
 </div>
 </div>
 
-<!-- ADMIN PAYMENT VERIFICATION -->
+<!-- PAYMENT VERIFICATION -->
 
 <div id="paymentsPanel" class="panel hide">
 
 <h2>Payment Verification</h2>
 
 <p class="notice">
-Verify the actual bank credit before approving a payment. A transaction reference alone is not proof of payment.
+Verify the actual bank credit before approving a payment.
+A transaction reference alone is not proof of payment.
 </p>
 
 <div id="adminPaymentList"></div>
@@ -642,25 +912,54 @@ Verify the actual bank credit before approving a payment. A transaction referenc
 <h2>Add New Member</h2>
 
 <p class="notice">
-Admin only. Enter an available member number. Previously used numbers must not be reused without safe archival.
+Admin only. Enter an available member number.
+Previously used numbers must not be reused without safe archival.
 </p>
 
 <form id="addMemberForm">
 
-<label for="newMemberNumber">Member Number</label>
-<input id="newMemberNumber" type="number" min="1" step="1" required>
+<label for="newMemberNumber">
+Member Number
+</label>
+<input
+  id="newMemberNumber"
+  type="number"
+  min="1"
+  step="1"
+  required
+>
 
-<label for="newMemberName">Full Name</label>
-<input id="newMemberName" type="text" maxlength="100" required>
+<label for="newMemberName">
+Full Name
+</label>
+<input
+  id="newMemberName"
+  type="text"
+  maxlength="100"
+  required
+>
 
-<label for="newMemberPhone">Mobile Number</label>
-<input id="newMemberPhone" type="tel" maxlength="15">
+<label for="newMemberPhone">
+Mobile Number
+</label>
+<input
+  id="newMemberPhone"
+  type="tel"
+  maxlength="15"
+>
 
-<label for="newMemberDate">Joining Date</label>
-<input id="newMemberDate" type="date" required>
+<label for="newMemberDate">
+Joining Date
+</label>
+<input
+  id="newMemberDate"
+  type="date"
+  required
+>
 
-<label for="newMemberStatus">Membership Status</label>
-
+<label for="newMemberStatus">
+Membership Status
+</label>
 <select id="newMemberStatus">
 <option value="active">Active</option>
 <option value="inactive">Inactive</option>
@@ -733,12 +1032,11 @@ Search Member
 <div id="photoMembersList" class="scroll"></div>
 
 <div class="feature-pending">
-
 <button id="adminPhotoUpload" disabled>
 Upload Member Photo
 </button>
-
 </div>
+
 </div>
 
 <!-- IMPORT STATUS -->
@@ -748,7 +1046,8 @@ Upload Member Photo
 <h2>2027 Payment Import</h2>
 
 <p class="notice">
-2027 membership card payments will be imported after validation. Existing 2024–2026 records will be preserved.
+2027 membership card payments will be imported after validation.
+Existing 2024–2026 records will be preserved.
 </p>
 
 <p id="importStatusText">
@@ -781,23 +1080,34 @@ Historical records and opening balance must be preserved.
 © TFC Bandiyod · Private Member Portal
 </footer>
 
-<!-- EXISTING UPI INTERFACE SCRIPT -->
+<!-- UPI INTERFACE SCRIPT: ₹50 TO ₹3000 -->
 
 <script>
 (function(){
   const UPI_ID = 'waheedwahi84-1@oksbi';
-  const amountInput = document.getElementById('autoPaymentAmount');
-  const amountDisplay = document.getElementById('displayPaymentAmount');
-  const copyButton = document.getElementById('copyUpiId');
-  const googlePayButton = document.getElementById('openGooglePay');
-  const copyStatus = document.getElementById('copyStatus');
+
+  const amountInput =
+    document.getElementById('autoPaymentAmount');
+
+  const amountDisplay =
+    document.getElementById('displayPaymentAmount');
+
+  const copyButton =
+    document.getElementById('copyUpiId');
+
+  const googlePayButton =
+    document.getElementById('openGooglePay');
+
+  const copyStatus =
+    document.getElementById('copyStatus');
 
   function updateAmountDisplay(){
     const amount = Number(amountInput.value);
+
     const valid =
       Number.isInteger(amount) &&
       amount >= 50 &&
-      amount <= 600 &&
+      amount <= 3000 &&
       amount % 50 === 0;
 
     amountDisplay.textContent =
@@ -809,34 +1119,42 @@ Historical records and opening balance must be preserved.
     updateAmountDisplay
   );
 
-  copyButton.addEventListener('click', async function(){
-    try {
-      await navigator.clipboard.writeText(UPI_ID);
-      copyStatus.textContent =
-        'UPI ID copied successfully.';
-    } catch(e) {
-      copyStatus.textContent =
-        'Copy unavailable. Please copy the UPI ID manually.';
-    }
-  });
+  copyButton.addEventListener(
+    'click',
+    async function(){
+      try {
+        await navigator.clipboard.writeText(UPI_ID);
 
-  googlePayButton.addEventListener('click', function(){
-    copyStatus.textContent =
-      'Payment activation is pending final verification. Please do not transfer money yet.';
-  });
+        copyStatus.textContent =
+          'UPI ID copied successfully.';
+      } catch(e) {
+        copyStatus.textContent =
+          'Copy unavailable. Please copy the UPI ID manually.';
+      }
+    }
+  );
+
+  googlePayButton.addEventListener(
+    'click',
+    function(){
+      copyStatus.textContent =
+        'Payment activation is pending final verification. Please do not transfer money yet.';
+    }
+  );
 
   updateAmountDisplay();
 })();
 </script>
 
-<!-- EXISTING MODULES — UNCHANGED -->
+<!-- EXISTING MODULES: UNCHANGED -->
 
 <script type="module" src="./app.js?v=88.4"></script>
 <script type="module" src="./accounts.js?v=84.0"></script>
 <script type="module" src="./membership-income.js?v=87.0"></script>
 <script type="module" src="./member-photos.js?v=1.0"></script>
 
-<!-- NEW MEMBER DASHBOARD v89.1 -->
+<!-- TFC MEMBER DASHBOARD v89.3 -->
+<!-- FIVE MENUS; PHOTO INSIDE MY PROFILE -->
 
 <script>
 (() => {
@@ -854,75 +1172,106 @@ Historical records and opening balance must be preserved.
   const findSection = id =>
     byId(id)?.closest('.panel');
 
+  const profilePanel =
+    findSection('memberTitle');
+
+  const photoPanel =
+    findSection('memberPhotoUpload');
+
+  const membershipPanel =
+    byId('paidCount')?.closest('.grid');
+
+  const historyPanel =
+    findSection('historyBody');
+
+  const paymentPanel =
+    findSection('submitPayment');
+
+  const accountsPanel =
+    byId('memberAccountsPanel');
+
+  /*
+   My Profile includes:
+   - Member name and number
+   - Member mobile profile
+   - Member profile photo
+
+   All existing sections remain in the HTML.
+  */
+
   const views = [
     {
       id: 'profile',
-      element: findSection('memberTitle'),
+      elements: [
+        profilePanel,
+        photoPanel
+      ],
       en: 'My Profile',
       ml: 'എന്റെ പ്രൊഫൈൽ',
       icon: '👤'
     },
     {
-      id: 'photo',
-      element: findSection('memberPhotoUpload'),
-      en: 'Profile Photo',
-      ml: 'പ്രൊഫൈൽ ഫോട്ടോ',
-      icon: '🖼️'
-    },
-    {
       id: 'membership',
-      element: byId('paidCount')?.closest('.grid'),
+      elements: [membershipPanel],
       en: 'Membership',
       ml: 'അംഗത്വ വിവരങ്ങൾ',
       icon: '📋'
     },
     {
       id: 'history',
-      element: findSection('historyBody'),
+      elements: [historyPanel],
       en: 'Payment History',
       ml: 'പേയ്മെന്റ് ചരിത്രം',
       icon: '🗓️'
     },
     {
       id: 'payment',
-      element: findSection('submitPayment'),
+      elements: [paymentPanel],
       en: 'Pay Membership',
       ml: 'ഫീസ് അടയ്ക്കുക',
       icon: '💳'
     },
     {
       id: 'accounts',
-      element: byId('memberAccountsPanel'),
+      elements: [accountsPanel],
       en: 'TFC Accounts',
       ml: 'TFC അക്കൗണ്ട്സ്',
       icon: '📊'
     }
   ];
 
-  // Safety: Keep original page if a section is missing.
+  // Preserve original page if any section is missing.
 
-  if (views.some(view => !view.element)) {
+  if (
+    views.some(view =>
+      view.elements.some(element => !element)
+    )
+  ) {
     console.warn(
-      'TFC Dashboard: Section missing. Original layout retained.'
+      'TFC Dashboard: Original section missing. Layout retained.'
     );
     return;
   }
 
-  const menu = document.createElement('div');
+  const menu =
+    document.createElement('div');
 
   menu.id = 'tfcMemberMenu';
   menu.className = 'panel';
 
-  const heading = document.createElement('h2');
+  const heading =
+    document.createElement('h2');
+
   heading.id = 'tfcMemberMenuTitle';
 
   const description =
     document.createElement('p');
 
   description.className = 'muted';
-  description.id = 'tfcMemberMenuDescription';
 
-  const grid = document.createElement('div');
+  const grid =
+    document.createElement('div');
+
   grid.className = 'tfc-dashboard-grid';
 
   menu.append(
@@ -930,8 +1279,6 @@ Historical records and opening balance must be preserved.
     description,
     grid
   );
-
-  // Each tile controls its existing original section.
 
   function openView(id, scroll = false) {
     const selectedView =
@@ -942,10 +1289,12 @@ Historical records and opening balance must be preserved.
     for (const view of views) {
       const selected = view.id === id;
 
-      view.element.classList.toggle(
-        'tfc-dashboard-hidden',
-        !selected
-      );
+      for (const element of view.elements) {
+        element.classList.toggle(
+          'tfc-dashboard-hidden',
+          !selected
+        );
+      }
 
       view.button.setAttribute(
         'aria-pressed',
@@ -956,18 +1305,22 @@ Historical records and opening balance must be preserved.
     member.dataset.tfcOpenView = id;
 
     if (scroll) {
-      selectedView.element.scrollIntoView({
+      selectedView.elements[0].scrollIntoView({
         behavior: 'smooth',
         block: 'start'
       });
     }
   }
 
+  // Create five dashboard buttons.
+
   for (const view of views) {
-    if (!view.element.id) {
-      view.element.id =
-        'tfcSection_' + view.id;
-    }
+    view.elements.forEach((element, index) => {
+      if (!element.id) {
+        element.id =
+          'tfcSection_' + view.id + '_' + index;
+      }
+    });
 
     const btn =
       document.createElement('button');
@@ -977,7 +1330,9 @@ Historical records and opening balance must be preserved.
 
     btn.setAttribute(
       'aria-controls',
-      view.element.id
+      view.elements
+        .map(element => element.id)
+        .join(' ')
     );
 
     btn.setAttribute(
@@ -994,6 +1349,8 @@ Historical records and opening balance must be preserved.
 
     grid.append(btn);
   }
+
+  // Malayalam / English menu labels.
 
   function translateMenu() {
     const isMalayalam =
@@ -1027,7 +1384,7 @@ Historical records and opening balance must be preserved.
     }
   }
 
-  // Insert the menu without moving existing panels.
+  // Insert menu without moving existing panels.
 
   member.insertBefore(
     menu,
@@ -1041,12 +1398,12 @@ Historical records and opening balance must be preserved.
 
   translateMenu();
 
-  // Open profile by default.
+  // Profile and photo are visible together.
 
   openView('profile');
 
   console.info(
-    'TFC Bandiyod Member Dashboard v89.1 loaded.'
+    'TFC Bandiyod Member Dashboard v89.3 loaded.'
   );
 })();
 </script>
