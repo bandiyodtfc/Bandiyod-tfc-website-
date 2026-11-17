@@ -5,8 +5,9 @@
 <meta name="google-site-verification" content="i8klDfAWXKj0KWwW6eay-Y0i4h78a7Jy2bn0r8gqvY0">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TFC Bandiyod | Member Portal v88.0</title>
+<title>TFC Bandiyod | Member Portal v89.1</title>
 <link rel="stylesheet" href="./login-theme.css">
+
 <style>
 :root{font-family:system-ui,-apple-system,sans-serif;color:#1b2330;background:#f6f7fa}
 *{box-sizing:border-box}
@@ -84,6 +85,50 @@ footer{text-align:center;color:#777;padding:30px}
 }
 .auto-payment-note{font-size:13px;color:#667085;line-height:1.6}
 
+/* MEMBER DASHBOARD v89.1 */
+
+.tfc-dashboard-hidden {
+  display:none!important;
+}
+
+#tfcMemberMenu {
+  border:1px solid #e7e7e7;
+}
+
+.tfc-dashboard-grid {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin-top:16px;
+}
+
+.tfc-dashboard-button {
+  background:#f2f4f7;
+  border:1px solid #e4e7ec;
+  min-height:100px;
+  width:100%;
+  text-align:center;
+  line-height:1.4;
+  border-radius:14px;
+  padding:14px 9px;
+}
+
+.tfc-dashboard-button span {
+  display:block;
+  font-size:27px;
+  margin-bottom:7px;
+}
+
+.tfc-dashboard-button[aria-pressed="true"] {
+  background:#f8ce23;
+  border-color:#d8ab00;
+}
+
+.tfc-dashboard-button:focus-visible {
+  outline:3px solid #344054;
+  outline-offset:2px;
+}
+
 @media(max-width:600px){
 header{padding:12px;gap:8px}
 .brand{gap:7px}
@@ -95,9 +140,23 @@ header button{padding:9px;font-size:12px}
 .panel{padding:16px}
 td,th{padding:8px;font-size:13px}
 .accounts-actions button{flex:1}
+
+.tfc-dashboard-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+}
+.tfc-dashboard-button{
+  min-height:90px;
+  padding:12px 8px;
+  font-size:13px;
+}
+.tfc-dashboard-button span{
+  font-size:25px;
+}
 }
 </style>
 </head>
+
 <body>
 
 <header>
@@ -108,6 +167,7 @@ td,th{padding:8px;font-size:13px}
 <small>ONE TEAM ONE DREAM</small>
 </div>
 </div>
+
 <div class="flex">
 <select id="lang" style="width:auto">
 <option value="en">English</option>
@@ -120,91 +180,136 @@ td,th{padding:8px;font-size:13px}
 <main class="wrap">
 <div id="msg" role="status"></div>
 
+<!-- LOGIN -->
+
 <section id="login" class="panel">
 <h2 data-t="welcome">Welcome to TFC Bandiyod</h2>
 <p data-t="loginText">Members can sign in with Google. New accounts require admin approval.</p>
 <button id="signIn" data-t="signIn">Continue with Google</button>
 </section>
 
+<!-- PENDING APPROVAL -->
+
 <section id="pending" class="panel hide">
 <h2 data-t="pending">Membership approval pending</h2>
 <p data-t="pendingText">Your Google account needs approval from the TFC admin.</p>
-<label data-t="memberNumber" for="claimNumber">Membership number</label>
+
+<label data-t="memberNumber" for="claimNumber">
+Membership number
+</label>
+
 <input id="claimNumber" type="number" min="1" placeholder="e.g. 25">
-<button id="requestApproval" data-t="request">Request approval</button>
+
+<button id="requestApproval" data-t="request">
+Request approval
+</button>
 </section>
 
+<!-- MEMBER PORTAL -->
+
 <section id="member" class="hide">
+
+<!-- MEMBER PROFILE -->
 
 <div class="panel">
 <h2 id="memberTitle"></h2>
 <p id="memberMeta"></p>
 </div>
 
+<!-- MEMBER PHOTO -->
+
 <div class="panel">
 <h2>My Profile Photo</h2>
 <div class="feature-pending">
 <p class="muted">Upload or change your profile photo.</p>
-<button id="memberPhotoUpload" disabled>Upload My Photo</button>
+<button id="memberPhotoUpload" disabled>
+Upload My Photo
+</button>
 </div>
 </div>
 
+<!-- MEMBERSHIP STATS -->
+
 <div class="grid">
+
 <div class="stat">
 <span data-t="due">Outstanding dues</span>
 <strong id="dueAmount">—</strong>
 </div>
+
 <div class="stat">
 <span data-t="paid">Paid months</span>
 <strong id="paidCount">—</strong>
 </div>
+
 <div class="stat">
 <span data-t="fee">Membership fee</span>
 <strong>₹50 / month</strong>
 </div>
+
 </div>
+
+<!-- MEMBER HISTORY -->
 
 <div class="panel">
 <h2 data-t="history">Payment history</h2>
+
 <label for="memberHistoryYear">Select Year</label>
+
 <select id="memberHistoryYear" class="year-select">
 <option value="all">All Years</option>
 </select>
+
 <p class="muted">
 Historical payments are based on recorded membership card marks.
 Unmarked months are not automatically treated as outstanding dues.
 </p>
+
 <div class="scroll">
 <table>
 <thead>
-<tr><th data-t="month">Month</th><th data-t="status">Status</th></tr>
+<tr>
+<th data-t="month">Month</th>
+<th data-t="status">Status</th>
+</tr>
 </thead>
 <tbody id="historyBody"></tbody>
 </table>
 </div>
 </div>
 
+<!-- PAY MEMBERSHIP -->
+
 <div class="panel">
 <h2 data-t="pay">Pay membership fee</h2>
 
 <div class="payment-status">
 <strong>UPI Membership Payment</strong>
-<p>Enter the amount you wish to pay. Available membership months will be selected automatically, starting from your earliest unpaid eligible month. Payment remains Pending until admin verifies the bank transfer.</p>
+<p>
+Enter the amount you wish to pay. Available membership months will be selected automatically, starting from your earliest unpaid eligible month. Payment remains Pending until admin verifies the bank transfer.
+</p>
 </div>
 
 <!-- Legacy fields retained for app.js compatibility -->
+
 <div class="hide" aria-hidden="true">
 <select id="paymentPlan" tabindex="-1">
 <option value="monthly">Monthly</option>
 <option value="yearly">Yearly</option>
 </select>
+
 <input id="paymentPeriod" type="month" tabindex="-1">
 </div>
 
-<!-- v88 automatic amount and month preview -->
+<!-- AUTOMATIC AMOUNT AND MONTH PREVIEW -->
+
 <div id="autoPaymentControls">
 <h3>Automatic Month Selection</h3>
-<label for="autoPaymentAmount">Payment Amount (₹)</label>
+
+<label for="autoPaymentAmount">
+Payment Amount (₹)
+</label>
+
 <input
   id="autoPaymentAmount"
   type="number"
@@ -214,13 +319,17 @@ Unmarked months are not automatically treated as outstanding dues.
   value="50"
   inputmode="numeric"
 >
+
 <p class="auto-payment-note">
 Enter an amount from ₹50 to ₹600 in multiples of ₹50.
 </p>
+
 <p><strong>Selected Months:</strong></p>
+
 <p id="autoPaymentMonths" aria-live="polite">
 Loading payment records...
 </p>
+
 <p class="auto-payment-note">
 ₹50 = 1 month · ₹100 = 2 months · ₹150 = 3 months ·
 ₹300 = 6 months · ₹600 = 12 months.
@@ -229,26 +338,52 @@ New members start from their joining month.
 </p>
 </div>
 
+<!-- UPI PAYMENT DETAILS -->
+
 <div class="payment-box">
 <h3>UPI Payment Details</h3>
+
 <p>UPI ID</p>
-<div id="displayUpiId" class="payment-id">waheedwahi84-1@oksbi</div>
-<p>Beneficiary: <strong>MOOSA WAHEED M B</strong></p>
-<p>Membership Amount: <strong id="displayPaymentAmount">₹50</strong></p>
+
+<div id="displayUpiId" class="payment-id">
+waheedwahi84-1@oksbi
+</div>
+
+<p>
+Beneficiary:
+<strong>MOOSA WAHEED M B</strong>
+</p>
+
+<p>
+Membership Amount:
+<strong id="displayPaymentAmount">₹50</strong>
+</p>
 
 <div class="payment-actions">
-<button id="copyUpiId" type="button">Copy UPI ID</button>
-<button id="openGooglePay" type="button">Open Google Pay</button>
+<button id="copyUpiId" type="button">
+Copy UPI ID
+</button>
+
+<button id="openGooglePay" type="button">
+Open Google Pay
+</button>
 </div>
+
 <p id="copyStatus" role="status"></p>
 
-<a id="upiPayLink" class="paylink" href="#" rel="noopener">
+<a
+  id="upiPayLink"
+  class="paylink"
+  href="#"
+  rel="noopener"
+>
 Open UPI App — Enter ₹50
 </a>
 
 <p class="muted">
 Verify the recipient name and amount inside your UPI app before transferring money. This website does not automatically confirm bank payments.
 </p>
+
 </div>
 
 <ol class="payment-instructions">
@@ -260,8 +395,17 @@ Verify the recipient name and amount inside your UPI app before transferring mon
 <li>Enter the reference below and submit for admin verification.</li>
 </ol>
 
-<label for="transactionId">UPI Transaction / Reference ID</label>
-<input id="transactionId" type="text" maxlength="100" autocomplete="off" placeholder="Enter transaction reference">
+<label for="transactionId">
+UPI Transaction / Reference ID
+</label>
+
+<input
+  id="transactionId"
+  type="text"
+  maxlength="100"
+  autocomplete="off"
+  placeholder="Enter transaction reference"
+>
 
 <p>
 <button id="submitPayment" type="button">
@@ -274,25 +418,34 @@ Payments require admin verification before being marked Paid.
 </p>
 
 <h3>Your Payment Submissions</h3>
+
 <div id="myPaymentList" class="scroll"></div>
 </div>
 
 <!-- MEMBER ACCOUNTS -->
+
 <div id="memberAccountsPanel" class="panel">
+
 <h2>TFC Accounts — Income & Expenses</h2>
+
 <p class="notice">
 Approved members can view the club's income, expenses and balance.
 Only admins can manage account entries.
 </p>
+
 <div id="accountsMemberContent"></div>
+
 </div>
 
 </section>
+
+<!-- ADMIN PORTAL -->
 
 <section id="admin" class="hide">
 
 <div class="panel">
 <h2 data-t="admin">Admin dashboard</h2>
+
 <div class="flex">
 <button id="tabRequests">Approval requests</button>
 <button id="tabMembers" class="secondary">Members</button>
@@ -302,64 +455,121 @@ Only admins can manage account entries.
 <button id="tabMemberPhotos" class="secondary">Member Photos</button>
 <button id="tabAccounts" class="secondary" type="button">Accounts</button>
 </div>
+
 </div>
+
+<!-- ADMIN APPROVALS -->
 
 <div id="requestsPanel" class="panel">
 <h2>Pending Requests</h2>
 <div id="requestsList"></div>
 </div>
 
+<!-- ADMIN MEMBERS -->
+
 <div id="membersPanel" class="panel hide">
+
 <h2>Members</h2>
+
 <input id="search" placeholder="Search name or member number">
+
 <div id="membersList" class="scroll"></div>
 
+<!-- ADMIN HISTORY -->
+
 <div id="adminMemberHistory" class="panel hide">
-<h3 id="adminHistoryTitle">Member Payment History</h3>
+
+<h3 id="adminHistoryTitle">
+Member Payment History
+</h3>
+
 <p id="adminHistorySummary"></p>
+
 <label for="adminHistoryYear">Select Year</label>
+
 <select id="adminHistoryYear" class="year-select">
 <option value="all">All Years</option>
 </select>
+
 <div id="adminHistoryTable" class="scroll"></div>
 </div>
 
+<!-- EDIT MEMBER -->
+
 <div id="editMemberPanel" class="panel hide">
+
 <h3>Edit Member</h3>
-<p class="muted">Update member details without changing the membership number or existing payment history.</p>
+
+<p class="muted">
+Update member details without changing the membership number or existing payment history.
+</p>
+
 <form id="editMemberForm">
+
 <label for="editMemberNumber">Member Number</label>
 <input id="editMemberNumber" type="number" readonly required>
+
 <label for="editMemberName">Full Name</label>
 <input id="editMemberName" type="text" maxlength="100" required>
+
 <label for="editMemberPhone">Mobile Number</label>
 <input id="editMemberPhone" type="tel" maxlength="15">
+
 <label for="editMemberDate">Joining Date</label>
 <input id="editMemberDate" type="date" required>
+
 <label for="editMemberStatus">Membership Status</label>
+
 <select id="editMemberStatus">
 <option value="active">Active</option>
 <option value="inactive">Inactive</option>
 </select>
+
 <div class="form-actions">
-<button id="saveEditMember" type="submit">Save Changes</button>
-<button id="cancelEditMember" type="button" class="secondary">Cancel</button>
+
+<button id="saveEditMember" type="submit">
+Save Changes
+</button>
+
+<button id="cancelEditMember" type="button" class="secondary">
+Cancel
+</button>
+
 </div>
 </form>
 </div>
 
+<!-- ARCHIVE MEMBER -->
+
 <div id="archiveMemberPanel" class="panel hide">
+
 <h3>Archive Member</h3>
+
 <div class="archive-warning">
-<strong>Important: Archive is not permanent deletion.</strong>
-<p>Member records and payment history must be preserved before archival.</p>
-<p>Old Google login access and pending payment requests must be handled safely.</p>
+
+<strong>
+Important: Archive is not permanent deletion.
+</strong>
+
+<p>
+Member records and payment history must be preserved before archival.
+</p>
+
+<p>
+Old Google login access and pending payment requests must be handled safely.
+</p>
+
 </div>
+
 <p id="archiveMemberSummary"></p>
+
 <form id="archiveMemberForm">
+
 <label for="archiveMemberNumber">Member Number</label>
 <input id="archiveMemberNumber" type="number" readonly required>
+
 <label for="archiveMemberReason">Reason for Archiving</label>
+
 <select id="archiveMemberReason" required>
 <option value="">Select reason</option>
 <option value="resigned">Resigned</option>
@@ -368,94 +578,210 @@ Only admins can manage account entries.
 <option value="duplicate">Duplicate Record</option>
 <option value="other">Other</option>
 </select>
+
 <label for="archiveMemberNotes">Notes (Optional)</label>
-<input id="archiveMemberNotes" type="text" maxlength="250">
+
+<input
+  id="archiveMemberNotes"
+  type="text"
+  maxlength="250"
+>
+
 <label class="flex">
-<input id="archiveMemberConfirm" type="checkbox" style="width:auto" required>
+<input
+  id="archiveMemberConfirm"
+  type="checkbox"
+  style="width:auto"
+  required
+>
 I understand that this member will be moved to the admin-only archive.
 </label>
+
 <div class="form-actions">
-<button id="confirmArchiveMember" type="submit" class="danger" disabled>Confirm Archive</button>
-<button id="cancelArchiveMember" type="button" class="secondary">Cancel</button>
+
+<button
+  id="confirmArchiveMember"
+  type="submit"
+  class="danger"
+  disabled
+>
+Confirm Archive
+</button>
+
+<button
+  id="cancelArchiveMember"
+  type="button"
+  class="secondary"
+>
+Cancel
+</button>
+
 </div>
 </form>
 </div>
 </div>
 
+<!-- ADMIN PAYMENT VERIFICATION -->
+
 <div id="paymentsPanel" class="panel hide">
+
 <h2>Payment Verification</h2>
-<p class="notice">Verify the actual bank credit before approving a payment. A transaction reference alone is not proof of payment.</p>
+
+<p class="notice">
+Verify the actual bank credit before approving a payment. A transaction reference alone is not proof of payment.
+</p>
+
 <div id="adminPaymentList"></div>
+
 </div>
 
+<!-- ADD MEMBER -->
+
 <div id="addMemberPanel" class="panel hide">
+
 <h2>Add New Member</h2>
-<p class="notice">Admin only. Enter an available member number. Previously used numbers must not be reused without safe archival.</p>
+
+<p class="notice">
+Admin only. Enter an available member number. Previously used numbers must not be reused without safe archival.
+</p>
+
 <form id="addMemberForm">
+
 <label for="newMemberNumber">Member Number</label>
 <input id="newMemberNumber" type="number" min="1" step="1" required>
+
 <label for="newMemberName">Full Name</label>
 <input id="newMemberName" type="text" maxlength="100" required>
+
 <label for="newMemberPhone">Mobile Number</label>
 <input id="newMemberPhone" type="tel" maxlength="15">
+
 <label for="newMemberDate">Joining Date</label>
 <input id="newMemberDate" type="date" required>
+
 <label for="newMemberStatus">Membership Status</label>
+
 <select id="newMemberStatus">
 <option value="active">Active</option>
 <option value="inactive">Inactive</option>
 </select>
-<p><button id="saveNewMember" type="submit">Save Member</button></p>
+
+<p>
+<button id="saveNewMember" type="submit">
+Save Member
+</button>
+</p>
+
 </form>
 </div>
 
+<!-- ARCHIVED MEMBERS -->
+
 <div id="archivedMembersPanel" class="panel hide">
+
 <h2>Archived Members</h2>
-<p class="notice">Admin only. Former member records and payment history are retained here.</p>
-<label for="archivedMembersSearch">Search Archived Members</label>
-<input id="archivedMembersSearch" type="search" placeholder="Search name, number or archive ID">
+
+<p class="notice">
+Admin only. Former member records and payment history are retained here.
+</p>
+
+<label for="archivedMembersSearch">
+Search Archived Members
+</label>
+
+<input
+  id="archivedMembersSearch"
+  type="search"
+  placeholder="Search name, number or archive ID"
+>
+
 <div id="archivedMembersList" class="scroll"></div>
+
 <div id="archivedMemberHistory" class="panel hide">
-<h3 id="archivedHistoryTitle">Archived Payment History</h3>
+
+<h3 id="archivedHistoryTitle">
+Archived Payment History
+</h3>
+
 <p id="archivedHistorySummary"></p>
+
 <div id="archivedHistoryTable" class="scroll"></div>
+
 </div>
 </div>
+
+<!-- MEMBER PHOTOS ADMIN -->
 
 <div id="memberPhotosPanel" class="panel hide">
+
 <h2>Member Profile Photos</h2>
-<p class="muted">Admin can upload, change and delete active member profile photos.</p>
-<label for="photoMemberSearch">Search Member</label>
-<input id="photoMemberSearch" type="search" placeholder="Search member number or name">
+
+<p class="muted">
+Admin can upload, change and delete active member profile photos.
+</p>
+
+<label for="photoMemberSearch">
+Search Member
+</label>
+
+<input
+  id="photoMemberSearch"
+  type="search"
+  placeholder="Search member number or name"
+>
+
 <div id="photoMembersList" class="scroll"></div>
+
 <div class="feature-pending">
-<button id="adminPhotoUpload" disabled>Upload Member Photo</button>
+
+<button id="adminPhotoUpload" disabled>
+Upload Member Photo
+</button>
+
 </div>
 </div>
 
+<!-- IMPORT STATUS -->
+
 <div id="importStatusPanel" class="panel hide">
+
 <h2>2027 Payment Import</h2>
-<p class="notice">2027 membership card payments will be imported after validation. Existing 2024–2026 records will be preserved.</p>
-<p id="importStatusText">Import not completed.</p>
+
+<p class="notice">
+2027 membership card payments will be imported after validation. Existing 2024–2026 records will be preserved.
+</p>
+
+<p id="importStatusText">
+Import not completed.
+</p>
+
 </div>
 
 <!-- ADMIN ACCOUNTS -->
+
 <div id="accountsPanel" class="panel hide">
+
 <h2>Accounts — Income & Expenses</h2>
+
 <p class="notice">
 Admin Accounts Management.
 Membership income must not be entered twice.
 Historical records and opening balance must be preserved.
 </p>
+
 <div id="accountsAdminContent"></div>
+
 </div>
 
 </section>
+
 </main>
 
 <footer>
 © TFC Bandiyod · Private Member Portal
 </footer>
+
+<!-- EXISTING UPI INTERFACE SCRIPT -->
 
 <script>
 (function(){
@@ -503,10 +829,227 @@ Historical records and opening balance must be preserved.
 })();
 </script>
 
+<!-- EXISTING MODULES — UNCHANGED -->
+
 <script type="module" src="./app.js?v=88.4"></script>
 <script type="module" src="./accounts.js?v=84.0"></script>
 <script type="module" src="./membership-income.js?v=87.0"></script>
 <script type="module" src="./member-photos.js?v=1.0"></script>
+
+<!-- NEW MEMBER DASHBOARD v89.1 -->
+
+<script>
+(() => {
+  const member =
+    document.getElementById('member');
+
+  if (
+    !member ||
+    document.getElementById('tfcMemberMenu')
+  ) return;
+
+  const byId = id =>
+    document.getElementById(id);
+
+  const findSection = id =>
+    byId(id)?.closest('.panel');
+
+  const views = [
+    {
+      id: 'profile',
+      element: findSection('memberTitle'),
+      en: 'My Profile',
+      ml: 'എന്റെ പ്രൊഫൈൽ',
+      icon: '👤'
+    },
+    {
+      id: 'photo',
+      element: findSection('memberPhotoUpload'),
+      en: 'Profile Photo',
+      ml: 'പ്രൊഫൈൽ ഫോട്ടോ',
+      icon: '🖼️'
+    },
+    {
+      id: 'membership',
+      element: byId('paidCount')?.closest('.grid'),
+      en: 'Membership',
+      ml: 'അംഗത്വ വിവരങ്ങൾ',
+      icon: '📋'
+    },
+    {
+      id: 'history',
+      element: findSection('historyBody'),
+      en: 'Payment History',
+      ml: 'പേയ്മെന്റ് ചരിത്രം',
+      icon: '🗓️'
+    },
+    {
+      id: 'payment',
+      element: findSection('submitPayment'),
+      en: 'Pay Membership',
+      ml: 'ഫീസ് അടയ്ക്കുക',
+      icon: '💳'
+    },
+    {
+      id: 'accounts',
+      element: byId('memberAccountsPanel'),
+      en: 'TFC Accounts',
+      ml: 'TFC അക്കൗണ്ട്സ്',
+      icon: '📊'
+    }
+  ];
+
+  // Safety: Keep original page if a section is missing.
+
+  if (views.some(view => !view.element)) {
+    console.warn(
+      'TFC Dashboard: Section missing. Original layout retained.'
+    );
+    return;
+  }
+
+  const menu = document.createElement('div');
+
+  menu.id = 'tfcMemberMenu';
+  menu.className = 'panel';
+
+  const heading = document.createElement('h2');
+  heading.id = 'tfcMemberMenuTitle';
+
+  const description =
+    document.createElement('p');
+
+  description.className = 'muted';
+  description.id = 'tfcMemberMenuDescription';
+
+  const grid = document.createElement('div');
+  grid.className = 'tfc-dashboard-grid';
+
+  menu.append(
+    heading,
+    description,
+    grid
+  );
+
+  // Each tile controls its existing original section.
+
+  function openView(id, scroll = false) {
+    const selectedView =
+      views.find(view => view.id === id);
+
+    if (!selectedView) return;
+
+    for (const view of views) {
+      const selected = view.id === id;
+
+      view.element.classList.toggle(
+        'tfc-dashboard-hidden',
+        !selected
+      );
+
+      view.button.setAttribute(
+        'aria-pressed',
+        String(selected)
+      );
+    }
+
+    member.dataset.tfcOpenView = id;
+
+    if (scroll) {
+      selectedView.element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  }
+
+  for (const view of views) {
+    if (!view.element.id) {
+      view.element.id =
+        'tfcSection_' + view.id;
+    }
+
+    const btn =
+      document.createElement('button');
+
+    btn.type = 'button';
+    btn.className = 'tfc-dashboard-button';
+
+    btn.setAttribute(
+      'aria-controls',
+      view.element.id
+    );
+
+    btn.setAttribute(
+      'aria-pressed',
+      'false'
+    );
+
+    btn.addEventListener(
+      'click',
+      () => openView(view.id, true)
+    );
+
+    view.button = btn;
+
+    grid.append(btn);
+  }
+
+  function translateMenu() {
+    const isMalayalam =
+      byId('lang')?.value === 'ml';
+
+    heading.textContent = isMalayalam
+      ? 'അംഗങ്ങളുടെ ഡാഷ്ബോർഡ്'
+      : 'Member Dashboard';
+
+    description.textContent = isMalayalam
+      ? 'താഴെയുള്ള വിഭാഗം തിരഞ്ഞെടുക്കുക.'
+      : 'Select a section to view its details.';
+
+    for (const view of views) {
+      const emoji =
+        document.createElement('span');
+
+      emoji.textContent = view.icon;
+
+      emoji.setAttribute(
+        'aria-hidden',
+        'true'
+      );
+
+      view.button.replaceChildren(
+        emoji,
+        document.createTextNode(
+          isMalayalam ? view.ml : view.en
+        )
+      );
+    }
+  }
+
+  // Insert the menu without moving existing panels.
+
+  member.insertBefore(
+    menu,
+    member.firstChild
+  );
+
+  byId('lang')?.addEventListener(
+    'change',
+    translateMenu
+  );
+
+  translateMenu();
+
+  // Open profile by default.
+
+  openView('profile');
+
+  console.info(
+    'TFC Bandiyod Member Dashboard v89.1 loaded.'
+  );
+})();
+</script>
 
 </body>
 </html>
