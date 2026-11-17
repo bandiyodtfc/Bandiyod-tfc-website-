@@ -398,6 +398,125 @@ body:has(#member:not(.hide)) footer{
     background-position:center center;
   }
 }
+
+/*
+ TFC BANDIYOD PREMIUM HEADER v89.5
+
+ Header graphics only.
+ Original logo image and all functionality retained.
+*/
+
+header{
+  background:linear-gradient(
+    135deg,
+    #ffe56b 0%,
+    #f8ce23 48%,
+    #d99d08 100%
+  );
+  border-bottom:3px solid #242424;
+  padding:13px 4%;
+  box-shadow:0 4px 18px rgba(0,0,0,0.22);
+}
+
+header .brand{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+header .brand-logo{
+  width:78px;
+  height:78px;
+  object-fit:contain;
+  padding:5px;
+  border-radius:16px;
+  background:rgba(255,255,255,0.65);
+  border:2px solid #9e7500;
+  box-shadow:0 3px 10px rgba(0,0,0,0.2);
+}
+
+header .brand h1{
+  font-size:27px;
+  font-weight:900;
+  letter-spacing:1.2px;
+  color:#171717;
+  line-height:1.15;
+  text-shadow:1px 1px 0 rgba(255,255,255,0.45);
+}
+
+header .brand small{
+  display:block;
+  margin-top:6px;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:2px;
+  color:#493500;
+}
+
+header select,
+header #logout{
+  border-radius:9px;
+  font-weight:700;
+}
+
+@media(max-width:600px){
+  header{
+    padding:10px 12px;
+    gap:6px;
+  }
+
+  header .brand{
+    gap:8px;
+  }
+
+  header .brand-logo{
+    width:55px;
+    height:55px;
+    padding:3px;
+    border-radius:11px;
+  }
+
+  header .brand h1{
+    font-size:18px;
+    letter-spacing:0.1px;
+  }
+
+  header .brand small{
+    font-size:8px;
+    letter-spacing:0.7px;
+    margin-top:4px;
+  }
+
+  header .flex{
+    gap:5px;
+  }
+
+  header select,
+  header #logout{
+    padding:7px 6px;
+    font-size:11px;
+  }
+}
+
+@media(max-width:380px){
+  header .brand-logo{
+    width:46px;
+    height:46px;
+  }
+
+  header .brand h1{
+    font-size:15px;
+  }
+
+  header .brand small{
+    font-size:7px;
+  }
+
+  header select{
+    max-width:76px;
+  }
+}
+
 </style>
 </head>
 
