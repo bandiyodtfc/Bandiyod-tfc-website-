@@ -68,3 +68,31 @@ body:has(#login:not(.hide)) footer {
     margin: 25px auto;
   }
 }
+/* TFC Member Dashboard Background */
+
+body:has(#member:not(.hide)) {
+  background:
+    linear-gradient(
+      rgba(0,0,0,0.25),
+      rgba(0,0,0,0.35)
+    ),
+    url("./tfc-login-bg.jpg")
+    center center / cover fixed no-repeat;
+
+  min-height:100vh;
+}
+
+/* Make member panels slightly transparent */
+
+body:has(#member:not(.hide)) .panel {
+  background:rgba(255,255,255,0.94);
+}
+
+/* Mobile background */
+
+@media(max-width:600px) {
+  body:has(#member:not(.hide)) {
+    background-attachment:scroll;
+    background-position:center;
+  }
+}
