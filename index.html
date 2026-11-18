@@ -324,6 +324,79 @@
     .contact-address address{font-style:normal}
     .footer-club-details{display:block;margin-top:10px;font-size:11px;color:#adbfbb;line-height:1.55;letter-spacing:normal;max-width:300px}
     @media(max-width:580px){.club-official-info{grid-template-columns:1fr}.club-info-item{padding:15px 16px}}
+
+
+    /* RESTORED: TFC HERO & EMBLEM PREMIUM ANIMATION — continuous motion */
+    #heroTitle{
+      transform-origin:left center;
+      animation:tfcHeroFloat 5s ease-in-out infinite;
+      will-change:transform;
+    }
+    @keyframes tfcHeroFloat{
+      0%,100%{transform:translateY(0) scale(1)}
+      50%{transform:translateY(-11px) scale(1.018)}
+    }
+    #heroTitle > span{
+      display:inline-block;
+      animation:tfcHeroGoldGlow 3s ease-in-out infinite;
+    }
+    @keyframes tfcHeroGoldGlow{
+      0%,100%{text-shadow:0 0 9px rgba(244,206,40,.25),0 0 24px rgba(244,206,40,.08)}
+      50%{text-shadow:0 0 18px rgba(255,220,75,.77),0 0 44px rgba(255,208,40,.4)}
+    }
+    .about-panel{
+      animation:tfcEmblemPanelGlow 4s ease-in-out infinite;
+    }
+    @keyframes tfcEmblemPanelGlow{
+      0%,100%{box-shadow:0 0 14px rgba(244,206,40,.07),inset 0 0 0 rgba(244,206,40,0)}
+      50%{box-shadow:0 0 33px rgba(244,206,40,.28),inset 0 0 24px rgba(244,206,40,.06)}
+    }
+    .about-panel img{
+      transform-style:preserve-3d;
+      animation:tfcEmblemMotion 5s ease-in-out infinite;
+      will-change:transform,filter;
+    }
+    @keyframes tfcEmblemMotion{
+      0%,100%{transform:perspective(650px) translateY(0) rotateY(-8deg) rotateZ(-2deg) scale(1);filter:drop-shadow(0 4px 7px rgba(244,206,40,.16))}
+      50%{transform:perspective(650px) translateY(-12px) rotateY(9deg) rotateZ(2deg) scale(1.055);filter:drop-shadow(0 12px 20px rgba(244,206,40,.43))}
+    }
+    .brand img{animation:tfcSmallLogoMotion 5s ease-in-out infinite;will-change:transform}
+    @keyframes tfcSmallLogoMotion{
+      0%,100%{transform:translateY(0) rotate(-2deg)}
+      50%{transform:translateY(-3px) rotate(3deg)}
+    }
+    .brand-name{animation:tfcBrandLetterGlow 3.8s ease-in-out infinite}
+    @keyframes tfcBrandLetterGlow{
+      0%,100%{text-shadow:0 0 0 rgba(244,206,40,0)}
+      50%{text-shadow:0 0 10px rgba(244,206,40,.6)}
+    }
+
+    /* RESTORED: continuously scrolling bilingual club Running News */
+    .news-ticker{display:flex;align-items:stretch;overflow:hidden;min-height:58px}
+    .news-ticker-label{flex:0 0 auto;z-index:1;display:flex;align-items:center;gap:9px;padding:0 22px;background:#101719;color:var(--gold);font-size:13px;letter-spacing:.09em;font-weight:1000}
+    .news-live-dot{width:10px;height:10px;border-radius:50%;background:#f23b3b;box-shadow:0 0 0 4px rgba(242,59,59,.18);animation:tfcNewsBlink 1s ease-in-out infinite}
+    @keyframes tfcNewsBlink{0%,100%{opacity:1}50%{opacity:.22}}
+    .news-ticker-viewport{min-width:0;flex:1;display:flex;align-items:center;overflow:hidden}
+    .news-ticker-track{width:max-content;display:flex;align-items:center;animation:tfcRunningNews 34s linear infinite;will-change:transform}
+    .news-ticker-copy{display:flex;flex:0 0 auto;align-items:center;gap:38px;padding-right:38px;white-space:nowrap}
+    .news-ticker-copy span{font-size:13px;font-weight:900;letter-spacing:.018em;color:#151a17}
+    .news-ticker-copy span::before{content:'◆';font-size:8px;vertical-align:2px;margin-right:17px;opacity:.6}
+    @keyframes tfcRunningNews{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    .news-ticker:hover .news-ticker-track,.news-ticker:focus-within .news-ticker-track{animation-play-state:paused}
+    @media(max-width:760px){
+      .news-ticker{min-height:52px}
+      .news-ticker-label{padding:0 13px;font-size:11px}
+      .news-ticker-copy{gap:26px;padding-right:26px}
+      .news-ticker-copy span{font-size:12px}
+      .news-ticker-track{animation-duration:30s}
+    }
+    @media(prefers-reduced-motion:reduce){
+      #heroTitle,#heroTitle > span,.about-panel,.about-panel img,.brand img,.brand-name,
+      .news-live-dot,.news-ticker-track{animation:none!important;transform:none!important;will-change:auto!important}
+      .news-ticker-track{width:auto;max-width:100%}
+      .news-ticker-copy{white-space:normal;flex-wrap:wrap;gap:7px;padding:8px 12px}
+      .news-ticker-copy[aria-hidden="true"]{display:none}
+    }
   </style>
 </head>
 <body>
@@ -367,8 +440,29 @@
         <div class="hero-underline" aria-hidden="true"></div>
       </div>
     </section>
-    <div class="strip" aria-label="Club motto">
-      <div class="container strip-inner"><span>UNITY</span><span class="strip-dot">◆</span><span>TEAMWORK</span><span class="strip-dot">◆</span><span>ONE TEAM ONE DREAM</span></div>
+    <!-- Restored running NEWS ticker. Existing news articles below remain untouched. -->
+    <div class="strip news-ticker" role="region" aria-label="TFC Bandiyod running club news">
+      <div class="news-ticker-label"><span class="news-live-dot" aria-hidden="true"></span>NEWS</div>
+      <div class="news-ticker-viewport">
+        <div class="news-ticker-track">
+        <div class="news-ticker-copy">
+          <span data-i18n="tickerFest">🏆 Bandiyod Games Fest 2027</span>
+          <span data-i18n="tickerDate">📅 8–12 January 2027</span>
+          <span data-i18n="tickerUzi">UZI Men's Boutique — Title Sponsor</span>
+          <span data-i18n="tickerUbbi">🏆 UBBI Dubai — Champion Trophy Sponsor</span>
+          <span data-i18n="tickerUae">🇦🇪 TFC UAE കമ്മിറ്റി</span>
+          <span data-i18n="tickerMotto">ONE TEAM ONE DREAM</span>
+        </div>
+        <div class="news-ticker-copy" aria-hidden="true">
+          <span data-i18n="tickerFest">🏆 Bandiyod Games Fest 2027</span>
+          <span data-i18n="tickerDate">📅 8–12 January 2027</span>
+          <span data-i18n="tickerUzi">UZI Men's Boutique — Title Sponsor</span>
+          <span data-i18n="tickerUbbi">🏆 UBBI Dubai — Champion Trophy Sponsor</span>
+          <span data-i18n="tickerUae">🇦🇪 TFC UAE കമ്മിറ്റി</span>
+          <span data-i18n="tickerMotto">ONE TEAM ONE DREAM</span>
+        </div>
+        </div>
+      </div>
     </div>
     <section id="about" aria-labelledby="aboutTitle">
       <div class="container about-grid">
@@ -557,6 +651,7 @@
         membersLabel:'അംഗങ്ങൾക്കായി',membersTitle:'നിങ്ങളുടെ മെമ്പർഷിപ്പ് വിവരങ്ങൾ ഇവിടെ',membersBody:'Google അക്കൗണ്ട് ഉപയോഗിച്ച് ലോഗിൻ ചെയ്യാം. അഡ്മിൻ അംഗീകരിച്ച അംഗങ്ങൾക്ക് പ്രൊഫൈലും പേയ്‌മെന്റ് ചരിത്രവും കാണാം.',fees:'അംഗത്വ ഫീസ്: ₹50 / മാസം · ₹600 / വർഷം',payMembership:'💳 മെമ്പർഷിപ്പ് അടയ്ക്കുക',openPortal:'മെമ്പർ ലോഗിൻ തുറക്കുക',
         festBadge:'🏆 12-ാം പതിപ്പ് · ഉടൻ വരുന്നു',festIntro:'TFC Arts & Sports Club Bandiyod അവതരിപ്പിക്കുന്ന അഞ്ചുദിവസത്തെ കായികമേള.',festDate:'ജനുവരി 8, 9, 10, 11, 12 — 2027',festDateLabel:'പരിപാടി നടക്കുന്ന ദിവസങ്ങൾ',festVenueLabel:'വേദി',festSports:'ഫുട്ബോൾ · ക്രിക്കറ്റ് · വോളിബോൾ · വടംവലി',festSportsLabel:'മത്സര ഇനങ്ങൾ',titleSponsor:'ടൈറ്റിൽ സ്പോൺസർ',seePoster:'സ്പോൺസർ പോസ്റ്റർ കാണുക',festTimeNote:'മത്സരങ്ങളുടെ കൃത്യമായ സമയക്രമം പിന്നീട് അറിയിക്കും.',
                 updatesLabel:'ക്ലബ് വാർത്തകൾ',updatesTitle:'അറിയിപ്പുകൾ',updatesCardTitle:'ഔദ്യോഗിക അറിയിപ്പുകൾ',updatesCardBody:'പുതിയ വാർത്തകളും ക്ലബ് അറിയിപ്പുകളും ഇവിടെ ഉടൻ പ്രസിദ്ധീകരിക്കും.',
+        tickerFest:'🏆 ബണ്ടിയോട് ഗെയിംസ് ഫെസ്റ്റ് 2027',tickerDate:'📅 2027 ജനുവരി 8 മുതൽ 12 വരെ',tickerUzi:'UZI Men\'s Boutique — ടൈറ്റിൽ സ്പോൺസർ',tickerUbbi:'🏆 UBBI Dubai — ചാമ്പ്യൻ ട്രോഫി സ്പോൺസർ',tickerUae:'🇦🇪 TFC UAE കമ്മിറ്റി',tickerMotto:'ONE TEAM ONE DREAM',
         championNewsTag:'🏆 ചാമ്പ്യൻ ട്രോഫി',championNewsTitle:'Champion Trophy സ്പോൺസർ — UBBI Dubai',championNewsBody:'Bandiyod Games Fest 2027-ന്റെ Champion Trophy സ്പോൺസർ ചെയ്യുന്ന UBBI Dubai (TFC UAE President)-ന് TFC Bandiyod-ന്റെ ഹൃദയം നിറഞ്ഞ നന്ദി.',championNewsOpen:'പോസ്റ്റർ കാണുക ↗',
         contactLabel:'ബന്ധപ്പെടുക',contactTitle:'ഞങ്ങളുമായി ബന്ധപ്പെടാം',contactBody:'TFC Bandiyod സംബന്ധിച്ച വിവരങ്ങൾക്കും അന്വേഷണങ്ങൾക്കും ഇമെയിൽ വഴിയോ Instagram വഴിയോ ബന്ധപ്പെടാം.',rights:'എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്തം.'
       },
@@ -573,6 +668,7 @@
         membersLabel:'For members',membersTitle:'Your membership, in one place',membersBody:'Sign in with Google. Admin-approved members can access their profile and payment history.',fees:'Membership fee: ₹50 / month · ₹600 / year',payMembership:'💳 Pay Membership',openPortal:'Open Member Login',
         festBadge:'🏆 12th Edition · Coming Soon',festIntro:'Five days of sports presented by TFC Arts & Sports Club Bandiyod.',festDate:'January 8, 9, 10, 11 & 12, 2027',festDateLabel:'Fest dates',festVenueLabel:'Venue',festSports:'Football · Cricket · Volleyball · Tug of War',festSportsLabel:'Sports',titleSponsor:'Title Sponsor',seePoster:'View sponsor poster',festTimeNote:'Detailed match timings will be announced later.',
                 updatesLabel:'Club news',updatesTitle:'Latest Updates',updatesCardTitle:'Official Announcements',updatesCardBody:'Club news and official announcements will be published here soon.',
+        tickerFest:'🏆 Bandiyod Games Fest 2027',tickerDate:'📅 8–12 January 2027',tickerUzi:'UZI Men\'s Boutique — Title Sponsor',tickerUbbi:'🏆 UBBI Dubai — Champion Trophy Sponsor',tickerUae:'🇦🇪 TFC UAE Committee',tickerMotto:'ONE TEAM ONE DREAM',
         championNewsTag:'🏆 Champion Trophy',championNewsTitle:'Champion Trophy Sponsor — UBBI Dubai',championNewsBody:'Heartfelt thanks from TFC Bandiyod to UBBI Dubai (TFC UAE President) for sponsoring the Champion Trophy at Bandiyod Games Fest 2027.',championNewsOpen:'View poster ↗',
         contactLabel:'Get in touch',contactTitle:'Contact Us',contactBody:'For club information and enquiries, connect with TFC Bandiyod by email or Instagram.',rights:'All rights reserved.'
       }
