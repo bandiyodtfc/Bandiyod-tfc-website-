@@ -312,6 +312,18 @@
         animation:none!important;transform:none!important;will-change:auto;
       }
     }
+
+    /* TFC BANDIYOD — official club registration and location. */
+    .club-official-info{display:grid;grid-template-columns:minmax(0,0.7fr) minmax(0,1.3fr);gap:12px;margin-top:25px;max-width:760px}
+    .club-info-item{border:1px solid #40504c;border-radius:14px;padding:17px 18px;background:rgba(255,255,255,.035);min-width:0}
+    .club-info-label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);font-weight:850;margin-bottom:8px}
+    .club-info-value{display:block;color:#f5f7f4;font-size:18px;font-weight:850;line-height:1.5}
+    .club-info-item address{font-size:13px;font-style:normal;line-height:1.7;color:#e1e9e4}
+    .contact-address{margin-top:20px;padding-left:14px;border-left:3px solid var(--gold);font-size:14px;line-height:1.7;color:#dce4e0}
+    .contact-address-label{display:block;margin-bottom:4px;font-size:12px;font-weight:850;color:var(--gold)}
+    .contact-address address{font-style:normal}
+    .footer-club-details{display:block;margin-top:10px;font-size:11px;color:#adbfbb;line-height:1.55;letter-spacing:normal;max-width:300px}
+    @media(max-width:580px){.club-official-info{grid-template-columns:1fr}.club-info-item{padding:15px 16px}}
   </style>
 </head>
 <body>
@@ -364,6 +376,16 @@
           <div class="section-kicker" data-i18n="aboutLabel">About us</div>
           <h2 id="aboutTitle" class="section-title" data-i18n="aboutTitle">നമ്മുടെ കൂട്ടായ്മ, നമ്മുടെ അഭിമാനം</h2>
           <p class="section-copy" data-i18n="aboutBody">TFC Bandiyod അംഗങ്ങളെ ഒരുമിപ്പിക്കുന്ന ഒരു കൂട്ടായ്മയാണ്. സൗഹൃദം, പരസ്പര സഹകരണം, ടീം സ്പിരിറ്റ് എന്നിവയാണ് നമ്മുടെ മുന്നേറ്റത്തിന്റെ അടിസ്ഥാനം.</p>
+          <div class="club-official-info" aria-label="Official registration and address">
+            <div class="club-info-item">
+              <span class="club-info-label" data-i18n="registrationLabel">രജിസ്ട്രേഷൻ നമ്പർ</span>
+              <strong class="club-info-value">399/17</strong>
+            </div>
+            <div class="club-info-item">
+              <span class="club-info-label" data-i18n="officialAddressLabel">ഔദ്യോഗിക വിലാസം</span>
+              <address>Main Junction, Bandiyod<br>Kasaragod, Kerala – 671324<br>India</address>
+            </div>
+          </div>
         </div>
         <div class="about-panel">
           <img src="./tfc-logo.jpeg" alt="TFC Bandiyod logo" width="180" height="180" loading="lazy">
@@ -400,7 +422,7 @@
         <div class="committee-grid" id="committeeOfficeGrid" aria-live="polite"></div>
         <h3 class="committee-group-title" data-i18n="teamCaptains">ടീം ക്യാപ്റ്റന്മാർ</h3>
         <div class="committee-grid" id="committeeCaptainGrid" aria-live="polite"></div>
-        <p class="committee-note" data-i18n="committeeNote">അംഗങ്ങളുടെ ഫോട്ടോകൾ ലഭിക്കുമ്പോൾ ഇവിടെ ചേർക്കാം.</p>
+        <p class="committee-note" data-i18n="committeeNote">2026–27 കമ്മിറ്റി അംഗങ്ങളും ടീം ക്യാപ്റ്റന്മാരും.</p>
         <!-- New: independent UAE committee list; older committee untouched. -->
         <h3 class="committee-group-title uae-committee-title" data-i18n="uaeOfficials">🇦🇪 UAE കമ്മിറ്റി ഭാരവാഹികൾ</h3>
         <p class="uae-committee-subtitle" data-i18n="uaeCommitteeIntro">TFC BANDIYOD — UAE Committee Officials</p>
@@ -493,6 +515,11 @@
           <div class="section-kicker" data-i18n="contactLabel">Get in touch</div>
           <h2 id="contactTitle" class="section-title" data-i18n="contactTitle">ഞങ്ങളുമായി ബന്ധപ്പെടാം</h2>
           <p class="section-copy" data-i18n="contactBody">TFC Bandiyod സംബന്ധിച്ച വിവരങ്ങൾക്കും അന്വേഷണങ്ങൾക്കും ഇമെയിൽ വഴി ബന്ധപ്പെടുക.</p>
+          <div class="contact-address">
+            <span class="contact-address-label" data-i18n="officialAddressLabel">ഔദ്യോഗിക വിലാസം</span>
+            <address>Main Junction, Bandiyod, Kasaragod<br>Kerala – 671324, India</address>
+            <span data-i18n="registrationLabel">രജിസ്ട്രേഷൻ നമ്പർ</span>: <strong>399/17</strong>
+          </div>
         </div>
         <div class="contact-actions">
           <a class="btn btn-gold" href="mailto:bandiyodtfc@gmail.com">✉ bandiyodtfc@gmail.com</a>
@@ -507,7 +534,7 @@
 
   <footer class="footer">
     <div class="container footer-inner">
-      <div><strong>TFC BANDIYOD</strong><small>ONE TEAM ONE DREAM</small></div>
+      <div><strong>TFC BANDIYOD</strong><small>ONE TEAM ONE DREAM</small><span class="footer-club-details"><span data-i18n="registrationLabel">രജിസ്ട്രേഷൻ നമ്പർ</span>: 399/17<br>Main Junction, Bandiyod, Kasaragod, Kerala – 671324, India</span></div>
       <div>© <span id="year">2026</span> TFC Bandiyod. <span data-i18n="rights">All rights reserved.</span></div>
       <div class="footer-links"><a href="#home" data-i18n="navHome">ഹോം</a><a href="./portal.html" data-i18n="memberLogin">Member Login</a></div>
     </div>
@@ -521,9 +548,10 @@
         navHome:'ഹോം',navAbout:'ഞങ്ങളെക്കുറിച്ച്',navActivities:'പ്രവർത്തനങ്ങൾ',navCommittee:'കമ്മിറ്റി',navUpdates:'അറിയിപ്പുകൾ',navContact:'ബന്ധപ്പെടുക',memberLogin:'മെമ്പർ ലോഗിൻ',
         welcome:'TFC Bandiyod-ലേക്ക് സ്വാഗതം',heroText:'ഒരുമയും സൗഹൃദവും കൂട്ടായ്മയും മുൻനിർത്തി മുന്നേറുന്ന നമ്മുടെ ക്ലബ്ബിന്റെ ഔദ്യോഗിക വെബ്‌സൈറ്റിലേക്ക് സ്വാഗതം.',memberPortal:'മെമ്പർ പോർട്ടൽ',explore:'കൂടുതൽ അറിയുക',
         aboutLabel:'ഞങ്ങളെക്കുറിച്ച്',aboutTitle:'നമ്മുടെ കൂട്ടായ്മ, നമ്മുടെ അഭിമാനം',aboutBody:'TFC Bandiyod അംഗങ്ങളെ ഒരുമിപ്പിക്കുന്ന ഒരു കൂട്ടായ്മയാണ്. സൗഹൃദം, പരസ്പര സഹകരണം, ടീം സ്പിരിറ്റ് എന്നിവയാണ് നമ്മുടെ മുന്നേറ്റത്തിന്റെ അടിസ്ഥാനം.',
+        registrationLabel:'രജിസ്ട്രേഷൻ നമ്പർ',officialAddressLabel:'ഔദ്യോഗിക വിലാസം',
         activityLabel:'നമ്മുടെ കൂട്ടായ്മ',activityTitle:'നമ്മുടെ പ്രവർത്തനങ്ങൾ',activityIntro:'ക്ലബ്ബിന്റെ പ്രവർത്തനങ്ങളും അംഗങ്ങൾക്കായുള്ള ഡിജിറ്റൽ സൗകര്യങ്ങളും ഒരു സ്ഥലത്ത്.',
         card1Title:'ടീം സ്പിരിറ്റ്',card1Body:'ഒരുമയും സൗഹൃദവും വളർത്തുന്ന ക്ലബ് പ്രവർത്തനങ്ങൾ.',card2Title:'കൂട്ടായ്മ',card2Body:'അംഗങ്ങൾ തമ്മിലുള്ള ബന്ധവും സഹകരണവും ശക്തിപ്പെടുത്തുക.',card3Title:'ഡിജിറ്റൽ മെമ്പർഷിപ്പ്',card3Body:'അംഗത്വ വിവരങ്ങളും അംഗീകരിച്ച പേയ്‌മെന്റുകളും സുരക്ഷിതമായി കാണാം.',
-        committeeLabel:'ക്ലബ് നേതൃത്വം',committeeTitle:'നമ്മുടെ കമ്മിറ്റി',committeeIntro:'TFC Arts & Sports Club Bandiyod — 2026–27 കമ്മിറ്റി ഭാരവാഹികൾ.',committeeContact:'കമ്മിറ്റിയുമായി ബന്ധപ്പെടുക',committeeNote:'Mizbah-യുടെ ഫോട്ടോ പിന്നീട് ചേർക്കാം.',committeeSeason:'2026–27 കമ്മിറ്റി',officeBearers:'കമ്മിറ്റി ഭാരവാഹികൾ',teamCaptains:'ടീം ക്യാപ്റ്റന്മാർ',roleChairman:'ചെയർമാൻ',roleVicePresident:'വൈസ് പ്രസിഡന്റ്',roleJointSecretary:'ജോയിന്റ് സെക്രട്ടറി',roleCricketCaptain:'ക്രിക്കറ്റ് ക്യാപ്റ്റൻ',roleCricketViceCaptain:'ക്രിക്കറ്റ് വൈസ് ക്യാപ്റ്റൻ',roleFootballCaptain:'ഫുട്ബോൾ ക്യാപ്റ്റൻ',roleFootballViceCaptain:'ഫുട്ബോൾ വൈസ് ക്യാപ്റ്റൻ',roleVolleyballCaptain:'വോളിബോൾ ക്യാപ്റ്റൻ',rolePresident:'പ്രസിഡന്റ്',roleSecretary:'സെക്രട്ടറി',roleTreasurer:'ട്രഷറർ',roleCommittee:'കമ്മിറ്റി അംഗം',memberPending:'പേര് ഉടൻ ചേർക്കും',
+        committeeLabel:'ക്ലബ് നേതൃത്വം',committeeTitle:'നമ്മുടെ കമ്മിറ്റി',committeeIntro:'TFC Arts & Sports Club Bandiyod — 2026–27 കമ്മിറ്റി ഭാരവാഹികൾ.',committeeContact:'കമ്മിറ്റിയുമായി ബന്ധപ്പെടുക',committeeNote:'2026–27 കമ്മിറ്റി അംഗങ്ങളും ടീം ക്യാപ്റ്റന്മാരും.',committeeSeason:'2026–27 കമ്മിറ്റി',officeBearers:'കമ്മിറ്റി ഭാരവാഹികൾ',teamCaptains:'ടീം ക്യാപ്റ്റന്മാർ',roleChairman:'ചെയർമാൻ',roleVicePresident:'വൈസ് പ്രസിഡന്റ്',roleJointSecretary:'ജോയിന്റ് സെക്രട്ടറി',roleCricketCaptain:'ക്രിക്കറ്റ് ക്യാപ്റ്റൻ',roleCricketViceCaptain:'ക്രിക്കറ്റ് വൈസ് ക്യാപ്റ്റൻ',roleFootballCaptain:'ഫുട്ബോൾ ക്യാപ്റ്റൻ',roleFootballViceCaptain:'ഫുട്ബോൾ വൈസ് ക്യാപ്റ്റൻ',roleVolleyballCaptain:'വോളിബോൾ ക്യാപ്റ്റൻ',rolePresident:'പ്രസിഡന്റ്',roleSecretary:'സെക്രട്ടറി',roleTreasurer:'ട്രഷറർ',roleCommittee:'കമ്മിറ്റി അംഗം',memberPending:'പേര് ഉടൻ ചേർക്കും',
         uaeOfficials:'🇦🇪 UAE കമ്മിറ്റി ഭാരവാഹികൾ',uaeCommitteeIntro:'TFC BANDIYOD — UAE Committee Officials',
         shortcutProfile:'എന്റെ പ്രൊഫൈൽ',shortcutHistory:'പേയ്‌മെന്റ് ചരിത്രം',shortcutPay:'മെമ്പർഷിപ്പ് പേയ്‌മെന്റ്',shortcutAccounts:'ക്ലബ് അക്കൗണ്ട്സ്',loginRequired:'ലോഗിൻ ആവശ്യമാണ്',memberPrivacy:'🔒 എല്ലാ ഷോർട്ട്കട്ടുകളും നിലവിലുള്ള സുരക്ഷിത ലോഗിൻ പേജിലേക്കാണ് പോകുന്നത്. അനുമതിയുള്ളവർക്ക് മാത്രം വിവരങ്ങൾ കാണാം.',
         membersLabel:'അംഗങ്ങൾക്കായി',membersTitle:'നിങ്ങളുടെ മെമ്പർഷിപ്പ് വിവരങ്ങൾ ഇവിടെ',membersBody:'Google അക്കൗണ്ട് ഉപയോഗിച്ച് ലോഗിൻ ചെയ്യാം. അഡ്മിൻ അംഗീകരിച്ച അംഗങ്ങൾക്ക് പ്രൊഫൈലും പേയ്‌മെന്റ് ചരിത്രവും കാണാം.',fees:'അംഗത്വ ഫീസ്: ₹50 / മാസം · ₹600 / വർഷം',payMembership:'💳 മെമ്പർഷിപ്പ് അടയ്ക്കുക',openPortal:'മെമ്പർ ലോഗിൻ തുറക്കുക',
@@ -536,9 +564,10 @@
         navHome:'Home',navAbout:'About',navActivities:'Activities',navCommittee:'Committee',navUpdates:'Updates',navContact:'Contact',memberLogin:'Member Login',
         welcome:'Welcome to TFC Bandiyod',heroText:'Welcome to the official website of TFC Bandiyod — united by friendship, teamwork and a shared dream.',memberPortal:'Member Portal',explore:'Explore More',
         aboutLabel:'About us',aboutTitle:'One club. One family. One dream.',aboutBody:'TFC Bandiyod is a community that brings members together. Friendship, mutual support and team spirit drive us forward.',
+        registrationLabel:'Registration No.',officialAddressLabel:'Registered Office',
         activityLabel:'Our community',activityTitle:'What We Do',activityIntro:'Discover our club community and the digital services available to members.',
         card1Title:'Team Spirit',card1Body:'Club activities that encourage unity and friendship.',card2Title:'Community',card2Body:'Stronger connections and cooperation among our members.',card3Title:'Digital Membership',card3Body:'Secure access to membership details and approved payment history.',
-        committeeLabel:'Club leadership',committeeTitle:'Our Committee',committeeIntro:'TFC Arts & Sports Club Bandiyod — Committee for 2026–27.',committeeContact:'Contact Committee',committeeNote:'Mizbah’s photo will be added later.',committeeSeason:'2026–27 Committee',officeBearers:'Office Bearers',teamCaptains:'Team Captains',roleChairman:'Chairman',roleVicePresident:'Vice President',roleJointSecretary:'Joint Secretary',roleCricketCaptain:'Cricket Captain',roleCricketViceCaptain:'Cricket Vice Captain',roleFootballCaptain:'Football Captain',roleFootballViceCaptain:'Football Vice Captain',roleVolleyballCaptain:'Volleyball Captain',rolePresident:'President',roleSecretary:'Secretary',roleTreasurer:'Treasurer',roleCommittee:'Committee Member',memberPending:'Name coming soon',
+        committeeLabel:'Club leadership',committeeTitle:'Our Committee',committeeIntro:'TFC Arts & Sports Club Bandiyod — Committee for 2026–27.',committeeContact:'Contact Committee',committeeNote:'2026–27 committee members and team captains.',committeeSeason:'2026–27 Committee',officeBearers:'Office Bearers',teamCaptains:'Team Captains',roleChairman:'Chairman',roleVicePresident:'Vice President',roleJointSecretary:'Joint Secretary',roleCricketCaptain:'Cricket Captain',roleCricketViceCaptain:'Cricket Vice Captain',roleFootballCaptain:'Football Captain',roleFootballViceCaptain:'Football Vice Captain',roleVolleyballCaptain:'Volleyball Captain',rolePresident:'President',roleSecretary:'Secretary',roleTreasurer:'Treasurer',roleCommittee:'Committee Member',memberPending:'Name coming soon',
         uaeOfficials:'🇦🇪 UAE Committee Officials',uaeCommitteeIntro:'TFC BANDIYOD — UAE Committee Officials',
         shortcutProfile:'My Profile',shortcutHistory:'Payment History',shortcutPay:'Membership Payment',shortcutAccounts:'Club Accounts',loginRequired:'Login required',memberPrivacy:'🔒 All shortcuts open the existing secure login page. Only authorized members can view protected information.',
         membersLabel:'For members',membersTitle:'Your membership, in one place',membersBody:'Sign in with Google. Admin-approved members can access their profile and payment history.',fees:'Membership fee: ₹50 / month · ₹600 / year',payMembership:'💳 Pay Membership',openPortal:'Open Member Login',
@@ -564,7 +593,7 @@
       { group:'captains', role:'roleCricketCaptain', name:'Asif', photo:'./committee/asif.jpg' },
       { group:'captains', role:'roleCricketViceCaptain', name:'Moinu', photo:'./committee/moinu.jpg' },
       { group:'captains', role:'roleFootballCaptain', name:'Zahil', photo:'./committee/zahil.jpg' },
-      { group:'captains', role:'roleFootballViceCaptain', name:'Mizbah', photo:'' },
+      { group:'captains', role:'roleFootballViceCaptain', name:'Mizbah', photo:'./committee/mizbah.jpg', position:'center 35%' },
       { group:'captains', role:'roleVolleyballCaptain', name:'Zakir Mims', photo:'./committee/zakir_mims.jpg' }
     ];
     // New UAE committee photos are stored alongside the existing committee photographs.
@@ -633,292 +662,5 @@
     }));
     document.getElementById('year').textContent=new Date().getFullYear();
   </script>
-  
-<!-- TFC HERO & EMBLEM PREMIUM ANIMATION -->
-
-<style>
-
-/* BIG TFC BANDIYOD TEXT */
-#heroTitle {
-  transform-origin: left center;
-  animation: tfcHeroFloating 5s ease-in-out infinite;
-}
-
-/* HERO TEXT FLOATING */
-@keyframes tfcHeroFloating {
-  0%, 100% {
-    transform: translateY(0) scale(1);
-  }
-
-  50% {
-    transform: translateY(-7px) scale(1.015);
-  }
-}
-
-/* GOLDEN BANDIYOD LIGHT */
-#heroTitle span {
-  display: inline-block;
-  animation: tfcHeroGoldenLight 3s ease-in-out infinite;
-}
-
-@keyframes tfcHeroGoldenLight {
-  0%, 100% {
-    text-shadow:
-      0 0 0 rgba(244,206,40,0);
-  }
-
-  50% {
-    text-shadow:
-      0 0 12px rgba(244,206,40,.55),
-      0 0 35px rgba(244,206,40,.30);
-  }
-}
-
-/* LOWER TFC EMBLEM */
-.about-panel {
-  perspective: 1000px;
-}
-
-.about-panel img {
-  transform-origin: center center;
-  animation: tfcEmblem3D 5s ease-in-out infinite;
-}
-
-/* CONTINUOUS 3D EMBLEM MOVEMENT */
-@keyframes tfcEmblem3D {
-  0%, 100% {
-    transform:
-      rotateY(-8deg)
-      rotateZ(-2deg)
-      translateY(0)
-      scale(.98);
-
-    filter:
-      drop-shadow(0 5px 8px rgba(244,206,40,.15));
-  }
-
-  50% {
-    transform:
-      rotateY(8deg)
-      rotateZ(2deg)
-      translateY(-10px)
-      scale(1.04);
-
-    filter:
-      drop-shadow(0 10px 22px rgba(244,206,40,.50));
-  }
-}
-
-/* EMBLEM BOX GOLDEN GLOW */
-.about-panel {
-  animation: tfcEmblemBoxGlow 4s ease-in-out infinite;
-}
-
-@keyframes tfcEmblemBoxGlow {
-  0%, 100% {
-    box-shadow:
-      0 10px 25px rgba(244,206,40,.05);
-  }
-
-  50% {
-    box-shadow:
-      0 15px 40px rgba(244,206,40,.22);
-  }
-}
-
-/* ACCESSIBILITY */
-@media (prefers-reduced-motion: reduce) {
-  #heroTitle,
-  #heroTitle span,
-  .about-panel,
-  .about-panel img {
-    animation: none !important;
-    transform: none !important;
-  }
-}
-
-</style>
-
-<!-- END TFC HERO & EMBLEM ANIMATION -->
-
-<!-- TFC BANDIYOD RUNNING NEWS TICKER -->
-<style>
-.strip .tfc-news-inner {
-  width: 100%;
-  max-width: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  align-items: stretch;
-  gap: 0;
-  justify-content: flex-start;
-  overflow: hidden;
-  text-align: left;
-  letter-spacing: normal;
-}
-
-.tfc-news-label {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  background: #111719;
-  color: #f4ce28;
-  padding: 12px 16px;
-  font-size: 12px;
-  font-weight: 950;
-  letter-spacing: .1em;
-  z-index: 1;
-}
-
-.tfc-news-label::before {
-  content: "●";
-  color: #ff5252;
-  margin-right: 8px;
-  animation: tfcNewsBlink 1.5s infinite;
-}
-
-.tfc-news-viewport {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-}
-
-.tfc-news-track {
-  display: flex;
-  width: max-content;
-  flex-shrink: 0;
-  animation: tfcNewsScroll 34s linear infinite;
-}
-
-.tfc-news-group {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  gap: 30px;
-  padding-right: 30px;
-  white-space: nowrap;
-}
-
-.tfc-news-item {
-  display: inline-block;
-  color: #161b18;
-  font-size: 12px;
-  font-weight: 900;
-}
-
-html[lang="ml"] .tfc-news-en,
-html[lang="en"] .tfc-news-ml {
-  display: none;
-}
-
-@keyframes tfcNewsScroll {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-@keyframes tfcNewsBlink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: .25; }
-}
-
-.tfc-news-viewport:hover .tfc-news-track {
-  animation-play-state: paused;
-}
-
-@media(max-width:760px) {
-  .tfc-news-label {
-    font-size: 10px;
-    padding: 12px 10px;
-  }
-  .tfc-news-item {
-    font-size: 11px;
-  }
-  .tfc-news-track {
-    animation-duration: 30s;
-  }
-}
-
-@media(prefers-reduced-motion:reduce) {
-  .tfc-news-track,
-  .tfc-news-label::before {
-    animation: none !important;
-  }
-  .tfc-news-viewport {
-    overflow-x: auto;
-  }
-}
-</style>
-
-<script>
-(function() {
-  const strip = document.querySelector('.strip');
-  if (!strip) return;
-
-  const news = {
-    ml: [
-      '🏆 BANDIYOD GAMES FEST 2027 — ജനുവരി 8 മുതൽ 12 വരെ',
-      '📍 വേദി: TFC Ground, Bandiyod',
-      '⭐ Title Sponsor — UZI Men’s Boutique, Dubai',
-      '🏅 Champion Trophy Sponsor — UBBI Dubai',
-      '🇦🇪 TFC UAE Committee Officials',
-      '⚽ ONE TEAM ONE DREAM'
-    ],
-    en: [
-      '🏆 BANDIYOD GAMES FEST 2027 — January 8 to 12',
-      '📍 Venue: TFC Ground, Bandiyod',
-      '⭐ Title Sponsor — UZI Men’s Boutique, Dubai',
-      '🏅 Champion Trophy Sponsor — UBBI Dubai',
-      '🇦🇪 TFC UAE Committee Officials',
-      '⚽ ONE TEAM ONE DREAM'
-    ]
-  };
-
-  const inner = document.createElement('div');
-  inner.className = 'container strip-inner tfc-news-inner';
-
-  const label = document.createElement('div');
-  label.className = 'tfc-news-label';
-  label.textContent = 'NEWS';
-
-  const viewport = document.createElement('div');
-  viewport.className = 'tfc-news-viewport';
-
-  for (const lang of ['ml', 'en']) {
-    const track = document.createElement('div');
-    track.className = 'tfc-news-track tfc-news-' + lang;
-
-    for (let repeat = 0; repeat < 2; repeat++) {
-      const group = document.createElement('div');
-      group.className = 'tfc-news-group';
-
-      if (repeat === 1) {
-        group.setAttribute('aria-hidden', 'true');
-      }
-
-      news[lang].forEach(item => {
-        const span = document.createElement('span');
-        span.className = 'tfc-news-item';
-        span.textContent = item;
-        group.appendChild(span);
-      });
-
-      track.appendChild(group);
-    }
-
-    viewport.appendChild(track);
-  }
-
-  inner.append(label, viewport);
-  strip.replaceChildren(inner);
-})();
-</script>
-<!-- END TFC RUNNING NEWS -->
-
 </body>
 </html>
