@@ -1,6 +1,6 @@
 
 /*
- TFC BANDIYOD — ACCOUNTS v88.0
+ TFC BANDIYOD — ACCOUNTS v88.1
 
  Admin: Add, Edit, Soft Delete, Audit
  Members: Read only
@@ -9,19 +9,13 @@
  Membership Income automatic.
  No historical data migration or deletion.
 
- Order fix:
- - Accounts History: transaction date newest first
- - Same date: creation time newest first
- - Legacy records: Firebase push-key order fallback
- - Show recording time in IST when available
- - Editing does not change original recording order
-
- Preserved:
- - Protected Opening Balance
- - Admin Edit/Delete
- - Audit History
- - Membership Income
- - Original balance calculations
+ ORDER FIX:
+ - Latest transaction date first
+ - Same date: newest creation first
+ - Opening Balance ALWAYS at bottom
+ - Both Admin and Member History sorted
+ - Original balance calculations preserved
+ - Edit/Delete and Audit preserved
 */
 
 import {
@@ -87,6 +81,8 @@ const safe = value =>
     "'": "&#39;"
   }[char]));
 
+/* DATE FUNCTIONS */
+
 function today() {
   const d = new Date();
 
@@ -128,8 +124,9 @@ function message(text, error = false) {
 /*
  OPENING BALANCE PROTECTION
 
- Do not classify ordinary income as opening
- merely because the amount is ₹221914.
+ Opening Balance is protected.
+ Ordinary income is not classified as opening
+ merely because its amount equals ₹221914.
 */
 
 function opening(item) {
@@ -168,13 +165,15 @@ function opening(item) {
 }
 
 /*
- ACCOUNTS HISTORY ORDER FIX
+ ACCOUNTS HISTORY SORTING
 
- 1. Latest transaction date first.
- 2. Same date: newest createdAt first.
- 3. Older records without createdAt:
-    Firebase push-key order fallback.
- 4. Editing does not change original order.
+ IMPORTANT:
+ Opening Balance always at the BOTTOM.
+
+ All other entries:
+ 1. Latest date first
+ 2. Latest creation time first
+ 3. Firebase record ID fallback
 */
 
 function createdTimestamp(item) {
@@ -188,13 +187,20 @@ function createdTimestamp(item) {
 function sortAccountRows(items) {
   return [...items].sort((a, b) => {
 
-    const byDate = String(b.date)
-      .localeCompare(String(a.date));
+    // Opening Balance ALWAYS at the bottom
+    if (a.opening !== b.opening) {
+      return a.opening ? 1 : -1;
+    }
+
+    // Latest transaction date first
+    const byDate = String(b.date || "")
+      .localeCompare(String(a.date || ""));
 
     if (byDate !== 0) {
       return byDate;
     }
 
+    // Latest recording time first
     const aCreated = createdTimestamp(a);
     const bCreated = createdTimestamp(b);
 
@@ -206,6 +212,7 @@ function sortAccountRows(items) {
       return bCreated - aCreated;
     }
 
+    // Legacy Firebase record order
     return String(b.id || "")
       .localeCompare(String(a.id || ""));
   });
@@ -229,9 +236,7 @@ function recordingTime(item) {
   );
 }
 
-/*
- BUILD ACCOUNTS UI
-*/
+/* BUILD ACCOUNTS UI */
 
 function buildUI() {
   if (uiReady) return true;
@@ -295,6 +300,7 @@ function buildUI() {
       <form id="accForm">
 
         <label for="accType">Type</label>
+
         <select id="accType">
           <option value="income">
             Other Income
@@ -305,6 +311,7 @@ function buildUI() {
         </select>
 
         <label for="accDate">Date</label>
+
         <input
           id="accDate"
           type="date"
@@ -406,13 +413,11 @@ function buildUI() {
       </select>
 
       <p class="muted">
-        Latest transaction date first.
-        For the same date, newest recorded
-        entry first.
-
+        Latest transactions first.
+        Opening Balance always at the bottom.
         Opening Balance is protected.
-        Other income and expenses can
-        be edited or soft-deleted by Admin.
+        Other income and expenses can be edited
+        or soft-deleted by Admin.
       </p>
 
       <div
@@ -498,9 +503,7 @@ function buildUI() {
     render
   );
 
-  /*
-   Delegated Edit / Delete buttons
-  */
+  /* Delegated Edit and Delete */
 
   $("accTable").addEventListener(
     "click",
@@ -527,6 +530,7 @@ function buildUI() {
   );
 
   const tabs = $("tabMembers")?.parentElement;
+
   let accountsButton = $("tabAccounts");
 
   if (tabs && !accountsButton) {
@@ -593,9 +597,7 @@ function buildUI() {
   return true;
 }
 
-/*
- ACCOUNTS DATA
-*/
+/* ACCOUNTS DATA */
 
 function rows() {
   return Object.entries(entries)
@@ -617,9 +619,7 @@ function rows() {
     }));
 }
 
-/*
- MEMBERSHIP INCOME SUMMARY
-*/
+/* MEMBERSHIP INCOME SUMMARY */
 
 function membershipSummary() {
   if (
@@ -678,9 +678,7 @@ function membershipSummary() {
   };
 }
 
-/*
- ACCOUNTS HISTORY TABLE
-*/
+/* ACCOUNTS HISTORY TABLE */
 
 function tableHTML(items, actions) {
   if (!items.length) {
@@ -784,9 +782,7 @@ function tableHTML(items, actions) {
   `;
 }
 
-/*
- RENDER ALL ACCOUNTS
-*/
+/* RENDER ACCOUNTS */
 
 function render() {
   if (!uiReady) return;
@@ -801,18 +797,14 @@ function render() {
     item => !item.opening
   );
 
-  /*
-   Opening Balance
-  */
+  /* Opening Balance */
 
   const openingAmount = openingRows.reduce(
     (sum, item) => sum + item.amount,
     0
   );
 
-  /*
-   Other Income
-  */
+  /* Other Income */
 
   const otherIncome = normalRows
     .filter(item => item.type === "income")
@@ -821,9 +813,7 @@ function render() {
       0
     );
 
-  /*
-   Expenses
-  */
+  /* Expenses */
 
   const expenses = normalRows
     .filter(item => item.type === "expense")
@@ -832,11 +822,11 @@ function render() {
       0
     );
 
+  /* Membership Income */
+
   const membership = membershipSummary();
 
-  /*
-   Final Balance
-  */
+  /* Final Balance */
 
   const balance = membership.ready
     ? openingAmount +
@@ -855,12 +845,9 @@ function render() {
     }
   };
 
-  /*
-   Admin Summary
-  */
+  /* Admin Summary */
 
   put("accOpening", openingAmount);
-
   put("accOtherIncome", otherIncome);
 
   put(
@@ -871,15 +858,11 @@ function render() {
   );
 
   put("accExpenses", expenses);
-
   put("accBalance", balance);
 
-  /*
-   Member Summary
-  */
+  /* Member Summary */
 
   put("memberAccOpening", openingAmount);
-
   put("memberAccIncome", otherIncome);
 
   put(
@@ -890,12 +873,9 @@ function render() {
   );
 
   put("memberAccExpenses", expenses);
-
   put("memberAccBalance", balance);
 
-  /*
-   Membership Publication Status
-  */
+  /* Membership Status */
 
   const status = membershipError
     ? "Membership income read failed: " +
@@ -923,9 +903,7 @@ function render() {
         : "muted";
   }
 
-  /*
-   Year Filter
-  */
+  /* Year Filter */
 
   const years = [
     ...new Set(
@@ -963,21 +941,25 @@ function render() {
   );
 
   /*
-   ADMIN HISTORY — ORDER FIX
+   ADMIN ACCOUNTS HISTORY
+
+   Opening Balance always at bottom.
   */
 
   if ($("accTable")) {
     $("accTable").innerHTML = tableHTML(
       sortAccountRows([
-        ...openingRows,
-        ...selected
+        ...selected,
+        ...openingRows
       ]),
       admin
     );
   }
 
   /*
-   MEMBER HISTORY — SAME ORDER
+   MEMBER ACCOUNTS HISTORY
+
+   Opening Balance always at bottom.
   */
 
   if ($("memberAccTable")) {
@@ -987,9 +969,7 @@ function render() {
     );
   }
 
-  /*
-   ADMIN AUDIT HISTORY
-  */
+  /* Admin Audit History */
 
   if ($("accAuditTable")) {
     const events = Object.entries(audits)
@@ -1051,9 +1031,7 @@ function render() {
   }
 }
 
-/*
- FORM DATA
-*/
+/* FORM DATA */
 
 function formData() {
   return {
@@ -1066,9 +1044,7 @@ function formData() {
   };
 }
 
-/*
- VALIDATE TRANSACTION
-*/
+/* VALIDATION */
 
 function validate(data) {
   if (
@@ -1147,9 +1123,7 @@ function validate(data) {
   }
 }
 
-/*
- RESET FORM
-*/
+/* RESET FORM */
 
 function resetForm() {
   editing = null;
@@ -1159,11 +1133,8 @@ function resetForm() {
   $("accForm").reset();
 
   $("accDate").value = today();
-
   $("accReason").value = "";
-
   $("accReasonBox").hidden = true;
-
   $("accCancelEdit").hidden = true;
 
   $("accFormTitle").textContent =
@@ -1173,9 +1144,7 @@ function resetForm() {
     "Save Transaction";
 }
 
-/*
- EDIT TRANSACTION
-*/
+/* EDIT TRANSACTION */
 
 function editTransaction(id) {
   if (!admin || busy) return;
@@ -1202,23 +1171,18 @@ function editTransaction(id) {
   editing = id;
 
   $("accType").value = item.type;
-
   $("accDate").value = item.date;
-
   $("accCategory").value =
     item.category || "";
 
   $("accParticulars").value =
     item.particulars || "";
 
-  $("accAmount").value =
-    item.amount;
-
+  $("accAmount").value = item.amount;
   $("accMethod").value =
     item.method || "other";
 
   $("accReasonBox").hidden = false;
-
   $("accCancelEdit").hidden = false;
 
   $("accFormTitle").textContent =
@@ -1237,9 +1201,7 @@ function editTransaction(id) {
   });
 }
 
-/*
- SAVE / UPDATE TRANSACTION
-*/
+/* SAVE / UPDATE */
 
 async function saveTransaction(event) {
   event.preventDefault();
@@ -1258,7 +1220,6 @@ async function saveTransaction(event) {
     $("accReason").value.trim();
 
   const target = editing;
-
   const uid = user.uid;
 
   try {
@@ -1302,7 +1263,6 @@ async function saveTransaction(event) {
   }
 
   busy = true;
-
   $("accSave").disabled = true;
 
   message("Saving...");
@@ -1316,9 +1276,7 @@ async function saveTransaction(event) {
       );
     }
 
-    /*
-     NEW TRANSACTION
-    */
+    /* NEW TRANSACTION */
 
     if (!target) {
       const entryRef = push(
@@ -1350,9 +1308,7 @@ async function saveTransaction(event) {
 
     } else {
 
-      /*
-       EDIT EXISTING TRANSACTION
-      */
+      /* EDIT EXISTING TRANSACTION */
 
       const now = Date.now();
 
@@ -1419,14 +1375,11 @@ async function saveTransaction(event) {
     );
   } finally {
     busy = false;
-
     $("accSave").disabled = false;
   }
 }
 
-/*
- SOFT DELETE TRANSACTION
-*/
+/* SOFT DELETE TRANSACTION */
 
 async function deleteTransaction(id) {
   if (
@@ -1487,7 +1440,6 @@ async function deleteTransaction(id) {
 
   try {
     const uid = user.uid;
-
     const now = Date.now();
 
     if (
@@ -1567,9 +1519,7 @@ async function deleteTransaction(id) {
   }
 }
 
-/*
- STOP FIREBASE LISTENERS
-*/
+/* STOP FIREBASE LISTENERS */
 
 function stopListening() {
   unsubscribers.forEach(fn => {
@@ -1588,9 +1538,7 @@ function stopListening() {
   membershipError = "";
 }
 
-/*
- AUTHENTICATION AND FIREBASE
-*/
+/* AUTHENTICATION */
 
 function startAuth() {
   onAuthStateChanged(
@@ -1658,9 +1606,7 @@ function startAuth() {
 
         render();
 
-        /*
-         ACCOUNTS ENTRIES
-        */
+        /* ACCOUNTS ENTRIES */
 
         unsubscribers.push(
           onValue(
@@ -1694,9 +1640,7 @@ function startAuth() {
           )
         );
 
-        /*
-         PUBLIC MEMBERSHIP INCOME
-        */
+        /* MEMBERSHIP INCOME */
 
         unsubscribers.push(
           onValue(
@@ -1734,9 +1678,7 @@ function startAuth() {
           )
         );
 
-        /*
-         ADMIN AUDIT HISTORY
-        */
+        /* AUDIT HISTORY */
 
         if (admin) {
           unsubscribers.push(
@@ -1788,9 +1730,7 @@ function startAuth() {
   );
 }
 
-/*
- INITIALIZE ACCOUNTS
-*/
+/* INITIALIZE ACCOUNTS */
 
 function initialize() {
   if (!buildUI()) {
@@ -1802,7 +1742,6 @@ function initialize() {
   }
 
   render();
-
   startAuth();
 }
 
@@ -1821,7 +1760,7 @@ if (
 }
 
 console.info(
-  "TFC BANDIYOD ACCOUNTS v88.0 loaded."
+  "TFC BANDIYOD ACCOUNTS v88.1 loaded."
 );
 
-/* END TFC ACCOUNTS v88.0 */
+/* END TFC ACCOUNTS v88.1 */
