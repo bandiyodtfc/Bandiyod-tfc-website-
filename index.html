@@ -736,5 +736,107 @@
 </script>
 <!-- END SPONSOR MOTION UPDATE -->
 
+<!-- TFC 3D SPONSOR FLIP MOTION -->
+<style>
+.title-sponsor-photo,
+.news-feature-photo {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+/* 3D Flip entrance */
+.tfc-3d-enter {
+  animation: tfcFlipIn 1.5s
+    cubic-bezier(.2,.75,.25,1) both;
+}
+
+@keyframes tfcFlipIn {
+  0% {
+    opacity: .2;
+    transform: perspective(1200px)
+      rotateY(-82deg) scale(.9);
+  }
+  70% {
+    opacity: 1;
+    transform: perspective(1200px)
+      rotateY(9deg) scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1200px)
+      rotateY(0deg) scale(1);
+  }
+}
+
+/* Continuous gentle 3D floating */
+.title-sponsor-photo img,
+.news-feature-photo img {
+  transform-origin: center center;
+  backface-visibility: hidden;
+  animation: tfcPosterFloat 7s
+    ease-in-out infinite !important;
+}
+
+@keyframes tfcPosterFloat {
+  0%, 100% {
+    transform: rotateY(-5deg)
+      translateY(0) scale(.96);
+  }
+  50% {
+    transform: rotateY(5deg)
+      translateY(-7px) scale(.96);
+  }
+}
+
+/* Respect reduced motion settings */
+@media (prefers-reduced-motion: reduce) {
+  .tfc-3d-enter,
+  .title-sponsor-photo img,
+  .news-feature-photo img {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+</style>
+
+<script>
+(function () {
+  const reduceMotion =
+    window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+  if (reduceMotion) return;
+
+  const posters = document.querySelectorAll(
+    '.title-sponsor-photo, .news-feature-photo'
+  );
+
+  if (!('IntersectionObserver' in window)) {
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+
+        entry.target.classList.add(
+          'tfc-3d-enter'
+        );
+
+        observer.unobserve(entry.target);
+      });
+    },
+    { threshold: 0.15 }
+  );
+
+  posters.forEach((poster) => {
+    observer.observe(poster);
+  });
+})();
+</script>
+<!-- END TFC 3D MOTION -->
+
 </body>
 </html>
