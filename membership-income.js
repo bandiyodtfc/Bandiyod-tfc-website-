@@ -1,7 +1,7 @@
 
 /*
  TFC BANDIYOD
- MEMBERSHIP INCOME v89.0
+ MEMBERSHIP INCOME v90.0 — ORDER FIX
 
  - Cash collections
  - Approved UPI monthly/yearly/auto payments
@@ -12,6 +12,9 @@
  - Automatic Firebase publication
  - Historical PDF payments excluded
  - Original payment records unchanged
+ - Newest collections first in BOTH admin and member reports
+ - Same-day records ordered by verification timestamp
+ - Periods inside each collection sorted year/month ascending
 */
 
 import {
@@ -101,11 +104,54 @@ function localDate(timestamp) {
   const part = type =>
     parts.find(p => p.type === type)?.value || "";
 
-  return [
-    part("year"),
-    part("month"),
-    part("day")
-  ].join("-");
+  return [part("year"), part("month"), part("day")].join("-");
+}
+
+/* Important: Firebase object entries are NOT guaranteed to arrive in
+   payment-time order. Always sort AFTER reading public entries. */
+function sortCollections(entries) {
+  const timestampOf = entry => {
+    const n = Number(entry?.timestamp);
+    if (Number.isFinite(n) && n > 0) return n;
+    const date = String(entry?.date || "");
+    const fallback = /^\d{4}-\d{2}-\d{2}$/.test(date)
+      ? Date.parse(date + "T00:00:00+05:30")
+      : 0;
+    return Number.isFinite(fallback) ? fallback : 0;
+  };
+
+  return [...entries].sort((a, b) => {
+    const byTime = timestampOf(b) - timestampOf(a);
+    if (byTime !== 0) return byTime;
+
+    // Consistent ordering if two records have the same timestamp.
+    const byDate = String(b?.date || "").localeCompare(String(a?.date || ""));
+    if (byDate !== 0) return byDate;
+
+    const byMember = String(a?.memberNumber || "").localeCompare(
+      String(b?.memberNumber || ""), "en", { numeric: true }
+    );
+    if (byMember !== 0) return byMember;
+
+    return String(a?.id || "").localeCompare(String(b?.id || ""));
+  });
+}
+
+function sortedPeriods(periods) {
+  return [...(Array.isArray(periods) ? periods : [])]
+    .map(String)
+    .sort((a, b) => a.localeCompare(b));
+}
+
+function displayTime(entry) {
+  const stamp = Number(entry?.timestamp);
+  if (!Number.isFinite(stamp) || stamp <= 0) return "";
+  return new Date(stamp).toLocaleTimeString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true
+  });
 }
 
 function cancelled(number, period) {
@@ -114,7 +160,6 @@ function cancelled(number, period) {
 
 function periodsFor(plan, period) {
   if (!validPeriod(period)) return [];
-
   if (plan === "monthly") return [period];
 
   if (plan === "yearly") {
@@ -124,7 +169,6 @@ function periodsFor(plan, period) {
       (_, i) => year + "-" + String(i + 1).padStart(2, "0")
     );
   }
-
   return [];
 }
 
@@ -133,13 +177,9 @@ function incomeRequestPeriods(request) {
 
   if (request.plan === "auto") {
     const map = request.months;
-
-    if (!map || typeof map !== "object" || Array.isArray(map)) {
-      return [];
-    }
+    if (!map || typeof map !== "object" || Array.isArray(map)) return [];
 
     const periods = Object.keys(map).sort();
-
     if (
       !periods.length ||
       periods.length > 12 ||
@@ -147,19 +187,13 @@ function incomeRequestPeriods(request) {
       periods.some(p => !validPeriod(p) || map[p] !== true) ||
       request.period !== periods[0] ||
       Number(request.amount) !== periods.length * FEE
-    ) {
-      return [];
-    }
+    ) return [];
 
     return periods;
   }
 
   const periods = periodsFor(request.plan, request.period);
-
-  if (Number(request.amount) !== periods.length * FEE) {
-    return [];
-  }
-
+  if (Number(request.amount) !== periods.length * FEE) return [];
   return periods;
 }
 
@@ -169,19 +203,16 @@ function buildSection(parent, id, prefix, heading) {
   const section = document.createElement("section");
   section.id = id;
   section.className = "panel";
-
   section.innerHTML = `
     <h3>${heading}</h3>
     <p class="muted">
       Verified membership collections from 08-11-2026.
       Historical PDF payments excluded.
     </p>
-
     <label for="${prefix}Year">Collection Year</label>
     <select id="${prefix}Year">
       <option value="all">All Years</option>
     </select>
-
     <div class="grid">
       <div class="stat">
         <span>Total Membership Income</span>
@@ -196,7 +227,6 @@ function buildSection(parent, id, prefix, heading) {
         <strong id="${prefix}Upi">—</strong>
       </div>
     </div>
-
     <p id="${prefix}Status" role="status">Loading...</p>
     <div id="${prefix}History" class="scroll"></div>
   `;
@@ -214,7 +244,6 @@ function setupUI() {
       "Automatic Membership Income"
     );
   }
-
   buildSection(
     $("memberAccountsPanel"),
     "memberMembershipIncome",
@@ -235,9 +264,7 @@ function collectCash() {
         Number(payment.amount) !== FEE ||
         !validTime(payment.verifiedAt) ||
         cancelled(number, period)
-      ) {
-        continue;
-      }
+      ) continue;
 
       const key = [
         number,
@@ -267,7 +294,10 @@ function collectCash() {
     }
   }
 
-  return [...groups.values()];
+  return [...groups.values()].map(group => ({
+    ...group,
+    periods: sortedPeriods(group.periods)
+  }));
 }
 
 function collectUPI() {
@@ -278,13 +308,10 @@ function collectUPI() {
     if (
       request?.status !== "approved" ||
       !validTime(request.reviewedAt)
-    ) {
-      continue;
-    }
+    ) continue;
 
     const number = String(request.memberNumber || "");
     const member = members[number];
-
     if (!member) continue;
 
     const periods = incomeRequestPeriods(request);
@@ -295,19 +322,15 @@ function collectUPI() {
 
     for (const period of periods) {
       const payment = member.payments?.[period];
-
       if (
         payment?.status !== "paid" ||
         payment.requestId !== id ||
         Number(payment.amount) !== FEE ||
         !validTime(payment.verifiedAt) ||
         (payment.method && payment.method !== "upi")
-      ) {
-        continue;
-      }
+      ) continue;
 
       const key = `${number}|${period}`;
-
       if (counted.has(key)) continue;
 
       if (cancelled(number, period)) {
@@ -328,9 +351,9 @@ function collectUPI() {
       method: "UPI",
       date: localDate(request.reviewedAt),
       amount: activePeriods.length * FEE,
-      periods: activePeriods,
+      periods: sortedPeriods(activePeriods),
       timestamp: Number(request.reviewedAt),
-      cancelledPeriods
+      cancelledPeriods: sortedPeriods(cancelledPeriods)
     });
   }
 
@@ -338,15 +361,11 @@ function collectUPI() {
 }
 
 function collections() {
-  return [
-    ...collectCash(),
-    ...collectUPI()
-  ].sort((a, b) => b.timestamp - a.timestamp);
+  return sortCollections([...collectCash(), ...collectUPI()]);
 }
 
 function fillYears(select, entries) {
   const old = select.value || "all";
-
   const years = [
     ...new Set(entries.map(e => String(e.date).slice(0, 4)))
   ].sort().reverse();
@@ -364,12 +383,12 @@ function renderReport(prefix, entries, isPublic = false) {
   const select = $(`${prefix}Year`);
   const history = $(`${prefix}History`);
   const status = $(`${prefix}Status`);
-
   if (!select || !history || !status) return;
 
-  const year = fillYears(select, entries);
-
-  const filtered = entries.filter(e =>
+  // Fix: sorting here is essential for public Firebase records.
+  const ordered = sortCollections(entries);
+  const year = fillYears(select, ordered);
+  const filtered = ordered.filter(e =>
     year === "all" || String(e.date).startsWith(year)
   );
 
@@ -386,7 +405,6 @@ function renderReport(prefix, entries, isPublic = false) {
   $(`${prefix}Total`).textContent = money(cash + upi);
 
   const countText = `${filtered.length} verified collection(s)`;
-
   if (isPublic) {
     status.textContent = countText +
       (publicData?.updatedAt
@@ -409,7 +427,7 @@ function renderReport(prefix, entries, isPublic = false) {
     <table>
       <thead>
         <tr>
-          <th>Date</th>
+          <th>Date / Time</th>
           ${isPublic ? "" : "<th>Member</th>"}
           <th>Method</th>
           <th>Period</th>
@@ -420,16 +438,21 @@ function renderReport(prefix, entries, isPublic = false) {
       <tbody>
         ${filtered.map(e => `
           <tr>
-            <td>${safe(e.date)}</td>
+            <td>
+              ${safe(e.date)}
+              ${displayTime(e)
+                ? `<br><small>${safe(displayTime(e))} IST</small>`
+                : ""}
+            </td>
             ${isPublic ? "" : `
               <td>#${safe(e.memberNumber)} ${safe(e.memberName)}</td>
             `}
             <td>${safe(e.method)}</td>
-            <td>${safe((e.periods || []).join(", "))}</td>
+            <td>${safe(sortedPeriods(e.periods).join(", "))}</td>
             <td>${money(e.amount)}</td>
             <td>${safe(
               e.cancelledPeriods?.length
-                ? "Review: " + e.cancelledPeriods.join(", ")
+                ? "Review: " + sortedPeriods(e.cancelledPeriods).join(", ")
                 : "—"
             )}</td>
           </tr>
@@ -441,7 +464,6 @@ function renderReport(prefix, entries, isPublic = false) {
 
 function publicEntries(entries) {
   const result = {};
-
   for (const entry of entries) {
     const source = String(entry.id);
     let hash = 2166136261;
@@ -452,16 +474,14 @@ function publicEntries(entries) {
     }
 
     const key = "collection_" + (hash >>> 0).toString(16);
-
     result[key] = {
       date: entry.date,
       method: entry.method,
       amount: entry.amount,
-      periods: entry.periods,
+      periods: sortedPeriods(entry.periods),
       timestamp: entry.timestamp
     };
   }
-
   return result;
 }
 
@@ -470,7 +490,6 @@ function updateAdminStatus(message, error = false) {
   publishStatus = error ? "" : message;
 
   const status = $("automaticIncomeStatus");
-
   if (status) {
     status.textContent =
       `${collections().length} verified collection(s) | ${message}`;
@@ -590,7 +609,6 @@ function stopListening() {
 
 onAuthStateChanged(auth, async account => {
   const id = ++generation;
-
   stopListening();
   admin = false;
 
@@ -598,7 +616,6 @@ onAuthStateChanged(auth, async account => {
 
   try {
     const adminSnap = await get(ref(db, `admins/${account.uid}`));
-
     if (id !== generation) return;
 
     admin = adminSnap.val() === true;
@@ -610,14 +627,12 @@ onAuthStateChanged(auth, async account => {
           ref(db, path),
           snapshot => {
             if (id !== generation) return;
-
             setter(snapshot.val() || {});
             loaded[key] = true;
             render();
           },
           error => {
             if (id !== generation) return;
-
             updateAdminStatus(
               `${path} read failed: ${error.message}`,
               true
@@ -629,17 +644,14 @@ onAuthStateChanged(auth, async account => {
       listen("members", "members", value => {
         members = value;
       });
-
       listen("paymentRequests", "requests", value => {
         requests = value;
       });
-
       listen("paymentCorrections", "corrections", value => {
         corrections = value;
       });
     } else {
       const userSnap = await get(ref(db, `users/${account.uid}`));
-
       if (id !== generation) return;
       if (userSnap.val()?.status !== "approved") return;
 
@@ -652,9 +664,7 @@ onAuthStateChanged(auth, async account => {
         },
         error => {
           if (id !== generation) return;
-
           const status = $("memberIncomeStatus");
-
           if (status) {
             status.textContent =
               "Membership income read failed: " + error.message;
@@ -665,7 +675,6 @@ onAuthStateChanged(auth, async account => {
     }
   } catch (error) {
     console.error("Membership income initialization:", error);
-
     if (id === generation && admin) {
       updateAdminStatus(
         "Initialization failed: " + error.message,
@@ -676,7 +685,5 @@ onAuthStateChanged(auth, async account => {
 });
 
 setupUI();
-
-console.info("TFC Bandiyod Membership Income v89.0 loaded.");
-
-/* END MEMBERSHIP INCOME v89.0 */
+console.info("TFC Bandiyod Membership Income v90.0 loaded.");
+/* END MEMBERSHIP INCOME v90.0 */
