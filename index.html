@@ -127,7 +127,6 @@
       .contact-grid{align-items:flex-start;flex-direction:column}
     }
 
-
     /* Games Fest 2027 — latest update */
     .fest-shell{margin-top:28px;background:#fff;border:1px solid #e3e8e5;border-radius:22px;overflow:hidden;box-shadow:0 16px 45px rgba(9,17,25,.08)}
     .fest-layout{display:grid;grid-template-columns:minmax(0,0.8fr) minmax(0,1.2fr);gap:0}
@@ -233,6 +232,35 @@
     }
     @media(min-width:1021px){.nav-links .mobile-login{display:none}}
     @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
+
+    /* New: UAE committee officials; original committee styles preserved. */
+    .uae-committee-title{margin-top:52px}
+    .uae-committee-subtitle{font-size:13px;color:#b9c8c5;margin:9px 0 0}
+    .uae-committee-grid .committee-card{border-color:#76672e;background:linear-gradient(155deg,#33403d,#1b2527);box-shadow:0 14px 30px #0002}
+    .uae-committee-grid .committee-avatar{width:152px;height:152px;border-width:4px;border-color:#f4ce28aa;margin-bottom:20px}
+    .uae-committee-grid .committee-avatar img{object-fit:cover}
+    .uae-committee-grid .committee-name{font-size:20px}
+    .uae-committee-grid .committee-role{font-size:12px}
+
+    /* New: prominent full-width title sponsor news post. Original festival post stays intact. */
+    .title-sponsor-feature{margin-top:27px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);overflow:hidden;background:#fff;border:2px solid #d6af24;border-radius:24px;box-shadow:0 18px 50px rgba(9,17,25,.14)}
+    .title-sponsor-photo{min-width:0;background:#071949;display:flex;align-items:center;justify-content:center}
+    .title-sponsor-photo img{display:block;width:100%;height:100%;max-height:790px;object-fit:contain}
+    .title-sponsor-copy{padding:clamp(25px,4vw,50px);display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:18px}
+    .title-sponsor-label{font-weight:950;font-size:clamp(17px,2.4vw,26px);letter-spacing:.06em;color:#816000;background:#fff3bc;padding:10px 15px;border-radius:12px}
+    .title-sponsor-copy h3{margin:0;font-size:clamp(31px,4.6vw,55px);line-height:1.1;color:#101d27;font-weight:950}
+    .title-sponsor-copy p{margin:0;color:#53605d;font-size:17px}
+    .title-sponsor-button{display:inline-flex;align-items:center;justify-content:center;padding:12px 20px;border-radius:11px;background:#132f83;color:white;font-weight:850;font-size:14px}
+    .title-sponsor-button:hover{background:#224aad}
+    @media(max-width:1020px){.uae-committee-grid .committee-avatar{width:140px;height:140px}}
+    @media(max-width:760px){
+      .uae-committee-grid .committee-avatar{width:112px;height:112px}
+      .uae-committee-grid .committee-name{font-size:17px}
+      .title-sponsor-feature{grid-template-columns:1fr}
+      .title-sponsor-photo img{height:auto;max-height:620px;object-fit:contain}
+      .title-sponsor-copy{padding:24px 20px;gap:13px}
+      .title-sponsor-copy h3{font-size:34px}
+    }
   </style>
 </head>
 <body>
@@ -322,6 +350,10 @@
         <h3 class="committee-group-title" data-i18n="teamCaptains">ടീം ക്യാപ്റ്റന്മാർ</h3>
         <div class="committee-grid" id="committeeCaptainGrid" aria-live="polite"></div>
         <p class="committee-note" data-i18n="committeeNote">അംഗങ്ങളുടെ ഫോട്ടോകൾ ലഭിക്കുമ്പോൾ ഇവിടെ ചേർക്കാം.</p>
+        <!-- New: independent UAE committee list; older committee untouched. -->
+        <h3 class="committee-group-title uae-committee-title" data-i18n="uaeOfficials">🇦🇪 UAE കമ്മിറ്റി ഭാരവാഹികൾ</h3>
+        <p class="uae-committee-subtitle" data-i18n="uaeCommitteeIntro">TFC BANDIYOD — UAE Committee Officials</p>
+        <div class="committee-grid uae-committee-grid" id="committeeUaeGrid" aria-live="polite"></div>
       </div>
     </section>
     <section id="membership" class="membership-section" aria-labelledby="memberTitle">
@@ -351,6 +383,18 @@
       <div class="container">
         <div class="section-kicker" data-i18n="updatesLabel">Club news</div>
         <h2 id="updatesTitle" class="section-title" data-i18n="updatesTitle">അറിയിപ്പുകൾ</h2>
+        <!-- New: title sponsor poster prominently displayed, using the already-hosted poster filename. -->
+        <article class="title-sponsor-feature" aria-labelledby="bigSponsorTitle">
+          <a class="title-sponsor-photo" href="./games-fest-2027-sponsor.jpg" target="_blank" rel="noopener" aria-label="Open full Title Sponsor poster">
+            <img src="./games-fest-2027-sponsor.jpg" loading="lazy" alt="Bandiyod Games Fest 2027 Title Sponsor — UZI Men's Boutique, Karama, Dubai" width="1100" height="1372">
+          </a>
+          <div class="title-sponsor-copy">
+            <span class="title-sponsor-label" data-i18n="titleSponsor">ടൈറ്റിൽ സ്പോൺസർ</span>
+            <h3 id="bigSponsorTitle">UZI Men's Boutique</h3>
+            <p>Karama, Dubai</p>
+            <a class="title-sponsor-button" href="./games-fest-2027-sponsor.jpg" target="_blank" rel="noopener" data-i18n="seePoster">സ്പോൺസർ പോസ്റ്റർ കാണുക</a>
+          </div>
+        </article>
         <div class="fest-shell">
           <div class="fest-layout">
             <div class="fest-poster-main">
@@ -429,6 +473,7 @@
         activityLabel:'നമ്മുടെ കൂട്ടായ്മ',activityTitle:'നമ്മുടെ പ്രവർത്തനങ്ങൾ',activityIntro:'ക്ലബ്ബിന്റെ പ്രവർത്തനങ്ങളും അംഗങ്ങൾക്കായുള്ള ഡിജിറ്റൽ സൗകര്യങ്ങളും ഒരു സ്ഥലത്ത്.',
         card1Title:'ടീം സ്പിരിറ്റ്',card1Body:'ഒരുമയും സൗഹൃദവും വളർത്തുന്ന ക്ലബ് പ്രവർത്തനങ്ങൾ.',card2Title:'കൂട്ടായ്മ',card2Body:'അംഗങ്ങൾ തമ്മിലുള്ള ബന്ധവും സഹകരണവും ശക്തിപ്പെടുത്തുക.',card3Title:'ഡിജിറ്റൽ മെമ്പർഷിപ്പ്',card3Body:'അംഗത്വ വിവരങ്ങളും അംഗീകരിച്ച പേയ്‌മെന്റുകളും സുരക്ഷിതമായി കാണാം.',
         committeeLabel:'ക്ലബ് നേതൃത്വം',committeeTitle:'നമ്മുടെ കമ്മിറ്റി',committeeIntro:'TFC Arts & Sports Club Bandiyod — 2026–27 കമ്മിറ്റി ഭാരവാഹികൾ.',committeeContact:'കമ്മിറ്റിയുമായി ബന്ധപ്പെടുക',committeeNote:'Mizbah-യുടെ ഫോട്ടോ പിന്നീട് ചേർക്കാം.',committeeSeason:'2026–27 കമ്മിറ്റി',officeBearers:'കമ്മിറ്റി ഭാരവാഹികൾ',teamCaptains:'ടീം ക്യാപ്റ്റന്മാർ',roleChairman:'ചെയർമാൻ',roleVicePresident:'വൈസ് പ്രസിഡന്റ്',roleJointSecretary:'ജോയിന്റ് സെക്രട്ടറി',roleCricketCaptain:'ക്രിക്കറ്റ് ക്യാപ്റ്റൻ',roleCricketViceCaptain:'ക്രിക്കറ്റ് വൈസ് ക്യാപ്റ്റൻ',roleFootballCaptain:'ഫുട്ബോൾ ക്യാപ്റ്റൻ',roleFootballViceCaptain:'ഫുട്ബോൾ വൈസ് ക്യാപ്റ്റൻ',roleVolleyballCaptain:'വോളിബോൾ ക്യാപ്റ്റൻ',rolePresident:'പ്രസിഡന്റ്',roleSecretary:'സെക്രട്ടറി',roleTreasurer:'ട്രഷറർ',roleCommittee:'കമ്മിറ്റി അംഗം',memberPending:'പേര് ഉടൻ ചേർക്കും',
+        uaeOfficials:'🇦🇪 UAE കമ്മിറ്റി ഭാരവാഹികൾ',uaeCommitteeIntro:'TFC BANDIYOD — UAE Committee Officials',
         shortcutProfile:'എന്റെ പ്രൊഫൈൽ',shortcutHistory:'പേയ്‌മെന്റ് ചരിത്രം',shortcutPay:'മെമ്പർഷിപ്പ് പേയ്‌മെന്റ്',shortcutAccounts:'ക്ലബ് അക്കൗണ്ട്സ്',loginRequired:'ലോഗിൻ ആവശ്യമാണ്',memberPrivacy:'🔒 എല്ലാ ഷോർട്ട്കട്ടുകളും നിലവിലുള്ള സുരക്ഷിത ലോഗിൻ പേജിലേക്കാണ് പോകുന്നത്. അനുമതിയുള്ളവർക്ക് മാത്രം വിവരങ്ങൾ കാണാം.',
         membersLabel:'അംഗങ്ങൾക്കായി',membersTitle:'നിങ്ങളുടെ മെമ്പർഷിപ്പ് വിവരങ്ങൾ ഇവിടെ',membersBody:'Google അക്കൗണ്ട് ഉപയോഗിച്ച് ലോഗിൻ ചെയ്യാം. അഡ്മിൻ അംഗീകരിച്ച അംഗങ്ങൾക്ക് പ്രൊഫൈലും പേയ്‌മെന്റ് ചരിത്രവും കാണാം.',fees:'അംഗത്വ ഫീസ്: ₹50 / മാസം · ₹600 / വർഷം',payMembership:'💳 മെമ്പർഷിപ്പ് അടയ്ക്കുക',openPortal:'മെമ്പർ ലോഗിൻ തുറക്കുക',
         festBadge:'🏆 12-ാം പതിപ്പ് · ഉടൻ വരുന്നു',festIntro:'TFC Arts & Sports Club Bandiyod അവതരിപ്പിക്കുന്ന അഞ്ചുദിവസത്തെ കായികമേള.',festDate:'ജനുവരി 8, 9, 10, 11, 12 — 2027',festDateLabel:'പരിപാടി നടക്കുന്ന ദിവസങ്ങൾ',festVenueLabel:'വേദി',festSports:'ഫുട്ബോൾ · ക്രിക്കറ്റ് · വോളിബോൾ · വടംവലി',festSportsLabel:'മത്സര ഇനങ്ങൾ',titleSponsor:'ടൈറ്റിൽ സ്പോൺസർ',seePoster:'സ്പോൺസർ പോസ്റ്റർ കാണുക',festTimeNote:'മത്സരങ്ങളുടെ കൃത്യമായ സമയക്രമം പിന്നീട് അറിയിക്കും.',
@@ -443,6 +488,7 @@
         activityLabel:'Our community',activityTitle:'What We Do',activityIntro:'Discover our club community and the digital services available to members.',
         card1Title:'Team Spirit',card1Body:'Club activities that encourage unity and friendship.',card2Title:'Community',card2Body:'Stronger connections and cooperation among our members.',card3Title:'Digital Membership',card3Body:'Secure access to membership details and approved payment history.',
         committeeLabel:'Club leadership',committeeTitle:'Our Committee',committeeIntro:'TFC Arts & Sports Club Bandiyod — Committee for 2026–27.',committeeContact:'Contact Committee',committeeNote:'Mizbah’s photo will be added later.',committeeSeason:'2026–27 Committee',officeBearers:'Office Bearers',teamCaptains:'Team Captains',roleChairman:'Chairman',roleVicePresident:'Vice President',roleJointSecretary:'Joint Secretary',roleCricketCaptain:'Cricket Captain',roleCricketViceCaptain:'Cricket Vice Captain',roleFootballCaptain:'Football Captain',roleFootballViceCaptain:'Football Vice Captain',roleVolleyballCaptain:'Volleyball Captain',rolePresident:'President',roleSecretary:'Secretary',roleTreasurer:'Treasurer',roleCommittee:'Committee Member',memberPending:'Name coming soon',
+        uaeOfficials:'🇦🇪 UAE Committee Officials',uaeCommitteeIntro:'TFC BANDIYOD — UAE Committee Officials',
         shortcutProfile:'My Profile',shortcutHistory:'Payment History',shortcutPay:'Membership Payment',shortcutAccounts:'Club Accounts',loginRequired:'Login required',memberPrivacy:'🔒 All shortcuts open the existing secure login page. Only authorized members can view protected information.',
         membersLabel:'For members',membersTitle:'Your membership, in one place',membersBody:'Sign in with Google. Admin-approved members can access their profile and payment history.',fees:'Membership fee: ₹50 / month · ₹600 / year',payMembership:'💳 Pay Membership',openPortal:'Open Member Login',
         festBadge:'🏆 12th Edition · Coming Soon',festIntro:'Five days of sports presented by TFC Arts & Sports Club Bandiyod.',festDate:'January 8, 9, 10, 11 & 12, 2027',festDateLabel:'Fest dates',festVenueLabel:'Venue',festSports:'Football · Cricket · Volleyball · Tug of War',festSportsLabel:'Sports',titleSponsor:'Title Sponsor',seePoster:'View sponsor poster',festTimeNote:'Detailed match timings will be announced later.',
@@ -470,19 +516,30 @@
       { group:'captains', role:'roleFootballViceCaptain', name:'Mizbah', photo:'' },
       { group:'captains', role:'roleVolleyballCaptain', name:'Zakir Mims', photo:'./committee/zakir_mims.jpg' }
     ];
+    // New UAE committee photos are stored alongside the existing committee photographs.
+    const uaeCommitteeMembers = [
+      { role:'roleChairman', name:'Chachu', photo:'./committee/uae_chachu.jpg', position:'center 35%' },
+      { role:'rolePresident', name:'Ubbi', photo:'./committee/uae_ubbi.jpg', position:'center 25%' },
+      { role:'roleSecretary', name:'Shuail', photo:'./committee/uae_shuail.jpg', position:'center 33%' },
+      { role:'roleTreasurer', name:'Arif', photo:'./committee/uae_arif.jpg', position:'center 33%' }
+    ];
     function renderCommittee(lang){
       const officeGrid=document.getElementById('committeeOfficeGrid');
       const captainGrid=document.getElementById('committeeCaptainGrid');
+      const uaeGrid=document.getElementById('committeeUaeGrid');
       officeGrid.replaceChildren();
       captainGrid.replaceChildren();
-      for(const member of committeeMembers){
-        const grid=member.group==='captains'?captainGrid:officeGrid;
+      uaeGrid.replaceChildren();
+      for(const member of [...committeeMembers,...uaeCommitteeMembers]){
+        const isUae=uaeCommitteeMembers.includes(member);
+        const grid=isUae?uaeGrid:(member.group==='captains'?captainGrid:officeGrid);
         const card=document.createElement('article');card.className='committee-card';
         const avatar=document.createElement('div');avatar.className='committee-avatar';
         if(member.photo){
           const photo=document.createElement('img');
           photo.src=member.photo;photo.loading='lazy';
           photo.alt=member.name;
+          if(member.position)photo.style.objectPosition=member.position;
           photo.onerror=()=>{avatar.replaceChildren();avatar.textContent='👤'};
           avatar.appendChild(photo);
         }else{avatar.textContent='👤'}
