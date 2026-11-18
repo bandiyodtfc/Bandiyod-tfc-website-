@@ -741,5 +741,184 @@
 
 <!-- END TFC HERO & EMBLEM ANIMATION -->
 
+<!-- TFC BANDIYOD RUNNING NEWS TICKER -->
+<style>
+.strip .tfc-news-inner {
+  width: 100%;
+  max-width: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  justify-content: flex-start;
+  overflow: hidden;
+  text-align: left;
+  letter-spacing: normal;
+}
+
+.tfc-news-label {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  background: #111719;
+  color: #f4ce28;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: .1em;
+  z-index: 1;
+}
+
+.tfc-news-label::before {
+  content: "●";
+  color: #ff5252;
+  margin-right: 8px;
+  animation: tfcNewsBlink 1.5s infinite;
+}
+
+.tfc-news-viewport {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.tfc-news-track {
+  display: flex;
+  width: max-content;
+  flex-shrink: 0;
+  animation: tfcNewsScroll 34s linear infinite;
+}
+
+.tfc-news-group {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 30px;
+  padding-right: 30px;
+  white-space: nowrap;
+}
+
+.tfc-news-item {
+  display: inline-block;
+  color: #161b18;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+html[lang="ml"] .tfc-news-en,
+html[lang="en"] .tfc-news-ml {
+  display: none;
+}
+
+@keyframes tfcNewsScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes tfcNewsBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .25; }
+}
+
+.tfc-news-viewport:hover .tfc-news-track {
+  animation-play-state: paused;
+}
+
+@media(max-width:760px) {
+  .tfc-news-label {
+    font-size: 10px;
+    padding: 12px 10px;
+  }
+  .tfc-news-item {
+    font-size: 11px;
+  }
+  .tfc-news-track {
+    animation-duration: 30s;
+  }
+}
+
+@media(prefers-reduced-motion:reduce) {
+  .tfc-news-track,
+  .tfc-news-label::before {
+    animation: none !important;
+  }
+  .tfc-news-viewport {
+    overflow-x: auto;
+  }
+}
+</style>
+
+<script>
+(function() {
+  const strip = document.querySelector('.strip');
+  if (!strip) return;
+
+  const news = {
+    ml: [
+      '🏆 BANDIYOD GAMES FEST 2027 — ജനുവരി 8 മുതൽ 12 വരെ',
+      '📍 വേദി: TFC Ground, Bandiyod',
+      '⭐ Title Sponsor — UZI Men’s Boutique, Dubai',
+      '🏅 Champion Trophy Sponsor — UBBI Dubai',
+      '🇦🇪 TFC UAE Committee Officials',
+      '⚽ ONE TEAM ONE DREAM'
+    ],
+    en: [
+      '🏆 BANDIYOD GAMES FEST 2027 — January 8 to 12',
+      '📍 Venue: TFC Ground, Bandiyod',
+      '⭐ Title Sponsor — UZI Men’s Boutique, Dubai',
+      '🏅 Champion Trophy Sponsor — UBBI Dubai',
+      '🇦🇪 TFC UAE Committee Officials',
+      '⚽ ONE TEAM ONE DREAM'
+    ]
+  };
+
+  const inner = document.createElement('div');
+  inner.className = 'container strip-inner tfc-news-inner';
+
+  const label = document.createElement('div');
+  label.className = 'tfc-news-label';
+  label.textContent = 'NEWS';
+
+  const viewport = document.createElement('div');
+  viewport.className = 'tfc-news-viewport';
+
+  for (const lang of ['ml', 'en']) {
+    const track = document.createElement('div');
+    track.className = 'tfc-news-track tfc-news-' + lang;
+
+    for (let repeat = 0; repeat < 2; repeat++) {
+      const group = document.createElement('div');
+      group.className = 'tfc-news-group';
+
+      if (repeat === 1) {
+        group.setAttribute('aria-hidden', 'true');
+      }
+
+      news[lang].forEach(item => {
+        const span = document.createElement('span');
+        span.className = 'tfc-news-item';
+        span.textContent = item;
+        group.appendChild(span);
+      });
+
+      track.appendChild(group);
+    }
+
+    viewport.appendChild(track);
+  }
+
+  inner.append(label, viewport);
+  strip.replaceChildren(inner);
+})();
+</script>
+<!-- END TFC RUNNING NEWS -->
+
 </body>
 </html>
