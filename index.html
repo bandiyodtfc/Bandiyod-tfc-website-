@@ -582,5 +582,159 @@
     }));
     document.getElementById('year').textContent=new Date().getFullYear();
   </script>
+  
+<!-- TFC BANDIYOD - SPONSOR MOTION UPDATE -->
+
+<style>
+/* TITLE SPONSOR - GOLDEN GLOW */
+.title-sponsor-feature {
+  position: relative;
+  isolation: isolate;
+  border: 2px solid #f4ce28;
+  animation: tfcGoldenGlow 5s ease-in-out infinite alternate;
+}
+
+/* TITLE SPONSOR - SLOW ZOOM */
+.title-sponsor-photo {
+  position: relative;
+  overflow: hidden;
+  padding: 10px;
+}
+
+.title-sponsor-photo img {
+  display: block;
+  object-fit: contain;
+  transform-origin: center;
+  animation: tfcSlowZoom 10s ease-in-out infinite alternate;
+}
+
+/* SHINING SPONSOR LABEL */
+.title-sponsor-label {
+  position: relative;
+  overflow: hidden;
+}
+
+.title-sponsor-label::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255,255,255,.65) 50%,
+    transparent 70%
+  );
+  transform: translateX(-160%);
+  animation: tfcShine 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes tfcSlowZoom {
+  from { transform: scale(.965); }
+  to { transform: scale(1); }
+}
+
+@keyframes tfcGoldenGlow {
+  from {
+    box-shadow: 0 12px 35px rgba(244,206,40,.12);
+  }
+  to {
+    box-shadow:
+      0 18px 55px rgba(244,206,40,.32),
+      0 0 30px rgba(244,206,40,.22);
+  }
+}
+
+@keyframes tfcShine {
+  0%, 15% { transform: translateX(-160%); }
+  40%, 100% { transform: translateX(160%); }
+}
+
+/* GAMES FEST & CHAMPION TROPHY */
+.fest-shell.tfc-motion-pending,
+.news-feature.tfc-motion-pending {
+  opacity: 0;
+  transform: translateY(25px);
+}
+
+.news-feature.tfc-motion-pending {
+  transform: translateX(25px);
+}
+
+.fest-shell.tfc-motion-visible,
+.news-feature.tfc-motion-visible {
+  opacity: 1;
+  transform: translate(0, 0);
+  transition:
+    opacity .85s ease,
+    transform .85s ease;
+}
+
+/* ACCESSIBILITY */
+@media (prefers-reduced-motion: reduce) {
+  .title-sponsor-feature,
+  .title-sponsor-photo img,
+  .title-sponsor-label::after {
+    animation: none !important;
+  }
+
+  .title-sponsor-photo img {
+    transform: none;
+  }
+
+  .fest-shell.tfc-motion-pending,
+  .news-feature.tfc-motion-pending {
+    opacity: 1;
+    transform: none;
+  }
+}
+</style>
+
+<script>
+(function () {
+  const reducedMotion =
+    window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+  if (
+    reducedMotion ||
+    !('IntersectionObserver' in window)
+  ) return;
+
+  const posts = document.querySelectorAll(
+    '.fest-shell, .news-feature'
+  );
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+
+        entry.target.classList.remove(
+          'tfc-motion-pending'
+        );
+
+        entry.target.classList.add(
+          'tfc-motion-visible'
+        );
+
+        observer.unobserve(entry.target);
+      });
+    },
+    {
+      threshold: 0.06,
+      rootMargin: '0px 0px 90px 0px'
+    }
+  );
+
+  posts.forEach((post) => {
+    post.classList.add('tfc-motion-pending');
+    observer.observe(post);
+  });
+})();
+</script>
+<!-- END SPONSOR MOTION UPDATE -->
+
 </body>
 </html>
