@@ -1,1081 +1,529 @@
-
 <!doctype html>
 <html lang="ml">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="google-site-verification" content="i8klDfAWXKj0KWwW6eay-Y0i4h78a7Jy2bn0r8gqvY0">
-<meta name="theme-color" content="#111719">
-<meta name="description" content="TFC Arts & Sports Club Bandiyod — One Team One Dream. Bandiyod Games Fest 2027.">
-<meta property="og:title" content="TFC BANDIYOD | One Team One Dream">
-<meta property="og:description" content="Bandiyod Games Fest 2027 - January 8 to 12">
-<meta property="og:image" content="https://bandiyodtfc.github.io/Bandiyod-tfc-website-/tfc-logo.jpeg">
-<link rel="icon" href="./tfc-logo.jpeg">
-<title>TFC BANDIYOD | One Team One Dream</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google-site-verification" content="i8klDfAWXKj0KWwW6eay-Y0i4h78a7Jy2bn0r8gqvY0">
+  <meta name="theme-color" content="#111719">
+  <meta name="description" content="TFC Bandiyod — One Team One Dream. Official club website, updates, activities and secure member portal.">
+  <meta property="og:title" content="TFC Bandiyod | One Team One Dream">
+  <meta property="og:description" content="Welcome to TFC Bandiyod. One Team One Dream.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://bandiyodtfc.github.io/Bandiyod-tfc-website-/tfc-logo.jpeg">
+  <link rel="icon" href="./tfc-logo.jpeg" type="image/jpeg">
+  <title>TFC BANDIYOD | One Team One Dream</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink:#111719;--ink2:#1d2528;--gold:#f4ce28;--gold2:#ffdf62;
+      --paper:#f7f7f2;--muted:#a9b4b5;--white:#ffffff;
+      font-family:system-ui,-apple-system,"Noto Sans Malayalam","Segoe UI",sans-serif;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;scroll-padding-top:92px}
+    body{margin:0;background:var(--ink);color:var(--white);line-height:1.6}
+    a{color:inherit;text-decoration:none}
+    button{font:inherit}
+    img{max-width:100%}
+    .container{width:min(1180px,calc(100% - 42px));margin:auto}
+    .skip{position:absolute;left:12px;top:-70px;background:#fff;color:#111;padding:10px;z-index:100}
+    .skip:focus{top:10px}
+    .topline{height:5px;background:linear-gradient(90deg,#f6cf19,#ffe890,#f6cf19)}
+    .site-header{position:sticky;top:0;z-index:10;background:rgba(17,23,25,.96);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.1)}
+    .nav{height:84px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .brand{display:flex;align-items:center;gap:13px;min-width:0}
+    .brand img{width:58px;height:58px;object-fit:contain;filter:drop-shadow(0 2px 4px #0005)}
+    .brand-name{font-size:clamp(17px,2.2vw,22px);line-height:1.1;font-weight:900;letter-spacing:.045em;white-space:nowrap}
+    .brand-sub{font-size:10px;letter-spacing:.19em;color:var(--gold);font-weight:800;margin-top:5px}
+    .nav-actions{display:flex;align-items:center;gap:20px}
+    .nav-links{display:flex;align-items:center;gap:22px}
+    .nav-links a{font-weight:650;font-size:13px;color:#d9dfdc;transition:color .15s}
+    .nav-links a:hover,.nav-links a:focus-visible{color:var(--gold)}
+    .lang-btn{background:transparent;border:1px solid #576062;border-radius:10px;color:white;padding:10px 11px;cursor:pointer;font-size:12px;font-weight:700}
+    .btn{display:inline-flex;justify-content:center;align-items:center;gap:9px;min-height:45px;border:1px solid transparent;border-radius:11px;padding:11px 18px;font-size:13px;font-weight:850;cursor:pointer;transition:transform .2s,background .2s}
+    .btn:hover{transform:translateY(-2px)}
+    .btn-gold{background:var(--gold);color:#151912}
+    .btn-gold:hover{background:var(--gold2)}
+    .btn-outline{border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.07);color:white}
+    .btn-outline:hover{background:rgba(255,255,255,.14)}
+    .menu-btn{display:none;border:1px solid #4b5758;color:white;background:transparent;border-radius:10px;width:42px;height:42px;align-items:center;justify-content:center;cursor:pointer;font-size:24px}
+    .hero{min-height:630px;position:relative;overflow:hidden;display:flex;align-items:center;background:#10191b}
+    .hero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(9,16,18,.94) 0%,rgba(9,16,18,.81) 38%,rgba(9,16,18,.45) 75%,rgba(9,16,18,.58) 100%),linear-gradient(0deg,#111719,transparent 25%),url('./tfc-login-bg.jpg') center/cover no-repeat;transform:scale(1.01)}
+    .hero:after{content:"";position:absolute;right:-80px;bottom:-240px;width:520px;height:520px;border:1px solid rgba(244,206,40,.15);border-radius:50%;box-shadow:0 0 0 80px rgba(244,206,40,.03),0 0 0 160px rgba(244,206,40,.02);pointer-events:none}
+    .hero-inner{position:relative;z-index:1;padding:100px 0 112px}
+    .eyebrow{display:inline-flex;align-items:center;gap:10px;color:var(--gold);font-weight:850;letter-spacing:.2em;font-size:12px;text-transform:uppercase}
+    .eyebrow:before{content:"";width:28px;height:2px;background:var(--gold)}
+    .hero h1{font-size:clamp(46px,8vw,96px);line-height:1.02;letter-spacing:-.042em;margin:22px 0 15px;font-weight:1000;max-width:890px}
+    .hero h1 span{color:var(--gold)}
+    .hero-slogan{font-weight:900;letter-spacing:.15em;font-size:clamp(15px,2.2vw,23px);margin:0;color:#f6eee0}
+    .hero-text{max-width:590px;color:#d2dbd8;font-size:clamp(14px,1.7vw,17px);margin:25px 0 30px}
+    .hero-cta{display:flex;gap:12px;flex-wrap:wrap}
+    .hero-underline{width:90px;height:5px;background:var(--gold);margin-top:37px;border-radius:20px}
+    .strip{background:var(--gold);color:#161b18}
+    .strip-inner{display:flex;align-items:center;justify-content:center;gap:18px;padding:18px 15px;text-align:center;font-size:13px;font-weight:900;letter-spacing:.13em}
+    .strip-dot{font-size:8px;opacity:.55}
+    section{padding:94px 0}
+    .section-kicker{font-size:12px;text-transform:uppercase;letter-spacing:.17em;font-weight:900;color:#bc9b16;margin-bottom:13px}
+    .section-title{font-size:clamp(30px,4.5vw,48px);font-weight:900;letter-spacing:-.035em;line-height:1.15;margin:0 0 22px}
+    .section-copy{color:#c1cdca;max-width:690px;margin:0;font-size:15px}
+    .about-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:64px;align-items:center}
+    .about-panel{position:relative;border:1px solid #364245;background:linear-gradient(140deg,#242e2f,#172123);border-radius:23px;padding:44px 35px;text-align:center;overflow:hidden}
+    .about-panel:before{content:"";position:absolute;background:var(--gold);width:200px;height:200px;filter:blur(135px);opacity:.24;top:-80px;right:-50px}
+    .about-panel img{position:relative;display:block;width:180px;height:180px;object-fit:contain;margin:0 auto 24px}
+    .about-panel strong{display:block;font-size:28px;letter-spacing:.06em}
+    .about-panel span{display:block;color:var(--gold);font-size:13px;font-weight:800;letter-spacing:.15em;margin-top:5px}
+    .features-section{background:var(--paper);color:#152021}
+    .features-section .section-copy{color:#536262}
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:38px}
+    .feature-card{background:#fff;border:1px solid #e7e9e1;border-radius:18px;padding:29px;min-height:228px;box-shadow:0 10px 25px rgba(0,0,0,.03)}
+    .feature-icon{width:55px;height:55px;background:#fff5c7;display:grid;place-items:center;border-radius:15px;font-size:25px;margin-bottom:22px}
+    .feature-card h3{font-size:18px;line-height:1.35;margin:0 0 12px}
+    .feature-card p{font-size:14px;color:#5e6a68;margin:0}
+    .membership-section{background:linear-gradient(145deg,#1f2a2c,#111719)}
+    .member-box{border:1px solid #404a49;border-radius:23px;padding:46px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:25px;background:rgba(255,255,255,.03)}
+    .member-box h2{font-size:clamp(25px,3.6vw,37px);line-height:1.2;margin:0 0 15px}
+    .member-box p{margin:0;color:#bdc8c5;max-width:625px;font-size:14px}
+    .fees{font-size:13px;color:var(--gold);font-weight:850;margin-top:18px}
+    .membership-buttons{display:flex;flex-direction:column;gap:11px;min-width:185px}
+    .updates-section{background:var(--paper);color:var(--ink)}
+    .updates-note{background:white;border-radius:18px;border:1px solid #e5e7df;padding:27px;display:flex;gap:16px;align-items:center;margin-top:25px}
+    .updates-note .feature-icon{margin:0;flex:0 0 55px}
+    .updates-note strong{display:block;margin-bottom:3px}
+    .updates-note p{margin:0;font-size:13px;color:#5e6a68}
+    .contact-grid{display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap}
+    .contact-grid .section-copy{max-width:600px}
+    .footer{border-top:1px solid #384041;background:#0d1314}
+    .footer-inner{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;padding:30px 0;color:#b4c0bf;font-size:12px}
+    .footer strong{color:#fff;font-size:15px}
+    .footer small{display:block;color:var(--gold);letter-spacing:.15em;margin-top:3px}
+    .footer-links{display:flex;gap:17px}
+    :focus-visible{outline:3px solid #ffe578;outline-offset:3px}
+    @media(max-width:970px){
+      .nav-links{gap:11px}.nav-links a{font-size:12px}
+      .nav-actions{gap:10px}.nav-actions>.btn{padding:10px 12px}
+      .about-grid{gap:28px}
+    }
+    @media(max-width:760px){
+      .container{width:min(100% - 30px,1180px)}
+      .nav{height:75px;gap:9px}
+      .brand img{width:46px;height:46px}.brand-name{font-size:17px}.brand-sub{font-size:8px}
+      .menu-btn{display:flex}
+      .nav-actions>.btn{display:none}
+      .nav-links{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:stretch;background:#141c1e;gap:0;padding:10px 15px 16px;border-bottom:1px solid #3a4848;box-shadow:0 12px 18px #0006}
+      .nav-links.is-open{display:flex}
+      .nav-links a{padding:14px 10px;border-bottom:1px solid #2b3436;font-size:14px}
+      .nav-links .mobile-login{display:block}
+      .hero{min-height:590px}
+      .hero:before{background:linear-gradient(90deg,rgba(9,16,18,.92),rgba(9,16,18,.56)),linear-gradient(0deg,#111719,transparent 36%),url('./tfc-login-bg.jpg') center/cover no-repeat}
+      .hero-inner{padding:80px 0 98px}
+      .hero h1{font-size:clamp(45px,12vw,73px)}
+      section{padding:70px 0}
+      .about-grid,.member-box{grid-template-columns:1fr}
+      .about-panel{padding:35px 20px}
+      .cards{grid-template-columns:1fr;gap:12px;margin-top:30px}
+      .feature-card{min-height:auto}
+      .member-box{padding:28px}
+      .strip-inner{gap:9px;letter-spacing:.06em;font-size:10px}
+      .contact-grid{align-items:flex-start;flex-direction:column}
+    }
 
-<style>
-:root{
-  --dark:#111719;
-  --dark2:#1d282a;
-  --gold:#f4ce28;
-  --gold2:#ffe36b;
-  --light:#f7f7f2;
-  --white:#fff;
-  --muted:#bbc8c5;
-  font-family:system-ui,-apple-system,"Noto Sans Malayalam",sans-serif;
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:90px}
-body{margin:0;background:var(--dark);color:#fff;line-height:1.6}
-a{text-decoration:none;color:inherit}
-button{font:inherit;cursor:pointer}
-img{max-width:100%}
-.container{max-width:1180px;width:calc(100% - 36px);margin:auto}
-.topline{height:5px;background:linear-gradient(90deg,#d7a900,#ffeb72,#d7a900)}
-header{
-  position:sticky;top:0;z-index:20;
-  background:rgba(17,23,25,.97);
-  backdrop-filter:blur(15px);
-  border-bottom:1px solid #ffffff20;
-}
-.nav{
-  min-height:82px;display:flex;align-items:center;
-  justify-content:space-between;gap:15px;
-}
-.brand{display:flex;align-items:center;gap:12px}
-.brand img{width:55px;height:55px;object-fit:contain}
-.brand-name{font-weight:900;font-size:21px;letter-spacing:1px;line-height:1.2}
-.brand-sub{font-size:10px;letter-spacing:2px;color:var(--gold);font-weight:800}
-.nav-links{display:flex;gap:17px;align-items:center}
-.nav-links a{font-size:13px;font-weight:650;color:#dde4df}
-.nav-links a:hover{color:var(--gold)}
-.nav-actions{display:flex;gap:9px;align-items:center}
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;
-  gap:8px;padding:12px 19px;border-radius:11px;
-  font-weight:850;font-size:13px;min-height:46px;
-  border:1px solid transparent;transition:.2s;
-  text-align:center;
-}
-.btn:hover{transform:translateY(-2px)}
-.btn-gold{background:var(--gold);color:#131812}
-.btn-gold:hover{background:var(--gold2)}
-.btn-outline{border-color:#ffffff80;background:#ffffff10;color:white}
-.btn-outline:hover{background:#ffffff20}
-.lang-btn,.menu-btn{
-  background:transparent;border:1px solid #586363;
-  color:white;border-radius:10px;padding:10px 12px;font-weight:800;
-}
-.menu-btn{display:none;font-size:22px;min-width:43px}
-.mobile-login{display:none}
 
-/* HERO */
-.hero{
-  min-height:630px;position:relative;
-  display:flex;align-items:center;
-  background:#10191b;overflow:hidden;
-}
-.hero:before{
-  content:"";position:absolute;inset:0;
-  background:
-    linear-gradient(90deg,rgba(9,16,18,.95),rgba(9,16,18,.71) 50%,rgba(9,16,18,.48)),
-    linear-gradient(0deg,#111719,transparent 28%),
-    url("./tfc-login-bg.jpg") center/cover no-repeat;
-}
-.hero:after{
-  content:"";position:absolute;right:-140px;bottom:-240px;
-  width:550px;height:550px;border:1px solid #f4ce2830;
-  border-radius:50%;box-shadow:0 0 0 90px #f4ce2808;
-}
-.hero-inner{position:relative;z-index:1;padding:95px 0}
-.eyebrow{
-  color:var(--gold);font-size:12px;
-  font-weight:900;letter-spacing:2px;
-}
-.hero h1{
-  font-size:clamp(48px,8vw,96px);
-  line-height:1.03;letter-spacing:-3px;margin:20px 0;
-}
-.hero h1 span{color:var(--gold)}
-.slogan{
-  font-size:clamp(15px,2vw,23px);
-  font-weight:900;letter-spacing:3px;
-}
-.hero p{max-width:600px;color:#d3dfdb;margin:24px 0 30px}
-.hero-buttons{display:flex;gap:12px;flex-wrap:wrap}
-.gold-line{
-  height:5px;width:95px;background:var(--gold);
-  margin-top:38px;border-radius:10px;
-}
-.strip{
-  background:var(--gold);color:#141b17;
-  text-align:center;padding:17px;font-weight:900;
-  font-size:13px;letter-spacing:2px;
-}
+    /* Games Fest 2027 — latest update */
+    .fest-shell{margin-top:28px;background:#fff;border:1px solid #e3e8e5;border-radius:22px;overflow:hidden;box-shadow:0 16px 45px rgba(9,17,25,.08)}
+    .fest-layout{display:grid;grid-template-columns:minmax(0,0.8fr) minmax(0,1.2fr);gap:0}
+    .fest-poster-main{background:#091b4e;display:flex;align-items:stretch;justify-content:center;min-width:0}
+    .fest-poster-main img{width:100%;height:100%;max-height:655px;object-fit:contain;display:block}
+    .fest-details{padding:clamp(25px,4.2vw,48px);min-width:0;display:flex;flex-direction:column;justify-content:center;gap:16px}
+    .fest-badge{display:inline-flex;align-items:center;align-self:flex-start;padding:7px 13px;border-radius:999px;background:#fff3c3;border:1px solid #ead88a;color:#5a4800;font-size:12px;font-weight:900;letter-spacing:.045em}
+    .fest-details h3{font-weight:950;font-size:clamp(28px,3.5vw,43px);line-height:1.1;color:#182129;margin:0}
+    .fest-details h3 span{color:#0c47a1}
+    .fest-details p{font-size:14px;color:#4b5c5b;margin:0}
+    .fest-facts{display:grid;gap:12px;margin:4px 0}
+    .fest-fact{display:flex;gap:12px;align-items:flex-start;border-bottom:1px solid #e8ebe8;padding-bottom:12px;font-size:14px;color:#172627}
+    .fest-fact:last-child{border-bottom:0;padding-bottom:0}
+    .fest-fact-icon{font-size:22px;line-height:1.15;flex:0 0 28px}
+    .fest-fact strong{display:block;font-weight:850;color:#172326}
+    .fest-fact small{display:block;font-size:12px;color:#5a6665;margin-top:1px}
+    .fest-sponsor{background:#f6f8fc;border:1px solid #dfe4ef;border-radius:16px;padding:14px;display:flex;align-items:center;gap:16px}
+    .fest-sponsor img{width:94px;max-height:126px;object-fit:contain;border-radius:9px;background:#0b1552;flex:0 0 94px}
+    .fest-sponsor strong{display:block;font-size:13px;color:#203039}
+    .fest-sponsor p{margin-top:3px;font-size:13px}
+    .fest-sponsor a{display:inline-block;color:#0b48a5;font-size:12px;font-weight:850;margin-top:6px;text-decoration:underline;text-underline-offset:3px}
 
-/* GENERAL SECTIONS */
-section{padding:88px 0}
-.kicker{
-  color:var(--gold);font-weight:900;font-size:12px;
-  letter-spacing:2px;text-transform:uppercase;margin-bottom:15px;
-}
-.section-title{
-  font-size:clamp(30px,4vw,46px);
-  font-weight:900;line-height:1.2;margin:0 0 20px;
-}
-.section-copy{
-  color:var(--muted);font-size:15px;max-width:660px;
-}
-.about-grid{
-  display:grid;grid-template-columns:1.2fr .8fr;
-  align-items:center;gap:55px;
-}
-.about-logo{
-  background:linear-gradient(130deg,#263234,#172022);
-  border:1px solid #425050;border-radius:24px;
-  padding:42px 25px;text-align:center;
-}
-.about-logo img{
-  width:170px;height:170px;
-  object-fit:contain;margin-bottom:22px;
-}
-.about-logo strong{font-size:26px;display:block}
-.about-logo small{
-  display:block;letter-spacing:2px;
-  color:var(--gold);font-weight:800;
-}
-.activities{background:var(--light);color:#152021}
-.activities .section-copy{color:#596565}
-.cards{
-  display:grid;grid-template-columns:repeat(3,1fr);
-  gap:18px;margin-top:35px;
-}
-.card{
-  background:white;border:1px solid #e4e8e2;
-  border-radius:18px;padding:30px;
-}
-.card-icon{
-  background:#fff3c0;border-radius:15px;
-  width:56px;height:56px;display:grid;
-  place-items:center;font-size:26px;margin-bottom:20px;
-}
-.card h3{margin:0 0 10px;font-size:19px}
-.card p{font-size:14px;color:#596665;margin:0}
+    /* Champion Trophy sponsor — latest club news */
+    .news-feature{margin-top:24px;display:grid;grid-template-columns:minmax(0,0.75fr) minmax(0,1.25fr);overflow:hidden;border-radius:22px;background:#fff;border:1px solid #e3e8e5;box-shadow:0 16px 45px rgba(9,17,25,.08)}
+    .news-feature-photo{display:block;min-width:0;background:#051747;align-self:stretch}
+    .news-feature-photo img{width:100%;height:100%;max-height:440px;object-fit:contain;display:block}
+    .news-feature-copy{padding:clamp(24px,4vw,42px);display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:14px}
+    .news-feature-tag{font-size:12px;font-weight:900;letter-spacing:.06em;color:#745400;background:#fff3c3;border:1px solid #e9d58b;border-radius:999px;padding:7px 13px}
+    .news-feature-copy h3{font-size:clamp(23px,3.2vw,36px);font-weight:900;line-height:1.2;margin:0;color:#142030}
+    .news-feature-copy p{font-size:15px;line-height:1.75;margin:0;color:#4b5c5b}
+    .news-feature-action{display:inline-block;background:#122e83;color:#fff;font-size:14px;font-weight:850;border-radius:11px;padding:11px 17px;text-decoration:none;margin-top:3px}
+    .news-feature-action:hover{background:#224aad;color:#fff}
+    @media(max-width:760px){
+      .news-feature{grid-template-columns:1fr}
+      .news-feature-photo img{height:auto;max-height:510px;object-fit:contain}
+      .news-feature-copy{padding:24px 20px}
+    }
 
-/* COMMITTEE */
-.committee{background:#172022}
-.committee-head{
-  display:flex;justify-content:space-between;
-  align-items:end;gap:20px;flex-wrap:wrap;
-}
-.committee-season{
-  display:inline-block;border:1px solid #897524;
-  color:var(--gold);border-radius:30px;
-  padding:7px 15px;font-size:13px;font-weight:900;
-  margin-top:15px;
-}
-.committee-group-title{
-  font-size:22px;font-weight:900;
-  border-left:4px solid var(--gold);
-  padding-left:14px;margin:38px 0 22px;
-}
-.committee-grid{
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:17px;
-}
-.committee-card{
-  border:1px solid #425052;
-  background:linear-gradient(160deg,#293437,#1c2528);
-  padding:25px 14px;border-radius:20px;
-  text-align:center;position:relative;overflow:hidden;
-}
-.committee-card:before{
-  content:"";position:absolute;top:0;left:18%;right:18%;
-  height:3px;background:var(--gold);
-  border-radius:0 0 7px 7px;
-}
-.avatar{
-  width:105px;height:105px;border-radius:50%;
-  border:3px solid #f4ce2850;background:#263638;
-  margin:0 auto 18px;display:grid;place-items:center;
-  font-size:42px;overflow:hidden;
-}
-.avatar img{width:100%;height:100%;object-fit:cover}
-.role{
-  color:var(--gold);font-size:12px;
-  font-weight:900;letter-spacing:.5px;
-  min-height:20px;
-}
-.person-name{
-  font-size:17px;margin:9px 0 0;
-  overflow-wrap:anywhere;
-}
-.committee-note{
-  color:#b4c5c0;font-size:13px;
-  margin-top:24px;border-left:3px solid var(--gold);
-  padding-left:13px;
-}
+    .contact-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:12px}
+    .instagram-link{background:#ffffff10;border:1px solid #b69a29;color:#fff}
+    .instagram-link:hover{background:#ffffff22}
+    .instagram-link svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    @media(max-width:760px){
+      .fest-layout{grid-template-columns:1fr}
+      .fest-poster-main img{max-height:560px;object-fit:contain}
+      .fest-details{padding:25px 20px;gap:15px}
+      .fest-sponsor img{width:75px;flex-basis:75px;max-height:105px}
+      .contact-actions{justify-content:flex-start;width:100%}
+      .contact-actions .btn{max-width:100%}
+    }
 
-/* MEMBERSHIP */
-.membership{
-  background:linear-gradient(145deg,#1e292c,#111719);
-}
-.member-box{
-  border:1px solid #41504f;border-radius:23px;padding:43px;
-  display:grid;grid-template-columns:1fr auto;
-  align-items:center;gap:24px;background:#ffffff07;
-}
-.member-box h2{
-  font-size:clamp(26px,3.5vw,37px);
-  line-height:1.2;margin:0 0 16px;
-}
-.member-box p{
-  font-size:14px;color:var(--muted);max-width:620px;
-}
-.fees{
-  color:var(--gold);font-size:13px;
-  font-weight:850;margin-top:16px;
-}
-.member-buttons{
-  display:flex;flex-direction:column;
-  gap:11px;min-width:185px;
-}
-.member-shortcuts{
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:14px;margin-top:22px;
-}
-.member-action{
-  display:flex;align-items:center;gap:12px;
-  background:#1d2829;border:1px solid #40504d;
-  border-radius:16px;padding:17px 13px;min-width:0;
-}
-.member-action:hover{
-  border-color:var(--gold);background:#273234;
-}
-.action-icon{
-  background:#383922;border-radius:12px;
-  width:43px;height:43px;flex-shrink:0;
-  display:grid;place-items:center;font-size:23px;
-}
-.member-action strong{
-  display:block;font-size:13px;line-height:1.3;
-}
-.member-action small{
-  display:block;color:#b2c2bd;font-size:11px;
-}
-.privacy{
-  color:#b3c2bc;font-size:12px;margin-top:18px;
-}
+    /* Committee section – public roles and editable member records */
+    .committee-section{background:#172022}
+    .committee-intro{display:flex;align-items:end;justify-content:space-between;gap:25px;flex-wrap:wrap}
+    .committee-intro .section-copy{max-width:530px}
+    .committee-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:17px;margin-top:36px}
+    .committee-card{border:1px solid #414b4b;background:linear-gradient(160deg,#283234,#1b2527);border-radius:20px;padding:25px 17px 23px;text-align:center;position:relative;overflow:hidden}
+    .committee-card:before{content:"";height:3px;position:absolute;top:0;left:18%;right:18%;background:var(--gold);border-radius:0 0 7px 7px}
+    .committee-avatar{width:105px;height:105px;border:3px solid rgba(244,206,40,.38);border-radius:50%;margin:6px auto 18px;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 25%,#354345,#1b2527);color:var(--gold);font-size:42px}
+    .committee-avatar img{width:100%;height:100%;object-fit:cover}
+    .committee-role{color:var(--gold);font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;min-height:19px}
+    .committee-name{font-size:18px;margin:7px 0 0;line-height:1.4;overflow-wrap:anywhere}
+    .committee-note{border-left:3px solid var(--gold);padding-left:13px;color:#afc0bb;font-size:13px;margin-top:23px}
+    .committee-season{display:inline-block;margin:15px 0 0;padding:7px 13px;border:1px solid #8e7926;border-radius:999px;color:var(--gold);font-weight:800;font-size:12px;letter-spacing:.05em}
+    .committee-group-title{font-size:20px;font-weight:850;margin:36px 0 0;padding-left:13px;border-left:4px solid var(--gold);line-height:1.4}
+    .committee-group-title + .committee-grid{margin-top:21px}
 
-/* GAMES FEST 2027 */
-.updates{background:var(--light);color:var(--dark)}
-.updates .kicker{color:#ad9014}
-.fest-container{
-  display:grid;
-  grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr);
-  background:#fff;
-  border:1px solid #e5e8e7;
-  border-radius:22px;
-  overflow:hidden;
-  margin-top:30px;
-  box-shadow:0 16px 45px #00000012;
-}
-.fest-poster{
-  background:#0b1b4a;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.fest-poster img{
-  width:100%;
-  height:100%;
-  max-height:680px;
-  object-fit:contain;
-  display:block;
-}
-.fest-details{
-  padding:40px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  gap:17px;
-}
-.fest-badge{
-  align-self:flex-start;
-  background:#fff2b6;
-  color:#67500c;
-  border-radius:30px;
-  padding:8px 16px;
-  font-weight:900;
-  font-size:12px;
-}
-.fest-details h3{
-  font-size:clamp(28px,4vw,44px);
-  line-height:1.12;
-  margin:0;
-  font-weight:950;
-}
-.fest-details h3 span{color:#164bad}
-.fest-description{
-  font-size:14px;
-  color:#566361;
-  margin:0;
-}
-.fest-fact{
-  display:flex;
-  align-items:flex-start;
-  gap:13px;
-  border-bottom:1px solid #e5e9e6;
-  padding:12px 0;
-}
-.fest-fact-icon{font-size:23px;line-height:1.3}
-.fest-fact strong{
-  display:block;
-  font-size:15px;
-  color:#172326;
-}
-.fest-fact small{
-  display:block;
-  font-size:12px;
-  color:#61716c;
-}
-.sponsor-box{
-  display:flex;
-  gap:15px;
-  align-items:center;
-  background:#f3f6fd;
-  border:1px solid #dfe5f0;
-  padding:14px;
-  border-radius:15px;
-}
-.sponsor-box img{
-  width:95px;
-  max-height:130px;
-  object-fit:contain;
-  background:#081c53;
-  border-radius:8px;
-}
-.sponsor-box strong{display:block;color:#203039}
-.sponsor-box p{
-  font-size:13px;
-  color:#4c5960;
-  margin:4px 0;
-}
-.sponsor-box a{
-  color:#164bad;
-  text-decoration:underline;
-  font-weight:800;
-  font-size:12px;
-}
-.fest-time-note{
-  font-size:12px;
-  color:#65716e;
-  margin:0;
-}
-
-/* CONTACT */
-.contact-grid{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:24px;
-  flex-wrap:wrap;
-}
-.contact-buttons{
-  display:flex;
-  align-items:center;
-  flex-wrap:wrap;
-  gap:12px;
-}
-.instagram-btn{
-  background:#ffffff10;
-  border:1px solid #ab9639;
-  color:white;
-}
-.instagram-btn:hover{background:#ffffff20}
-.instagram-btn svg{
-  width:20px;height:20px;
-  fill:none;stroke:currentColor;
-  stroke-width:2;
-  stroke-linecap:round;
-  stroke-linejoin:round;
-}
-
-/* FOOTER */
-footer{
-  background:#0c1213;
-  border-top:1px solid #354141;
-  padding:28px 0;
-}
-.footer-inner{
-  display:flex;align-items:center;
-  justify-content:space-between;
-  gap:20px;flex-wrap:wrap;
-  font-size:12px;color:#aebbb7;
-}
-.footer-inner strong{font-size:15px;color:white}
-.footer-inner small{
-  color:var(--gold);display:block;letter-spacing:2px;
-}
-.footer-links{display:flex;gap:17px}
-.floating-login{display:none}
-:focus-visible{
-  outline:3px solid #ffe578;outline-offset:3px;
-}
-
-/* MOBILE */
-@media(max-width:1050px){
-  .nav-links{
-    display:none;position:absolute;top:100%;
-    left:0;right:0;background:#151d1f;
-    flex-direction:column;align-items:stretch;
-    padding:12px 18px;
-    border-bottom:1px solid #3b4849;
-    box-shadow:0 12px 20px #0007;
-  }
-  .nav-links.open{display:flex}
-  .nav-links a{
-    padding:12px;border-bottom:1px solid #303a3c;
-  }
-  .mobile-login{display:block}
-  .menu-btn{display:block}
-  .nav-actions>.btn{display:none}
-  .committee-grid,.member-shortcuts{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-  }
-}
-@media(max-width:760px){
-  .container{width:calc(100% - 30px)}
-  .nav{min-height:74px}
-  .brand img{width:46px;height:46px}
-  .brand-name{font-size:17px}
-  .brand-sub{font-size:8px}
-  .hero{min-height:570px}
-  .hero-inner{padding:75px 0}
-  .hero h1{letter-spacing:-1px}
-  section{padding:68px 0}
-  .about-grid,.member-box{grid-template-columns:1fr}
-  .about-logo{padding:30px}
-  .cards{grid-template-columns:1fr;gap:13px}
-  .member-box{padding:27px}
-  .member-buttons{width:100%}
-  .committee-grid,.member-shortcuts{gap:11px}
-  .committee-card{padding:22px 10px}
-  .avatar{width:86px;height:86px;font-size:34px}
-  .person-name{font-size:15px}
-  .member-action{padding:13px 9px;gap:8px}
-  .action-icon{width:35px;height:35px;font-size:18px}
-  .member-action strong{font-size:12px}
-  .member-action small{font-size:10px}
-  .fest-container{grid-template-columns:1fr}
-  .fest-poster img{max-height:580px}
-  .fest-details{padding:25px 20px}
-  .sponsor-box img{width:80px}
-  .contact-buttons{width:100%}
-  .floating-login{
-    display:inline-flex;
-    position:fixed;right:13px;
-    bottom:calc(14px + env(safe-area-inset-bottom));
-    z-index:15;border-radius:50px;
-    box-shadow:0 5px 22px #0009;
-  }
-  footer{padding-bottom:75px}
-  .strip{font-size:10px;letter-spacing:1px}
-}
-@media(prefers-reduced-motion:reduce){
-  html{scroll-behavior:auto}
-  .btn{transition:none}
-}
-</style>
+    /* Member actions link to the existing protected login page. */
+    .member-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:22px}
+    .member-action{display:flex;align-items:center;gap:13px;padding:18px 14px;border:1px solid #3f4b49;background:#1d2829;border-radius:16px;transition:border-color .2s,transform .2s,background .2s;min-width:0}
+    .member-action:hover{border-color:var(--gold);background:#253132;transform:translateY(-2px)}
+    .member-action-icon{display:grid;place-items:center;flex:0 0 43px;width:43px;height:43px;border-radius:12px;background:#3a3822;font-size:22px}
+    .member-action strong{display:block;color:white;font-size:13px;line-height:1.3}
+    .member-action small{display:block;color:#aabbb6;font-size:11px;margin-top:4px}
+    .member-privacy{margin-top:18px;color:#aebdb9;font-size:12px}
+    .floating-login{display:none}
+    @media(max-width:1160px){
+      .nav-links{gap:12px}.nav-links a{font-size:12px}
+      .nav-actions{gap:9px}.nav-actions>.btn{padding:9px 12px}
+    }
+    @media(max-width:1020px){
+      .nav-links{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:stretch;background:#141c1e;gap:0;padding:10px 15px 16px;border-bottom:1px solid #3a4848;box-shadow:0 12px 18px #0006}
+      .nav-links.is-open{display:flex}
+      .nav-links a{padding:14px 10px;border-bottom:1px solid #2b3436;font-size:14px}
+      .nav-links .mobile-login{display:block}
+      .menu-btn{display:flex}
+      .nav-actions>.btn{display:none}
+      .committee-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .member-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media(max-width:760px){
+      .committee-grid{gap:12px}
+      .committee-card{padding:24px 11px}
+      .committee-avatar{width:87px;height:87px;font-size:34px}
+      .committee-name{font-size:15px}
+      .member-shortcuts{gap:10px}
+      .member-action{padding:13px 10px;gap:9px}
+      .member-action-icon{width:35px;height:35px;flex-basis:35px;font-size:18px}
+      .member-action strong{font-size:12px}
+      .member-action small{font-size:10px}
+      .floating-login{display:inline-flex;position:fixed;z-index:9;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));box-shadow:0 6px 25px rgba(0,0,0,.45);border:2px solid #111719;border-radius:999px;padding:11px 15px;font-size:12px}
+      .footer{padding-bottom:60px}
+    }
+    @media(min-width:1021px){.nav-links .mobile-login{display:none}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
+  </style>
 </head>
-
 <body>
-<div class="topline"></div>
-
-<!-- HEADER -->
-<header>
-<div class="container nav">
-
-<a href="#home" class="brand">
-<img src="./tfc-logo.jpeg" alt="TFC Logo">
-<div>
-<div class="brand-name">TFC BANDIYOD</div>
-<div class="brand-sub">ONE TEAM ONE DREAM</div>
-</div>
-</a>
-
-<nav class="nav-links" id="navLinks">
-<a href="#home" data-i18n="navHome">ഹോം</a>
-<a href="#about" data-i18n="navAbout">ഞങ്ങളെക്കുറിച്ച്</a>
-<a href="#activities" data-i18n="navActivities">പ്രവർത്തനങ്ങൾ</a>
-<a href="#committee" data-i18n="navCommittee">കമ്മിറ്റി</a>
-<a href="#membership" data-i18n="navPay">💳 Pay Membership</a>
-<a href="#updates" data-i18n="navUpdates">അറിയിപ്പുകൾ</a>
-<a href="#contact" data-i18n="navContact">ബന്ധപ്പെടുക</a>
-<a class="mobile-login" href="./portal.html" data-i18n="memberLogin">Member Login</a>
-</nav>
-
-<div class="nav-actions">
-<button class="lang-btn" id="langBtn" type="button" aria-label="Switch language">EN</button>
-<a class="btn btn-gold" href="./portal.html" data-i18n="memberLogin">Member Login</a>
-<button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="navLinks">☰</button>
-</div>
-
-</div>
-</header>
-
-<main>
-
-<!-- HOME -->
-<section class="hero" id="home">
-<div class="container hero-inner">
-<div class="eyebrow" data-i18n="welcome">WELCOME TO TFC BANDIYOD</div>
-<h1>TFC<br><span>BANDIYOD</span></h1>
-<div class="slogan">ONE TEAM ONE DREAM</div>
-<p data-i18n="heroText">ഒരുമയും സൗഹൃദവും കൂട്ടായ്മയും മുൻനിർത്തി മുന്നേറുന്ന നമ്മുടെ ക്ലബ്ബിന്റെ ഔദ്യോഗിക വെബ്‌സൈറ്റിലേക്ക് സ്വാഗതം.</p>
-<div class="hero-buttons">
-<a class="btn btn-gold" href="./portal.html" data-i18n="memberPortal">Member Portal ↗</a>
-<a class="btn btn-outline" href="#about" data-i18n="explore">കൂടുതൽ അറിയുക</a>
-</div>
-<div class="gold-line"></div>
-</div>
-</section>
-
-<div class="strip">UNITY ◆ TEAMWORK ◆ ONE TEAM ONE DREAM</div>
-
-<!-- ABOUT -->
-<section id="about">
-<div class="container about-grid">
-<div>
-<div class="kicker" data-i18n="aboutLabel">ABOUT US</div>
-<h2 class="section-title" data-i18n="aboutTitle">നമ്മുടെ കൂട്ടായ്മ, നമ്മുടെ അഭിമാനം</h2>
-<p class="section-copy" data-i18n="aboutBody">TFC Bandiyod അംഗങ്ങളെ ഒരുമിപ്പിക്കുന്ന ഒരു കൂട്ടായ്മയാണ്. സൗഹൃദം, പരസ്പര സഹകരണം, ടീം സ്പിരിറ്റ് എന്നിവയാണ് നമ്മുടെ മുന്നേറ്റത്തിന്റെ അടിസ്ഥാനം.</p>
-</div>
-<div class="about-logo">
-<img src="./tfc-logo.jpeg" alt="TFC Bandiyod">
-<strong>TFC BANDIYOD</strong>
-<small>ONE TEAM ONE DREAM</small>
-</div>
-</div>
-</section>
-
-<!-- ACTIVITIES -->
-<section id="activities" class="activities">
-<div class="container">
-<div class="kicker" data-i18n="activityLabel">OUR COMMUNITY</div>
-<h2 class="section-title" data-i18n="activityTitle">നമ്മുടെ പ്രവർത്തനങ്ങൾ</h2>
-<p class="section-copy" data-i18n="activityIntro">ക്ലബ്ബിന്റെ പ്രവർത്തനങ്ങളും അംഗങ്ങൾക്കായുള്ള ഡിജിറ്റൽ സൗകര്യങ്ങളും ഒരു സ്ഥലത്ത്.</p>
-
-<div class="cards">
-<article class="card">
-<div class="card-icon">⚽</div>
-<h3 data-i18n="card1Title">ടീം സ്പിരിറ്റ്</h3>
-<p data-i18n="card1Body">ഒരുമയും സൗഹൃദവും വളർത്തുന്ന ക്ലബ് പ്രവർത്തനങ്ങൾ.</p>
-</article>
-<article class="card">
-<div class="card-icon">🤝</div>
-<h3 data-i18n="card2Title">കൂട്ടായ്മ</h3>
-<p data-i18n="card2Body">അംഗങ്ങൾ തമ്മിലുള്ള ബന്ധവും സഹകരണവും ശക്തിപ്പെടുത്തുക.</p>
-</article>
-<article class="card">
-<div class="card-icon">📱</div>
-<h3 data-i18n="card3Title">ഡിജിറ്റൽ മെമ്പർഷിപ്പ്</h3>
-<p data-i18n="card3Body">അംഗത്വ വിവരങ്ങളും അംഗീകരിച്ച പേയ്‌മെന്റുകളും സുരക്ഷിതമായി കാണാം.</p>
-</article>
-</div>
-</div>
-</section>
-
-<!-- COMMITTEE 2026-27 -->
-<section id="committee" class="committee">
-<div class="container">
-<div class="committee-head">
-<div>
-<div class="kicker" data-i18n="committeeLabel">CLUB LEADERSHIP</div>
-<h2 class="section-title" data-i18n="committeeTitle">നമ്മുടെ കമ്മിറ്റി</h2>
-<p class="section-copy" data-i18n="committeeIntro">TFC Arts & Sports Club Bandiyod - 2026–27 കമ്മിറ്റി ഭാരവാഹികൾ.</p>
-<div class="committee-season" data-i18n="committeeSeason">2026–27 കമ്മിറ്റി</div>
-</div>
-<a class="btn btn-outline" href="mailto:bandiyodtfc@gmail.com" data-i18n="committeeContact">കമ്മിറ്റിയുമായി ബന്ധപ്പെടുക</a>
-</div>
-
-<h3 class="committee-group-title" data-i18n="officeBearers">കമ്മിറ്റി ഭാരവാഹികൾ</h3>
-<div class="committee-grid" id="officeGrid"></div>
-
-<h3 class="committee-group-title" data-i18n="teamCaptains">സ്പോർട്സ് ക്യാപ്റ്റന്മാർ</h3>
-<div class="committee-grid" id="captainGrid"></div>
-
-<p class="committee-note" data-i18n="committeeNote">Mizbah-യുടെ ഫോട്ടോ പിന്നീട് ചേർക്കാം.</p>
-</div>
-</section>
-
-<!-- MEMBERSHIP -->
-<section id="membership" class="membership">
-<div class="container">
-
-<div class="member-box">
-<div>
-<div class="kicker" data-i18n="membersLabel">FOR MEMBERS</div>
-<h2 data-i18n="membersTitle">നിങ്ങളുടെ മെമ്പർഷിപ്പ് വിവരങ്ങൾ ഇവിടെ</h2>
-<p data-i18n="membersBody">Google അക്കൗണ്ട് ഉപയോഗിച്ച് ലോഗിൻ ചെയ്യാം. അഡ്മിൻ അംഗീകരിച്ച അംഗങ്ങൾക്ക് പ്രൊഫൈലും പേയ്‌മെന്റ് ചരിത്രവും കാണാം.</p>
-<div class="fees" data-i18n="fees">അംഗത്വ ഫീസ്: ₹50 / മാസം · ₹600 / വർഷം</div>
-</div>
-
-<div class="member-buttons">
-<a href="./portal.html" class="btn btn-gold" data-i18n="payMembership">💳 Pay Membership</a>
-<a href="./portal.html" class="btn btn-outline" data-i18n="openPortal">Member Login തുറക്കുക</a>
-</div>
-</div>
-
-<div class="member-shortcuts">
-<a class="member-action" href="./portal.html">
-<div class="action-icon">👤</div>
-<span>
-<strong data-i18n="shortcutProfile">My Profile</strong>
-<small data-i18n="loginRequired">ലോഗിൻ ആവശ്യമാണ്</small>
-</span>
-</a>
-<a class="member-action" href="./portal.html">
-<div class="action-icon">🧾</div>
-<span>
-<strong data-i18n="shortcutHistory">Payment History</strong>
-<small data-i18n="loginRequired">ലോഗിൻ ആവശ്യമാണ്</small>
-</span>
-</a>
-<a class="member-action" href="./portal.html">
-<div class="action-icon">💳</div>
-<span>
-<strong data-i18n="shortcutPay">Membership Payment</strong>
-<small data-i18n="loginRequired">ലോഗിൻ ആവശ്യമാണ്</small>
-</span>
-</a>
-<a class="member-action" href="./portal.html">
-<div class="action-icon">📊</div>
-<span>
-<strong data-i18n="shortcutAccounts">Club Accounts</strong>
-<small data-i18n="loginRequired">ലോഗിൻ ആവശ്യമാണ്</small>
-</span>
-</a>
-</div>
-
-<p class="privacy" data-i18n="memberPrivacy">🔒 ഈ ഷോർട്ട്കട്ടുകൾ നിലവിലുള്ള സുരക്ഷിത Member Portal തുറക്കും. അംഗീകരിച്ച അംഗങ്ങൾക്ക് മാത്രം സ്വകാര്യ വിവരങ്ങൾ കാണാം.</p>
-
-</div>
-</section>
-
-<!-- LATEST UPDATES : GAMES FEST 2027 -->
-<section id="updates" class="updates">
-<div class="container">
-
-<div class="kicker" data-i18n="updatesLabel">CLUB NEWS</div>
-<h2 class="section-title" data-i18n="updatesTitle">അറിയിപ്പുകൾ</h2>
-
-<div class="fest-container">
-
-<div class="fest-poster">
-<img
-  src="./games-fest-2027.jpg"
-  alt="Bandiyod Games Fest 2027 official poster"
-  loading="lazy">
-</div>
-
-<div class="fest-details">
-
-<div class="fest-badge" data-i18n="festBadge">🏆 12th Edition · Coming Soon</div>
-
-<h3>BANDIYOD<br><span>GAMES FEST 2027</span></h3>
-
-<p class="fest-description" data-i18n="festIntro">TFC Arts & Sports Club Bandiyod അവതരിപ്പിക്കുന്ന അഞ്ചുദിവസത്തെ കായികമേള.</p>
-
-<div class="fest-fact">
-<span class="fest-fact-icon">📅</span>
-<div>
-<strong data-i18n="festDate">ജനുവരി 8, 9, 10, 11, 12 — 2027</strong>
-<small data-i18n="festDateLabel">പരിപാടി നടക്കുന്ന ദിവസങ്ങൾ</small>
-</div>
-</div>
-
-<div class="fest-fact">
-<span class="fest-fact-icon">📍</span>
-<div>
-<strong>TFC Ground, Bandiyod</strong>
-<small data-i18n="festVenueLabel">വേദി</small>
-</div>
-</div>
-
-<div class="fest-fact">
-<span class="fest-fact-icon">⚽</span>
-<div>
-<strong data-i18n="festSports">Football · Cricket · Volleyball · Tug of War</strong>
-<small data-i18n="festSportsLabel">മത്സര ഇനങ്ങൾ</small>
-</div>
-</div>
-
-<div class="sponsor-box">
-<a href="./games-fest-2027-sponsor.jpg" target="_blank" rel="noopener">
-<img src="./games-fest-2027-sponsor.jpg" alt="Games Fest title sponsor poster" loading="lazy">
-</a>
-<div>
-<strong data-i18n="titleSponsor">TITLE SPONSOR</strong>
-<p><strong>UZI Men's Boutique</strong>Karama, Dubai</p>
-<a href="./games-fest-2027-sponsor.jpg" target="_blank" rel="noopener" data-i18n="seePoster">സ്പോൺസർ പോസ്റ്റർ കാണുക</a>
-</div>
-</div>
-
-<p class="fest-time-note" data-i18n="festTimeNote">മത്സരങ്ങളുടെ കൃത്യമായ സമയക്രമം പിന്നീട് അറിയിക്കും.</p>
-
-</div>
-</div>
-</div>
-</section>
-
-<!-- CONTACT & INSTAGRAM -->
-<section id="contact">
-<div class="container contact-grid">
-
-<div>
-<div class="kicker" data-i18n="contactLabel">GET IN TOUCH</div>
-<h2 class="section-title" data-i18n="contactTitle">ഞങ്ങളുമായി ബന്ധപ്പെടാം</h2>
-<p class="section-copy" data-i18n="contactBody">TFC Bandiyod സംബന്ധിച്ച വിവരങ്ങൾക്കും അന്വേഷണങ്ങൾക്കും ഇമെയിൽ വഴിയോ Instagram വഴിയോ ബന്ധപ്പെടാം.</p>
-</div>
-
-<div class="contact-buttons">
-<a class="btn btn-gold" href="mailto:bandiyodtfc@gmail.com">
-✉ bandiyodtfc@gmail.com
-</a>
-
-<a
- class="btn instagram-btn"
- href="https://www.instagram.com/tfc_bandiyod?xtok=MWN3OGNobXhpNjlkcw=="
- target="_blank"
- rel="noopener noreferrer"
- aria-label="TFC Bandiyod Instagram">
-<svg viewBox="0 0 24 24" aria-hidden="true">
-<rect x="2" y="2" width="20" height="20" rx="5"/>
-<circle cx="12" cy="12" r="4"/>
-<circle cx="18" cy="6" r="1" fill="currentColor" stroke="none"/>
-</svg>
-Instagram · @tfc_bandiyod
-</a>
-</div>
-
-</div>
-</section>
-
-</main>
-
-<!-- FOOTER -->
-<footer>
-<div class="container footer-inner">
-<div>
-<strong>TFC BANDIYOD</strong>
-<small>ONE TEAM ONE DREAM</small>
-</div>
-<div>
-© <span id="year">2026</span> TFC Bandiyod.
-<span data-i18n="rights">All rights reserved.</span>
-</div>
-<div class="footer-links">
-<a href="#home" data-i18n="navHome">ഹോം</a>
-<a href="./portal.html" data-i18n="memberLogin">Member Login</a>
-</div>
-</div>
-</footer>
-
-<a href="./portal.html" class="btn btn-gold floating-login" data-i18n="memberLogin">മെമ്പർ ലോഗിൻ</a>
-
-<script>
-// TFC COMMITTEE 2026-27
-// Photo paths are relative to index.html.
-
-const committeeMembers=[
- {group:"office",role:"chairman",name:"Abbas IB",photo:"./committee/abbas_ib.jpg"},
- {group:"office",role:"president",name:"Shareef Kasim",photo:"./committee/shareef_kasim.jpg"},
- {group:"office",role:"secretary",name:"Shakir Apollo",photo:"./committee/shakir_apollo.jpg"},
- {group:"office",role:"treasurer",name:"Thaju Izaan",photo:"./committee/thaju_izaan.jpg"},
- {group:"office",role:"vicePresident",name:"Azeez",photo:"./committee/azeez.jpg"},
- {group:"office",role:"vicePresident",name:"Latheef",photo:"./committee/latheef.jpg"},
- {group:"office",role:"vicePresident",name:"Riyaz",photo:"./committee/riyaz.jpg"},
- {group:"office",role:"jointSecretary",name:"Ajmal Wedco",photo:"./committee/ajmal_wedco.jpg"},
- {group:"office",role:"jointSecretary",name:"Waheed",photo:"./committee/waheed.jpg"},
- {group:"office",role:"jointSecretary",name:"Fahad",photo:"./committee/fahad.jpg"},
- {group:"captain",role:"cricketCaptain",name:"Asif",photo:"./committee/asif.jpg"},
- {group:"captain",role:"cricketVice",name:"Moinu",photo:"./committee/moinu.jpg"},
- {group:"captain",role:"footballCaptain",name:"Zahil",photo:"./committee/zahil.jpg"},
- {group:"captain",role:"footballVice",name:"Mizbah",photo:""},
- {group:"captain",role:"volleyballCaptain",name:"Zakir Mims",photo:"./committee/zakir_mims.jpg"}
-];
-
-const translations={
-ml:{
- navHome:"ഹോം",
- navAbout:"ഞങ്ങളെക്കുറിച്ച്",
- navActivities:"പ്രവർത്തനങ്ങൾ",
- navCommittee:"കമ്മിറ്റി",
- navPay:"💳 മെമ്പർഷിപ്പ് അടയ്ക്കുക",
- navUpdates:"അറിയിപ്പുകൾ",
- navContact:"ബന്ധപ്പെടുക",
- memberLogin:"മെമ്പർ ലോഗിൻ",
- welcome:"TFC BANDIYOD-ലേക്ക് സ്വാഗതം",
- heroText:"ഒരുമയും സൗഹൃദവും കൂട്ടായ്മയും മുൻനിർത്തി മുന്നേറുന്ന നമ്മുടെ ക്ലബ്ബിന്റെ ഔദ്യോഗിക വെബ്‌സൈറ്റിലേക്ക് സ്വാഗതം.",
- memberPortal:"മെമ്പർ പോർട്ടൽ ↗",
- explore:"കൂടുതൽ അറിയുക",
- aboutLabel:"ഞങ്ങളെക്കുറിച്ച്",
- aboutTitle:"നമ്മുടെ കൂട്ടായ്മ, നമ്മുടെ അഭിമാനം",
- aboutBody:"TFC Bandiyod അംഗങ്ങളെ ഒരുമിപ്പിക്കുന്ന ഒരു കൂട്ടായ്മയാണ്. സൗഹൃദം, പരസ്പര സഹകരണം, ടീം സ്പിരിറ്റ് എന്നിവയാണ് നമ്മുടെ മുന്നേറ്റത്തിന്റെ അടിസ്ഥാനം.",
- activityLabel:"നമ്മുടെ കൂട്ടായ്മ",
- activityTitle:"നമ്മുടെ പ്രവർത്തനങ്ങൾ",
- activityIntro:"ക്ലബ്ബിന്റെ പ്രവർത്തനങ്ങളും അംഗങ്ങൾക്കായുള്ള ഡിജിറ്റൽ സൗകര്യങ്ങളും ഒരു സ്ഥലത്ത്.",
- card1Title:"ടീം സ്പിരിറ്റ്",
- card1Body:"ഒരുമയും സൗഹൃദവും വളർത്തുന്ന ക്ലബ് പ്രവർത്തനങ്ങൾ.",
- card2Title:"കൂട്ടായ്മ",
- card2Body:"അംഗങ്ങൾ തമ്മിലുള്ള ബന്ധവും സഹകരണവും ശക്തിപ്പെടുത്തുക.",
- card3Title:"ഡിജിറ്റൽ മെമ്പർഷിപ്പ്",
- card3Body:"അംഗത്വ വിവരങ്ങളും അംഗീകരിച്ച പേയ്‌മെന്റുകളും സുരക്ഷിതമായി കാണാം.",
-
- committeeLabel:"ക്ലബ് നേതൃത്വം",
- committeeTitle:"നമ്മുടെ കമ്മിറ്റി",
- committeeIntro:"TFC Arts & Sports Club Bandiyod - 2026–27 കമ്മിറ്റി ഭാരവാഹികൾ.",
- committeeSeason:"2026–27 കമ്മിറ്റി",
- committeeContact:"കമ്മിറ്റിയുമായി ബന്ധപ്പെടുക",
- committeeNote:"Mizbah-യുടെ ഫോട്ടോ പിന്നീട് ചേർക്കാം.",
- officeBearers:"കമ്മിറ്റി ഭാരവാഹികൾ",
- teamCaptains:"സ്പോർട്സ് ക്യാപ്റ്റന്മാർ",
-
- roles:{
-  chairman:"ചെയർമാൻ",
-  president:"പ്രസിഡന്റ്",
-  secretary:"സെക്രട്ടറി",
-  treasurer:"ട്രഷറർ",
-  vicePresident:"വൈസ് പ്രസിഡന്റ്",
-  jointSecretary:"ജോയിന്റ് സെക്രട്ടറി",
-  cricketCaptain:"ക്രിക്കറ്റ് ക്യാപ്റ്റൻ",
-  cricketVice:"ക്രിക്കറ്റ് വൈസ് ക്യാപ്റ്റൻ",
-  footballCaptain:"ഫുട്ബോൾ ക്യാപ്റ്റൻ",
-  footballVice:"ഫുട്ബോൾ വൈസ് ക്യാപ്റ്റൻ",
-  volleyballCaptain:"വോളിബോൾ ക്യാപ്റ്റൻ"
- },
-
- membersLabel:"അംഗങ്ങൾക്കായി",
- membersTitle:"നിങ്ങളുടെ മെമ്പർഷിപ്പ് വിവരങ്ങൾ ഇവിടെ",
- membersBody:"Google അക്കൗണ്ട് ഉപയോഗിച്ച് ലോഗിൻ ചെയ്യാം. അഡ്മിൻ അംഗീകരിച്ച അംഗങ്ങൾക്ക് പ്രൊഫൈലും പേയ്‌മെന്റ് ചരിത്രവും കാണാം.",
- fees:"അംഗത്വ ഫീസ്: ₹50 / മാസം · ₹600 / വർഷം",
- payMembership:"💳 Pay Membership",
- openPortal:"മെമ്പർ ലോഗിൻ തുറക്കുക",
- shortcutProfile:"എന്റെ പ്രൊഫൈൽ",
- shortcutHistory:"പേയ്‌മെന്റ് ചരിത്രം",
- shortcutPay:"മെമ്പർഷിപ്പ് പേയ്‌മെന്റ്",
- shortcutAccounts:"ക്ലബ് അക്കൗണ്ട്സ്",
- loginRequired:"ലോഗിൻ ആവശ്യമാണ്",
- memberPrivacy:"🔒 ഈ ഷോർട്ട്കട്ടുകൾ നിലവിലുള്ള സുരക്ഷിത Member Portal തുറക്കും. അംഗീകരിച്ച അംഗങ്ങൾക്ക് മാത്രം സ്വകാര്യ വിവരങ്ങൾ കാണാം.",
-
- updatesLabel:"ക്ലബ് വാർത്തകൾ",
- updatesTitle:"അറിയിപ്പുകൾ",
- festBadge:"🏆 12-ാം പതിപ്പ് · ഉടൻ വരുന്നു",
- festIntro:"TFC Arts & Sports Club Bandiyod അവതരിപ്പിക്കുന്ന അഞ്ചുദിവസത്തെ കായികമേള.",
- festDate:"ജനുവരി 8, 9, 10, 11, 12 — 2027",
- festDateLabel:"പരിപാടി നടക്കുന്ന ദിവസങ്ങൾ",
- festVenueLabel:"വേദി",
- festSports:"ഫുട്ബോൾ · ക്രിക്കറ്റ് · വോളിബോൾ · വടംവലി",
- festSportsLabel:"മത്സര ഇനങ്ങൾ",
- titleSponsor:"ടൈറ്റിൽ സ്പോൺസർ",
- seePoster:"സ്പോൺസർ പോസ്റ്റർ കാണുക",
- festTimeNote:"മത്സരങ്ങളുടെ കൃത്യമായ സമയക്രമം പിന്നീട് അറിയിക്കും.",
-
- contactLabel:"ബന്ധപ്പെടുക",
- contactTitle:"ഞങ്ങളുമായി ബന്ധപ്പെടാം",
- contactBody:"TFC Bandiyod സംബന്ധിച്ച വിവരങ്ങൾക്കും അന്വേഷണങ്ങൾക്കും ഇമെയിൽ വഴിയോ Instagram വഴിയോ ബന്ധപ്പെടാം.",
- rights:"എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്തം."
-},
-
-en:{
- navHome:"Home",
- navAbout:"About",
- navActivities:"Activities",
- navCommittee:"Committee",
- navPay:"💳 Pay Membership",
- navUpdates:"Updates",
- navContact:"Contact",
- memberLogin:"Member Login",
- welcome:"WELCOME TO TFC BANDIYOD",
- heroText:"Welcome to the official TFC Bandiyod website, united by friendship, teamwork and a shared dream.",
- memberPortal:"Member Portal ↗",
- explore:"Explore More",
- aboutLabel:"About Us",
- aboutTitle:"One Club. One Family. One Dream.",
- aboutBody:"TFC Bandiyod brings members together through friendship, cooperation and team spirit.",
- activityLabel:"Our Community",
- activityTitle:"What We Do",
- activityIntro:"Our club community and digital services for members.",
- card1Title:"Team Spirit",
- card1Body:"Club activities that encourage unity and friendship.",
- card2Title:"Community",
- card2Body:"Stronger connections and cooperation among members.",
- card3Title:"Digital Membership",
- card3Body:"Secure membership details and approved payment history.",
-
- committeeLabel:"Club Leadership",
- committeeTitle:"Our Committee",
- committeeIntro:"TFC Arts & Sports Club Bandiyod - Committee for 2026–27.",
- committeeSeason:"2026–27 Committee",
- committeeContact:"Contact Committee",
- committeeNote:"Mizbah's photo will be added later.",
- officeBearers:"Office Bearers",
- teamCaptains:"Sports Captains",
-
- roles:{
-  chairman:"Chairman",
-  president:"President",
-  secretary:"Secretary",
-  treasurer:"Treasurer",
-  vicePresident:"Vice President",
-  jointSecretary:"Joint Secretary",
-  cricketCaptain:"Cricket Captain",
-  cricketVice:"Cricket Vice Captain",
-  footballCaptain:"Football Captain",
-  footballVice:"Football Vice Captain",
-  volleyballCaptain:"Volleyball Captain"
- },
-
- membersLabel:"For Members",
- membersTitle:"Your Membership in One Place",
- membersBody:"Sign in with Google. Approved members can access their profile and payment history.",
- fees:"Membership fee: ₹50 / month · ₹600 / year",
- payMembership:"💳 Pay Membership",
- openPortal:"Open Member Login",
- shortcutProfile:"My Profile",
- shortcutHistory:"Payment History",
- shortcutPay:"Membership Payment",
- shortcutAccounts:"Club Accounts",
- loginRequired:"Login required",
- memberPrivacy:"🔒 Shortcuts open the protected member portal. Only authorized members can view private data.",
-
- updatesLabel:"Club News",
- updatesTitle:"Latest Updates",
- festBadge:"🏆 12th Edition · Coming Soon",
- festIntro:"Five days of sports presented by TFC Arts & Sports Club Bandiyod.",
- festDate:"January 8, 9, 10, 11 & 12, 2027",
- festDateLabel:"Fest dates",
- festVenueLabel:"Venue",
- festSports:"Football · Cricket · Volleyball · Tug of War",
- festSportsLabel:"Sports",
- titleSponsor:"Title Sponsor",
- seePoster:"View sponsor poster",
- festTimeNote:"Detailed match timings will be announced later.",
-
- contactLabel:"Get in Touch",
- contactTitle:"Contact Us",
- contactBody:"For club information and enquiries, connect with TFC Bandiyod by email or Instagram.",
- rights:"All rights reserved."
-}
-};
-
-// RENDER COMMITTEE
-function renderCommittee(lang){
- const office=document.getElementById("officeGrid");
- const captains=document.getElementById("captainGrid");
-
- office.replaceChildren();
- captains.replaceChildren();
-
- committeeMembers.forEach(member=>{
-  const card=document.createElement("article");
-  card.className="committee-card";
-
-  const avatar=document.createElement("div");
-  avatar.className="avatar";
-
-  if(member.photo){
-   const img=document.createElement("img");
-   img.src=member.photo;
-   img.alt=member.name;
-   img.loading="lazy";
-   img.onerror=()=>{
-    avatar.replaceChildren();
-    avatar.textContent="👤";
-   };
-   avatar.appendChild(img);
-  }else{
-   avatar.textContent="👤";
-  }
-
-  const role=document.createElement("div");
-  role.className="role";
-  role.textContent=translations[lang].roles[member.role];
-
-  const name=document.createElement("h3");
-  name.className="person-name";
-  name.textContent=member.name;
-
-  card.append(avatar,role,name);
-
-  if(member.group==="captain"){
-   captains.appendChild(card);
-  }else{
-   office.appendChild(card);
-  }
- });
-}
-
-// LANGUAGE SWITCH
-function setLanguage(lang){
- const chosen=lang==="en"?"en":"ml";
- document.documentElement.lang=chosen;
-
- document.querySelectorAll("[data-i18n]").forEach(el=>{
-  const key=el.dataset.i18n;
-  if(translations[chosen][key]){
-   el.textContent=translations[chosen][key];
-  }
- });
-
- renderCommittee(chosen);
-
- const btn=document.getElementById("langBtn");
- btn.textContent=chosen==="ml"?"EN":"മല";
- btn.setAttribute(
-  "aria-label",
-  chosen==="ml"?"Switch to English":"മലയാളത്തിലേക്ക് മാറ്റുക"
- );
-
- try{
-  localStorage.setItem("tfc_home_lang",chosen);
- }catch(e){}
-}
-
-let language="ml";
-try{
- language=localStorage.getItem("tfc_home_lang")||"ml";
-}catch(e){}
-setLanguage(language);
-
-document.getElementById("langBtn").addEventListener("click",()=>{
- setLanguage(
-  document.documentElement.lang==="ml"?"en":"ml"
- );
-});
-
-// MOBILE MENU
-const menuBtn=document.getElementById("menuBtn");
-const navLinks=document.getElementById("navLinks");
-
-menuBtn.addEventListener("click",()=>{
- const open=navLinks.classList.toggle("open");
- menuBtn.setAttribute("aria-expanded",String(open));
- menuBtn.textContent=open?"×":"☰";
-});
-
-navLinks.querySelectorAll("a").forEach(a=>{
- a.addEventListener("click",()=>{
-  navLinks.classList.remove("open");
-  menuBtn.setAttribute("aria-expanded","false");
-  menuBtn.textContent="☰";
- });
-});
-
-document.getElementById("year").textContent=new Date().getFullYear();
-</script>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="topline"></div>
+  <header class="site-header">
+    <div class="container nav">
+      <a href="#home" class="brand" aria-label="TFC Bandiyod - Home">
+        <img src="./tfc-logo.jpeg" alt="TFC Bandiyod emblem" width="58" height="58">
+        <div><div class="brand-name">TFC BANDIYOD</div><div class="brand-sub">ONE TEAM ONE DREAM</div></div>
+      </a>
+      <nav class="nav-links" id="navLinks" aria-label="Primary navigation">
+        <a href="#home" data-i18n="navHome">ഹോം</a>
+        <a href="#about" data-i18n="navAbout">ഞങ്ങളെക്കുറിച്ച്</a>
+        <a href="#activities" data-i18n="navActivities">പ്രവർത്തനങ്ങൾ</a>
+        <a href="#committee" data-i18n="navCommittee">കമ്മിറ്റി</a>
+        <a href="#membership" data-i18n="payMembership">💳 Pay Membership</a>
+        <a href="#updates" data-i18n="navUpdates">അറിയിപ്പുകൾ</a>
+        <a href="#contact" data-i18n="navContact">ബന്ധപ്പെടുക</a>
+        <a class="mobile-login" href="./portal.html" data-i18n="memberLogin">Member Login</a>
+      </nav>
+      <div class="nav-actions">
+        <button id="langBtn" class="lang-btn" type="button" aria-label="Switch language">EN</button>
+        <a class="btn btn-gold" href="./portal.html" data-i18n="memberLogin">Member Login</a>
+        <button id="menuBtn" class="menu-btn" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section id="home" class="hero" aria-labelledby="heroTitle">
+      <div class="container hero-inner">
+        <div class="eyebrow" data-i18n="welcome">Welcome to TFC Bandiyod</div>
+        <h1 id="heroTitle">TFC<br><span>BANDIYOD</span></h1>
+        <p class="hero-slogan">ONE TEAM ONE DREAM</p>
+        <p class="hero-text" data-i18n="heroText">ഒരുമയും സൗഹൃദവും കൂട്ടായ്മയും മുൻനിർത്തി മുന്നേറുന്ന നമ്മുടെ ക്ലബ്ബിന്റെ ഔദ്യോഗിക വെബ്‌സൈറ്റിലേക്ക് സ്വാഗതം.</p>
+        <div class="hero-cta">
+          <a class="btn btn-gold" href="./portal.html"><span data-i18n="memberPortal">Member Portal</span><span aria-hidden="true">↗</span></a>
+          <a class="btn btn-outline" href="#about" data-i18n="explore">കൂടുതൽ അറിയുക</a>
+        </div>
+        <div class="hero-underline" aria-hidden="true"></div>
+      </div>
+    </section>
+    <div class="strip" aria-label="Club motto">
+      <div class="container strip-inner"><span>UNITY</span><span class="strip-dot">◆</span><span>TEAMWORK</span><span class="strip-dot">◆</span><span>ONE TEAM ONE DREAM</span></div>
+    </div>
+    <section id="about" aria-labelledby="aboutTitle">
+      <div class="container about-grid">
+        <div>
+          <div class="section-kicker" data-i18n="aboutLabel">About us</div>
+          <h2 id="aboutTitle" class="section-title" data-i18n="aboutTitle">നമ്മുടെ കൂട്ടായ്മ, നമ്മുടെ അഭിമാനം</h2>
+          <p class="section-copy" data-i18n="aboutBody">TFC Bandiyod അംഗങ്ങളെ ഒരുമിപ്പിക്കുന്ന ഒരു കൂട്ടായ്മയാണ്. സൗഹൃദം, പരസ്പര സഹകരണം, ടീം സ്പിരിറ്റ് എന്നിവയാണ് നമ്മുടെ മുന്നേറ്റത്തിന്റെ അടിസ്ഥാനം.</p>
+        </div>
+        <div class="about-panel">
+          <img src="./tfc-logo.jpeg" alt="TFC Bandiyod logo" width="180" height="180" loading="lazy">
+          <strong>TFC BANDIYOD</strong>
+          <span>ONE TEAM ONE DREAM</span>
+        </div>
+      </div>
+    </section>
+    <section id="activities" class="features-section" aria-labelledby="activityTitle">
+      <div class="container">
+        <div class="section-kicker" data-i18n="activityLabel">Our community</div>
+        <h2 id="activityTitle" class="section-title" data-i18n="activityTitle">നമ്മുടെ പ്രവർത്തനങ്ങൾ</h2>
+        <p class="section-copy" data-i18n="activityIntro">ക്ലബ്ബിന്റെ പ്രവർത്തനങ്ങളും അംഗങ്ങൾക്കായുള്ള ഡിജിറ്റൽ സൗകര്യങ്ങളും ഒരു സ്ഥലത്ത്.</p>
+        <div class="cards">
+          <article class="feature-card"><div class="feature-icon" aria-hidden="true">⚽</div><h3 data-i18n="card1Title">ടീം സ്പിരിറ്റ്</h3><p data-i18n="card1Body">ഒരുമയും സൗഹൃദവും വളർത്തുന്ന ക്ലബ് പ്രവർത്തനങ്ങൾ.</p></article>
+          <article class="feature-card"><div class="feature-icon" aria-hidden="true">🤝</div><h3 data-i18n="card2Title">കൂട്ടായ്മ</h3><p data-i18n="card2Body">അംഗങ്ങൾ തമ്മിലുള്ള ബന്ധവും സഹകരണവും ശക്തിപ്പെടുത്തുക.</p></article>
+          <article class="feature-card"><div class="feature-icon" aria-hidden="true">📱</div><h3 data-i18n="card3Title">ഡിജിറ്റൽ മെമ്പർഷിപ്പ്</h3><p data-i18n="card3Body">അംഗത്വ വിവരങ്ങളും അംഗീകരിച്ച പേയ്‌മെന്റുകളും സുരക്ഷിതമായി കാണാം.</p></article>
+        </div>
+      </div>
+    </section>
+    <!-- TFC Arts & Sports Club Bandiyod: 2026–27 committee -->
+    <section id="committee" class="committee-section" aria-labelledby="committeeTitle">
+      <div class="container">
+        <div class="committee-intro">
+          <div>
+            <div class="section-kicker" data-i18n="committeeLabel">Our committee</div>
+            <h2 id="committeeTitle" class="section-title" data-i18n="committeeTitle">നമ്മുടെ കമ്മിറ്റി</h2>
+            <p class="section-copy" data-i18n="committeeIntro">TFC Arts &amp; Sports Club Bandiyod — 2026–27 കമ്മിറ്റി ഭാരവാഹികൾ.</p>
+            <div class="committee-season" data-i18n="committeeSeason">2026–27 കമ്മിറ്റി</div>
+          </div>
+          <a class="btn btn-outline" href="mailto:bandiyodtfc@gmail.com" data-i18n="committeeContact">കമ്മിറ്റിയുമായി ബന്ധപ്പെടുക</a>
+        </div>
+        <h3 class="committee-group-title" data-i18n="officeBearers">കമ്മിറ്റി ഭാരവാഹികൾ</h3>
+        <div class="committee-grid" id="committeeOfficeGrid" aria-live="polite"></div>
+        <h3 class="committee-group-title" data-i18n="teamCaptains">ടീം ക്യാപ്റ്റന്മാർ</h3>
+        <div class="committee-grid" id="committeeCaptainGrid" aria-live="polite"></div>
+        <p class="committee-note" data-i18n="committeeNote">അംഗങ്ങളുടെ ഫോട്ടോകൾ ലഭിക്കുമ്പോൾ ഇവിടെ ചേർക്കാം.</p>
+      </div>
+    </section>
+    <section id="membership" class="membership-section" aria-labelledby="memberTitle">
+      <div class="container">
+        <div class="member-box">
+          <div>
+            <div class="section-kicker" data-i18n="membersLabel">For members</div>
+            <h2 id="memberTitle" data-i18n="membersTitle">നിങ്ങളുടെ മെമ്പർഷിപ്പ് വിവരങ്ങൾ ഇവിടെ</h2>
+            <p data-i18n="membersBody">Google അക്കൗണ്ട് ഉപയോഗിച്ച് ലോഗിൻ ചെയ്യാം. അഡ്മിൻ അംഗീകരിച്ച അംഗങ്ങൾക്ക് പ്രൊഫൈലും പേയ്‌മെന്റ് ചരിത്രവും കാണാം.</p>
+            <div class="fees" data-i18n="fees">അംഗത്വ ഫീസ്: ₹50 / മാസം · ₹600 / വർഷം</div>
+          </div>
+          <div class="membership-buttons">
+            <a class="btn btn-gold" href="./portal.html" data-i18n="payMembership">💳 Pay Membership</a>
+            <a class="btn btn-outline" href="./portal.html" data-i18n="openPortal">Member Login തുറക്കുക</a>
+          </div>
+        </div>
+        <div class="member-shortcuts" aria-label="Member portal shortcuts">
+          <a class="member-action" href="./portal.html"><span class="member-action-icon" aria-hidden="true">👤</span><span><strong data-i18n="shortcutProfile">My Profile</strong><small data-i18n="loginRequired">ലോഗിൻ ആവശ്യമാണ്</small></span></a>
+          <a class="member-action" href="./portal.html"><span class="member-action-icon" aria-hidden="true">🧾</span><span><strong data-i18n="shortcutHistory">Payment History</strong><small data-i18n="loginRequired">ലോഗിൻ ആവശ്യമാണ്</small></span></a>
+          <a class="member-action" href="./portal.html"><span class="member-action-icon" aria-hidden="true">💳</span><span><strong data-i18n="shortcutPay">Membership Payment</strong><small data-i18n="loginRequired">ലോഗിൻ ആവശ്യമാണ്</small></span></a>
+          <a class="member-action" href="./portal.html"><span class="member-action-icon" aria-hidden="true">📊</span><span><strong data-i18n="shortcutAccounts">Club Accounts</strong><small data-i18n="loginRequired">ലോഗിൻ ആവശ്യമാണ്</small></span></a>
+        </div>
+        <p class="member-privacy" data-i18n="memberPrivacy">🔒 എല്ലാ ഷോർട്ട്കട്ടുകളും നിലവിലുള്ള സുരക്ഷിത ലോഗിൻ പേജിലേക്കാണ് പോകുന്നത്. അനുമതിയുള്ളവർക്ക് മാത്രം വിവരങ്ങൾ കാണാം.</p>
+      </div>
+    </section>
+    <section id="updates" class="updates-section" aria-labelledby="updatesTitle">
+      <div class="container">
+        <div class="section-kicker" data-i18n="updatesLabel">Club news</div>
+        <h2 id="updatesTitle" class="section-title" data-i18n="updatesTitle">അറിയിപ്പുകൾ</h2>
+        <div class="fest-shell">
+          <div class="fest-layout">
+            <div class="fest-poster-main">
+              <img src="./games-fest-2027.jpg" loading="lazy" alt="Bandiyod Games Fest 2027, January 8 to 12 at TFC Ground Bandiyod. Football, Cricket, Volleyball and Tug of War." width="1024" height="1536">
+            </div>
+            <div class="fest-details">
+              <div class="fest-badge" data-i18n="festBadge">🏆 12-ാം പതിപ്പ് · ഉടൻ വരുന്നു</div>
+              <h3>BANDIYOD<br><span>GAMES FEST 2027</span></h3>
+              <p data-i18n="festIntro">TFC Arts & Sports Club Bandiyod അവതരിപ്പിക്കുന്ന അഞ്ചുദിവസത്തെ കായികമേള.</p>
+              <div class="fest-facts">
+                <div class="fest-fact"><span class="fest-fact-icon" aria-hidden="true">📅</span><div><strong data-i18n="festDate">ജനുവരി 8, 9, 10, 11, 12 — 2027</strong><small data-i18n="festDateLabel">പരിപാടി നടക്കുന്ന ദിവസങ്ങൾ</small></div></div>
+                <div class="fest-fact"><span class="fest-fact-icon" aria-hidden="true">📍</span><div><strong>TFC Ground, Bandiyod</strong><small data-i18n="festVenueLabel">വേദി</small></div></div>
+                <div class="fest-fact"><span class="fest-fact-icon" aria-hidden="true">⚽</span><div><strong data-i18n="festSports">Football · Cricket · Volleyball · Tug of War</strong><small data-i18n="festSportsLabel">മത്സര ഇനങ്ങൾ</small></div></div>
+              </div>
+              <div class="fest-sponsor">
+                <a href="./games-fest-2027-sponsor.jpg" target="_blank" rel="noopener" aria-label="View Games Fest sponsor poster">
+                  <img src="./games-fest-2027-sponsor.jpg" alt="Bandiyod Games Fest 2027 title sponsor poster" loading="lazy" width="1100" height="1372">
+                </a>
+                <div>
+                  <strong data-i18n="titleSponsor">Title Sponsor</strong>
+                  <p><strong>UZI Men's Boutique</strong>Karama, Dubai</p>
+                  <a href="./games-fest-2027-sponsor.jpg" target="_blank" rel="noopener" data-i18n="seePoster">സ്പോൺസർ പോസ്റ്റർ കാണുക</a>
+                </div>
+              </div>
+              <p data-i18n="festTimeNote">മത്സരങ്ങളുടെ കൃത്യമായ സമയക്രമം പിന്നീട് അറിയിക്കും.</p>
+            </div>
+          </div>
+        </div>
+        <article class="news-feature" aria-labelledby="championSponsorTitle">
+          <a class="news-feature-photo" href="./champion-trophy-ubbi-dubai.jpg" target="_blank" rel="noopener" aria-label="Open UBBI Dubai Champion Trophy sponsor poster">
+            <img src="./champion-trophy-ubbi-dubai.jpg" loading="lazy" alt="Bandiyod Games Fest 2027 Champion Trophy sponsored by UBBI Dubai, TFC UAE President, with a trophy and thank-you poster" width="1404" height="1536">
+          </a>
+          <div class="news-feature-copy">
+            <span class="news-feature-tag" data-i18n="championNewsTag">🏆 ചാമ്പ്യൻ ട്രോഫി</span>
+            <h3 id="championSponsorTitle" data-i18n="championNewsTitle">Champion Trophy സ്പോൺസർ — UBBI Dubai</h3>
+            <p data-i18n="championNewsBody">Bandiyod Games Fest 2027-ന്റെ Champion Trophy സ്പോൺസർ ചെയ്യുന്ന UBBI Dubai (TFC UAE President)-ന് TFC Bandiyod-ന്റെ ഹൃദയം നിറഞ്ഞ നന്ദി.</p>
+            <a class="news-feature-action" href="./champion-trophy-ubbi-dubai.jpg" target="_blank" rel="noopener" data-i18n="championNewsOpen">പോസ്റ്റർ കാണുക ↗</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section id="contact" aria-labelledby="contactTitle">
+      <div class="container contact-grid">
+        <div>
+          <div class="section-kicker" data-i18n="contactLabel">Get in touch</div>
+          <h2 id="contactTitle" class="section-title" data-i18n="contactTitle">ഞങ്ങളുമായി ബന്ധപ്പെടാം</h2>
+          <p class="section-copy" data-i18n="contactBody">TFC Bandiyod സംബന്ധിച്ച വിവരങ്ങൾക്കും അന്വേഷണങ്ങൾക്കും ഇമെയിൽ വഴി ബന്ധപ്പെടുക.</p>
+        </div>
+        <div class="contact-actions">
+          <a class="btn btn-gold" href="mailto:bandiyodtfc@gmail.com">✉ bandiyodtfc@gmail.com</a>
+          <a class="btn instagram-link" href="https://www.instagram.com/tfc_bandiyod?xtok=MWN3OGNobXhpNjlkcw==" target="_blank" rel="noopener noreferrer" aria-label="TFC Bandiyod on Instagram">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="18" cy="6" r="1" fill="currentColor" stroke="none"/></svg>
+            Instagram · @tfc_bandiyod
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div><strong>TFC BANDIYOD</strong><small>ONE TEAM ONE DREAM</small></div>
+      <div>© <span id="year">2026</span> TFC Bandiyod. <span data-i18n="rights">All rights reserved.</span></div>
+      <div class="footer-links"><a href="#home" data-i18n="navHome">ഹോം</a><a href="./portal.html" data-i18n="memberLogin">Member Login</a></div>
+    </div>
+  </footer>
+
+  <a class="btn btn-gold floating-login" href="./portal.html" data-i18n="memberLogin">മെമ്പർ ലോഗിൻ</a>
+
+  <script>
+    const translations = {
+      ml: {
+        navHome:'ഹോം',navAbout:'ഞങ്ങളെക്കുറിച്ച്',navActivities:'പ്രവർത്തനങ്ങൾ',navCommittee:'കമ്മിറ്റി',navUpdates:'അറിയിപ്പുകൾ',navContact:'ബന്ധപ്പെടുക',memberLogin:'മെമ്പർ ലോഗിൻ',
+        welcome:'TFC Bandiyod-ലേക്ക് സ്വാഗതം',heroText:'ഒരുമയും സൗഹൃദവും കൂട്ടായ്മയും മുൻനിർത്തി മുന്നേറുന്ന നമ്മുടെ ക്ലബ്ബിന്റെ ഔദ്യോഗിക വെബ്‌സൈറ്റിലേക്ക് സ്വാഗതം.',memberPortal:'മെമ്പർ പോർട്ടൽ',explore:'കൂടുതൽ അറിയുക',
+        aboutLabel:'ഞങ്ങളെക്കുറിച്ച്',aboutTitle:'നമ്മുടെ കൂട്ടായ്മ, നമ്മുടെ അഭിമാനം',aboutBody:'TFC Bandiyod അംഗങ്ങളെ ഒരുമിപ്പിക്കുന്ന ഒരു കൂട്ടായ്മയാണ്. സൗഹൃദം, പരസ്പര സഹകരണം, ടീം സ്പിരിറ്റ് എന്നിവയാണ് നമ്മുടെ മുന്നേറ്റത്തിന്റെ അടിസ്ഥാനം.',
+        activityLabel:'നമ്മുടെ കൂട്ടായ്മ',activityTitle:'നമ്മുടെ പ്രവർത്തനങ്ങൾ',activityIntro:'ക്ലബ്ബിന്റെ പ്രവർത്തനങ്ങളും അംഗങ്ങൾക്കായുള്ള ഡിജിറ്റൽ സൗകര്യങ്ങളും ഒരു സ്ഥലത്ത്.',
+        card1Title:'ടീം സ്പിരിറ്റ്',card1Body:'ഒരുമയും സൗഹൃദവും വളർത്തുന്ന ക്ലബ് പ്രവർത്തനങ്ങൾ.',card2Title:'കൂട്ടായ്മ',card2Body:'അംഗങ്ങൾ തമ്മിലുള്ള ബന്ധവും സഹകരണവും ശക്തിപ്പെടുത്തുക.',card3Title:'ഡിജിറ്റൽ മെമ്പർഷിപ്പ്',card3Body:'അംഗത്വ വിവരങ്ങളും അംഗീകരിച്ച പേയ്‌മെന്റുകളും സുരക്ഷിതമായി കാണാം.',
+        committeeLabel:'ക്ലബ് നേതൃത്വം',committeeTitle:'നമ്മുടെ കമ്മിറ്റി',committeeIntro:'TFC Arts & Sports Club Bandiyod — 2026–27 കമ്മിറ്റി ഭാരവാഹികൾ.',committeeContact:'കമ്മിറ്റിയുമായി ബന്ധപ്പെടുക',committeeNote:'Mizbah-യുടെ ഫോട്ടോ പിന്നീട് ചേർക്കാം.',committeeSeason:'2026–27 കമ്മിറ്റി',officeBearers:'കമ്മിറ്റി ഭാരവാഹികൾ',teamCaptains:'ടീം ക്യാപ്റ്റന്മാർ',roleChairman:'ചെയർമാൻ',roleVicePresident:'വൈസ് പ്രസിഡന്റ്',roleJointSecretary:'ജോയിന്റ് സെക്രട്ടറി',roleCricketCaptain:'ക്രിക്കറ്റ് ക്യാപ്റ്റൻ',roleCricketViceCaptain:'ക്രിക്കറ്റ് വൈസ് ക്യാപ്റ്റൻ',roleFootballCaptain:'ഫുട്ബോൾ ക്യാപ്റ്റൻ',roleFootballViceCaptain:'ഫുട്ബോൾ വൈസ് ക്യാപ്റ്റൻ',roleVolleyballCaptain:'വോളിബോൾ ക്യാപ്റ്റൻ',rolePresident:'പ്രസിഡന്റ്',roleSecretary:'സെക്രട്ടറി',roleTreasurer:'ട്രഷറർ',roleCommittee:'കമ്മിറ്റി അംഗം',memberPending:'പേര് ഉടൻ ചേർക്കും',
+        shortcutProfile:'എന്റെ പ്രൊഫൈൽ',shortcutHistory:'പേയ്‌മെന്റ് ചരിത്രം',shortcutPay:'മെമ്പർഷിപ്പ് പേയ്‌മെന്റ്',shortcutAccounts:'ക്ലബ് അക്കൗണ്ട്സ്',loginRequired:'ലോഗിൻ ആവശ്യമാണ്',memberPrivacy:'🔒 എല്ലാ ഷോർട്ട്കട്ടുകളും നിലവിലുള്ള സുരക്ഷിത ലോഗിൻ പേജിലേക്കാണ് പോകുന്നത്. അനുമതിയുള്ളവർക്ക് മാത്രം വിവരങ്ങൾ കാണാം.',
+        membersLabel:'അംഗങ്ങൾക്കായി',membersTitle:'നിങ്ങളുടെ മെമ്പർഷിപ്പ് വിവരങ്ങൾ ഇവിടെ',membersBody:'Google അക്കൗണ്ട് ഉപയോഗിച്ച് ലോഗിൻ ചെയ്യാം. അഡ്മിൻ അംഗീകരിച്ച അംഗങ്ങൾക്ക് പ്രൊഫൈലും പേയ്‌മെന്റ് ചരിത്രവും കാണാം.',fees:'അംഗത്വ ഫീസ്: ₹50 / മാസം · ₹600 / വർഷം',payMembership:'💳 മെമ്പർഷിപ്പ് അടയ്ക്കുക',openPortal:'മെമ്പർ ലോഗിൻ തുറക്കുക',
+        festBadge:'🏆 12-ാം പതിപ്പ് · ഉടൻ വരുന്നു',festIntro:'TFC Arts & Sports Club Bandiyod അവതരിപ്പിക്കുന്ന അഞ്ചുദിവസത്തെ കായികമേള.',festDate:'ജനുവരി 8, 9, 10, 11, 12 — 2027',festDateLabel:'പരിപാടി നടക്കുന്ന ദിവസങ്ങൾ',festVenueLabel:'വേദി',festSports:'ഫുട്ബോൾ · ക്രിക്കറ്റ് · വോളിബോൾ · വടംവലി',festSportsLabel:'മത്സര ഇനങ്ങൾ',titleSponsor:'ടൈറ്റിൽ സ്പോൺസർ',seePoster:'സ്പോൺസർ പോസ്റ്റർ കാണുക',festTimeNote:'മത്സരങ്ങളുടെ കൃത്യമായ സമയക്രമം പിന്നീട് അറിയിക്കും.',
+                updatesLabel:'ക്ലബ് വാർത്തകൾ',updatesTitle:'അറിയിപ്പുകൾ',updatesCardTitle:'ഔദ്യോഗിക അറിയിപ്പുകൾ',updatesCardBody:'പുതിയ വാർത്തകളും ക്ലബ് അറിയിപ്പുകളും ഇവിടെ ഉടൻ പ്രസിദ്ധീകരിക്കും.',
+        championNewsTag:'🏆 ചാമ്പ്യൻ ട്രോഫി',championNewsTitle:'Champion Trophy സ്പോൺസർ — UBBI Dubai',championNewsBody:'Bandiyod Games Fest 2027-ന്റെ Champion Trophy സ്പോൺസർ ചെയ്യുന്ന UBBI Dubai (TFC UAE President)-ന് TFC Bandiyod-ന്റെ ഹൃദയം നിറഞ്ഞ നന്ദി.',championNewsOpen:'പോസ്റ്റർ കാണുക ↗',
+        contactLabel:'ബന്ധപ്പെടുക',contactTitle:'ഞങ്ങളുമായി ബന്ധപ്പെടാം',contactBody:'TFC Bandiyod സംബന്ധിച്ച വിവരങ്ങൾക്കും അന്വേഷണങ്ങൾക്കും ഇമെയിൽ വഴിയോ Instagram വഴിയോ ബന്ധപ്പെടാം.',rights:'എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്തം.'
+      },
+      en: {
+        navHome:'Home',navAbout:'About',navActivities:'Activities',navCommittee:'Committee',navUpdates:'Updates',navContact:'Contact',memberLogin:'Member Login',
+        welcome:'Welcome to TFC Bandiyod',heroText:'Welcome to the official website of TFC Bandiyod — united by friendship, teamwork and a shared dream.',memberPortal:'Member Portal',explore:'Explore More',
+        aboutLabel:'About us',aboutTitle:'One club. One family. One dream.',aboutBody:'TFC Bandiyod is a community that brings members together. Friendship, mutual support and team spirit drive us forward.',
+        activityLabel:'Our community',activityTitle:'What We Do',activityIntro:'Discover our club community and the digital services available to members.',
+        card1Title:'Team Spirit',card1Body:'Club activities that encourage unity and friendship.',card2Title:'Community',card2Body:'Stronger connections and cooperation among our members.',card3Title:'Digital Membership',card3Body:'Secure access to membership details and approved payment history.',
+        committeeLabel:'Club leadership',committeeTitle:'Our Committee',committeeIntro:'TFC Arts & Sports Club Bandiyod — Committee for 2026–27.',committeeContact:'Contact Committee',committeeNote:'Mizbah’s photo will be added later.',committeeSeason:'2026–27 Committee',officeBearers:'Office Bearers',teamCaptains:'Team Captains',roleChairman:'Chairman',roleVicePresident:'Vice President',roleJointSecretary:'Joint Secretary',roleCricketCaptain:'Cricket Captain',roleCricketViceCaptain:'Cricket Vice Captain',roleFootballCaptain:'Football Captain',roleFootballViceCaptain:'Football Vice Captain',roleVolleyballCaptain:'Volleyball Captain',rolePresident:'President',roleSecretary:'Secretary',roleTreasurer:'Treasurer',roleCommittee:'Committee Member',memberPending:'Name coming soon',
+        shortcutProfile:'My Profile',shortcutHistory:'Payment History',shortcutPay:'Membership Payment',shortcutAccounts:'Club Accounts',loginRequired:'Login required',memberPrivacy:'🔒 All shortcuts open the existing secure login page. Only authorized members can view protected information.',
+        membersLabel:'For members',membersTitle:'Your membership, in one place',membersBody:'Sign in with Google. Admin-approved members can access their profile and payment history.',fees:'Membership fee: ₹50 / month · ₹600 / year',payMembership:'💳 Pay Membership',openPortal:'Open Member Login',
+        festBadge:'🏆 12th Edition · Coming Soon',festIntro:'Five days of sports presented by TFC Arts & Sports Club Bandiyod.',festDate:'January 8, 9, 10, 11 & 12, 2027',festDateLabel:'Fest dates',festVenueLabel:'Venue',festSports:'Football · Cricket · Volleyball · Tug of War',festSportsLabel:'Sports',titleSponsor:'Title Sponsor',seePoster:'View sponsor poster',festTimeNote:'Detailed match timings will be announced later.',
+                updatesLabel:'Club news',updatesTitle:'Latest Updates',updatesCardTitle:'Official Announcements',updatesCardBody:'Club news and official announcements will be published here soon.',
+        championNewsTag:'🏆 Champion Trophy',championNewsTitle:'Champion Trophy Sponsor — UBBI Dubai',championNewsBody:'Heartfelt thanks from TFC Bandiyod to UBBI Dubai (TFC UAE President) for sponsoring the Champion Trophy at Bandiyod Games Fest 2027.',championNewsOpen:'View poster ↗',
+        contactLabel:'Get in touch',contactTitle:'Contact Us',contactBody:'For club information and enquiries, connect with TFC Bandiyod by email or Instagram.',rights:'All rights reserved.'
+      }
+    };
+    // Official 2026–27 committee list supplied by TFC Bandiyod.
+    // To add a photo later, use a relative path like "./committee/abbas.jpg".
+    const committeeMembers = [
+      { group:'office', role:'roleChairman', name:'Abbas IB', photo:'./committee/abbas_ib.jpg' },
+      { group:'office', role:'rolePresident', name:'Shareef Kasim', photo:'./committee/shareef_kasim.jpg' },
+      { group:'office', role:'roleSecretary', name:'Shakir Apollo', photo:'./committee/shakir_apollo.jpg' },
+      { group:'office', role:'roleTreasurer', name:'Thaju Izaan', photo:'./committee/thaju_izaan.jpg' },
+      { group:'office', role:'roleVicePresident', name:'Azeez', photo:'./committee/azeez.jpg' },
+      { group:'office', role:'roleVicePresident', name:'Latheef', photo:'./committee/latheef.jpg' },
+      { group:'office', role:'roleVicePresident', name:'Riyaz', photo:'./committee/riyaz.jpg' },
+      { group:'office', role:'roleJointSecretary', name:'Ajmal Wedco', photo:'./committee/ajmal_wedco.jpg' },
+      { group:'office', role:'roleJointSecretary', name:'Waheed', photo:'./committee/waheed.jpg' },
+      { group:'office', role:'roleJointSecretary', name:'Fahad', photo:'./committee/fahad.jpg' },
+      { group:'captains', role:'roleCricketCaptain', name:'Asif', photo:'./committee/asif.jpg' },
+      { group:'captains', role:'roleCricketViceCaptain', name:'Moinu', photo:'./committee/moinu.jpg' },
+      { group:'captains', role:'roleFootballCaptain', name:'Zahil', photo:'./committee/zahil.jpg' },
+      { group:'captains', role:'roleFootballViceCaptain', name:'Mizbah', photo:'' },
+      { group:'captains', role:'roleVolleyballCaptain', name:'Zakir Mims', photo:'./committee/zakir_mims.jpg' }
+    ];
+    function renderCommittee(lang){
+      const officeGrid=document.getElementById('committeeOfficeGrid');
+      const captainGrid=document.getElementById('committeeCaptainGrid');
+      officeGrid.replaceChildren();
+      captainGrid.replaceChildren();
+      for(const member of committeeMembers){
+        const grid=member.group==='captains'?captainGrid:officeGrid;
+        const card=document.createElement('article');card.className='committee-card';
+        const avatar=document.createElement('div');avatar.className='committee-avatar';
+        if(member.photo){
+          const photo=document.createElement('img');
+          photo.src=member.photo;photo.loading='lazy';
+          photo.alt=member.name;
+          photo.onerror=()=>{avatar.replaceChildren();avatar.textContent='👤'};
+          avatar.appendChild(photo);
+        }else{avatar.textContent='👤'}
+        const role=document.createElement('div');role.className='committee-role';
+        role.textContent=translations[lang][member.role]||member.role;
+        const name=document.createElement('h3');name.className='committee-name';
+        name.textContent=member.name;
+        card.append(avatar,role,name);grid.appendChild(card);
+      }
+    }
+    const langBtn = document.getElementById('langBtn');
+    function setLanguage(lang){
+      const chosen = lang === 'en' ? 'en' : 'ml';
+      document.documentElement.lang = chosen;
+      document.querySelectorAll('[data-i18n]').forEach(el=>{
+        const translated = translations[chosen][el.dataset.i18n];
+        if(translated) el.textContent=translated;
+      });
+      renderCommittee(chosen);
+      langBtn.textContent=chosen === 'ml' ? 'EN' : 'മല';
+      langBtn.setAttribute('aria-label',chosen === 'ml' ? 'Switch to English' : 'മലയാളത്തിലേക്ക് മാറ്റുക');
+      try{localStorage.setItem('tfc_home_lang',chosen)}catch(e){}
+    }
+    let saved='ml';
+    try{saved=localStorage.getItem('tfc_home_lang') || 'ml'}catch(e){}
+    setLanguage(saved);
+    langBtn.addEventListener('click',()=>setLanguage(document.documentElement.lang==='ml'?'en':'ml'));
+    const menuBtn=document.getElementById('menuBtn');
+    const navLinks=document.getElementById('navLinks');
+    menuBtn.addEventListener('click',()=>{
+      const opened=navLinks.classList.toggle('is-open');
+      menuBtn.setAttribute('aria-expanded',String(opened));
+      menuBtn.textContent=opened?'×':'☰';
+      menuBtn.setAttribute('aria-label',opened?'Close menu':'Open menu');
+    });
+    navLinks.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>{
+      navLinks.classList.remove('is-open');
+      menuBtn.setAttribute('aria-expanded','false');
+      menuBtn.textContent='☰';
+    }));
+    document.getElementById('year').textContent=new Date().getFullYear();
+  </script>
 </body>
 </html>
