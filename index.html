@@ -261,6 +261,57 @@
       .title-sponsor-copy{padding:24px 20px;gap:13px}
       .title-sponsor-copy h3{font-size:34px}
     }
+
+    /* TFC continuous sponsor motion — replaces earlier one-time flip effects. */
+    .title-sponsor-photo,.news-feature-photo{
+      position:relative;perspective:1100px;overflow:hidden;isolation:isolate;
+    }
+    .title-sponsor-photo img{
+      transform-origin:center;backface-visibility:hidden;
+      animation:tfcSponsorRock 5.8s ease-in-out infinite;
+      will-change:transform;
+    }
+    .news-feature-photo img{
+      transform-origin:center;backface-visibility:hidden;
+      animation:tfcSponsorRock 7s ease-in-out infinite reverse;
+      will-change:transform;
+    }
+    @keyframes tfcSponsorRock{
+      0%,100%{transform:perspective(1100px) rotateY(-12deg) translateY(4px) scale(.955)}
+      25%{transform:perspective(1100px) rotateY(0deg) translateY(-5px) scale(.98)}
+      50%{transform:perspective(1100px) rotateY(12deg) translateY(4px) scale(.955)}
+      75%{transform:perspective(1100px) rotateY(0deg) translateY(-5px) scale(.98)}
+    }
+    .title-sponsor-feature{
+      position:relative;isolation:isolate;
+      animation:tfcSponsorGoldPulse 3.4s ease-in-out infinite;
+    }
+    @keyframes tfcSponsorGoldPulse{
+      0%,100%{box-shadow:0 12px 30px rgba(244,206,40,.13)}
+      50%{box-shadow:0 17px 48px rgba(244,206,40,.40),0 0 26px rgba(244,206,40,.28)}
+    }
+    .title-sponsor-label{position:relative;overflow:hidden;isolation:isolate}
+    .title-sponsor-label::after{
+      content:"";position:absolute;inset:0;pointer-events:none;
+      background:linear-gradient(110deg,transparent 24%,rgba(255,255,255,.75) 50%,transparent 76%);
+      transform:translateX(-160%);
+      animation:tfcSponsorShine 3.6s ease-in-out infinite;
+    }
+    @keyframes tfcSponsorShine{
+      0%,15%{transform:translateX(-160%)}
+      55%,100%{transform:translateX(160%)}
+    }
+    .news-feature{animation:tfcChampionHalo 5s ease-in-out infinite}
+    @keyframes tfcChampionHalo{
+      0%,100%{box-shadow:0 12px 28px rgba(18,46,131,.10)}
+      50%{box-shadow:0 18px 42px rgba(18,46,131,.27)}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .title-sponsor-photo img,.news-feature-photo img,
+      .title-sponsor-feature,.title-sponsor-label::after,.news-feature{
+        animation:none!important;transform:none!important;will-change:auto;
+      }
+    }
   </style>
 </head>
 <body>
@@ -582,261 +633,5 @@
     }));
     document.getElementById('year').textContent=new Date().getFullYear();
   </script>
-  
-<!-- TFC BANDIYOD - SPONSOR MOTION UPDATE -->
-
-<style>
-/* TITLE SPONSOR - GOLDEN GLOW */
-.title-sponsor-feature {
-  position: relative;
-  isolation: isolate;
-  border: 2px solid #f4ce28;
-  animation: tfcGoldenGlow 5s ease-in-out infinite alternate;
-}
-
-/* TITLE SPONSOR - SLOW ZOOM */
-.title-sponsor-photo {
-  position: relative;
-  overflow: hidden;
-  padding: 10px;
-}
-
-.title-sponsor-photo img {
-  display: block;
-  object-fit: contain;
-  transform-origin: center;
-  animation: tfcSlowZoom 10s ease-in-out infinite alternate;
-}
-
-/* SHINING SPONSOR LABEL */
-.title-sponsor-label {
-  position: relative;
-  overflow: hidden;
-}
-
-.title-sponsor-label::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    105deg,
-    transparent 30%,
-    rgba(255,255,255,.65) 50%,
-    transparent 70%
-  );
-  transform: translateX(-160%);
-  animation: tfcShine 6s ease-in-out infinite;
-  pointer-events: none;
-}
-
-@keyframes tfcSlowZoom {
-  from { transform: scale(.965); }
-  to { transform: scale(1); }
-}
-
-@keyframes tfcGoldenGlow {
-  from {
-    box-shadow: 0 12px 35px rgba(244,206,40,.12);
-  }
-  to {
-    box-shadow:
-      0 18px 55px rgba(244,206,40,.32),
-      0 0 30px rgba(244,206,40,.22);
-  }
-}
-
-@keyframes tfcShine {
-  0%, 15% { transform: translateX(-160%); }
-  40%, 100% { transform: translateX(160%); }
-}
-
-/* GAMES FEST & CHAMPION TROPHY */
-.fest-shell.tfc-motion-pending,
-.news-feature.tfc-motion-pending {
-  opacity: 0;
-  transform: translateY(25px);
-}
-
-.news-feature.tfc-motion-pending {
-  transform: translateX(25px);
-}
-
-.fest-shell.tfc-motion-visible,
-.news-feature.tfc-motion-visible {
-  opacity: 1;
-  transform: translate(0, 0);
-  transition:
-    opacity .85s ease,
-    transform .85s ease;
-}
-
-/* ACCESSIBILITY */
-@media (prefers-reduced-motion: reduce) {
-  .title-sponsor-feature,
-  .title-sponsor-photo img,
-  .title-sponsor-label::after {
-    animation: none !important;
-  }
-
-  .title-sponsor-photo img {
-    transform: none;
-  }
-
-  .fest-shell.tfc-motion-pending,
-  .news-feature.tfc-motion-pending {
-    opacity: 1;
-    transform: none;
-  }
-}
-</style>
-
-<script>
-(function () {
-  const reducedMotion =
-    window.matchMedia(
-      '(prefers-reduced-motion: reduce)'
-    ).matches;
-
-  if (
-    reducedMotion ||
-    !('IntersectionObserver' in window)
-  ) return;
-
-  const posts = document.querySelectorAll(
-    '.fest-shell, .news-feature'
-  );
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-
-        entry.target.classList.remove(
-          'tfc-motion-pending'
-        );
-
-        entry.target.classList.add(
-          'tfc-motion-visible'
-        );
-
-        observer.unobserve(entry.target);
-      });
-    },
-    {
-      threshold: 0.06,
-      rootMargin: '0px 0px 90px 0px'
-    }
-  );
-
-  posts.forEach((post) => {
-    post.classList.add('tfc-motion-pending');
-    observer.observe(post);
-  });
-})();
-</script>
-<!-- END SPONSOR MOTION UPDATE -->
-
-<!-- TFC 3D SPONSOR FLIP MOTION -->
-<style>
-.title-sponsor-photo,
-.news-feature-photo {
-  perspective: 1200px;
-  transform-style: preserve-3d;
-}
-
-/* 3D Flip entrance */
-.tfc-3d-enter {
-  animation: tfcFlipIn 1.5s
-    cubic-bezier(.2,.75,.25,1) both;
-}
-
-@keyframes tfcFlipIn {
-  0% {
-    opacity: .2;
-    transform: perspective(1200px)
-      rotateY(-82deg) scale(.9);
-  }
-  70% {
-    opacity: 1;
-    transform: perspective(1200px)
-      rotateY(9deg) scale(1);
-  }
-  100% {
-    opacity: 1;
-    transform: perspective(1200px)
-      rotateY(0deg) scale(1);
-  }
-}
-
-/* Continuous gentle 3D floating */
-.title-sponsor-photo img,
-.news-feature-photo img {
-  transform-origin: center center;
-  backface-visibility: hidden;
-  animation: tfcPosterFloat 7s
-    ease-in-out infinite !important;
-}
-
-@keyframes tfcPosterFloat {
-  0%, 100% {
-    transform: rotateY(-5deg)
-      translateY(0) scale(.96);
-  }
-  50% {
-    transform: rotateY(5deg)
-      translateY(-7px) scale(.96);
-  }
-}
-
-/* Respect reduced motion settings */
-@media (prefers-reduced-motion: reduce) {
-  .tfc-3d-enter,
-  .title-sponsor-photo img,
-  .news-feature-photo img {
-    animation: none !important;
-    transform: none !important;
-  }
-}
-</style>
-
-<script>
-(function () {
-  const reduceMotion =
-    window.matchMedia(
-      '(prefers-reduced-motion: reduce)'
-    ).matches;
-
-  if (reduceMotion) return;
-
-  const posters = document.querySelectorAll(
-    '.title-sponsor-photo, .news-feature-photo'
-  );
-
-  if (!('IntersectionObserver' in window)) {
-    return;
-  }
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-
-        entry.target.classList.add(
-          'tfc-3d-enter'
-        );
-
-        observer.unobserve(entry.target);
-      });
-    },
-    { threshold: 0.15 }
-  );
-
-  posters.forEach((poster) => {
-    observer.observe(poster);
-  });
-})();
-</script>
-<!-- END TFC 3D MOTION -->
-
 </body>
 </html>
