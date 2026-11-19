@@ -226,7 +226,7 @@ if (feed) {
     wrapper.dataset.photoReady = '1';
 
     // FIX: Set the source only after image is visible.
-    img.src = data;
+    img.src = link. href;
 
     // Handles images loaded instantly from browser cache.
     if (img.complete && img.naturalWidth > 0) {
