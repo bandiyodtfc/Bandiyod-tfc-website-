@@ -35,6 +35,12 @@
     .saved-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.small-btn{padding:7px 11px;min-height:34px;font-size:12px;background:#e8edee}.small-btn.danger{background:#fbe3e0;color:#882820}
     .warning{border-left:4px solid #d4a019;padding:12px 14px;background:#fff9df;border-radius:6px;font-size:13px}
     @media(max-width:450px){.saved-header{flex-direction:column;gap:6px}.top{align-items:flex-start}.logo{width:48px;height:48px}}
+
+    #tfcGalleryPanel .gallery-files{display:block;width:100%;padding:12px;border:2px dashed #d2b44b;border-radius:10px;background:#fffdf1}
+    #tfcGalleryPanel .gallery-form-note{color:#546366;font-size:13px}
+    #galleryStatus{margin-top:14px;padding:12px;border-radius:10px;background:#eef7ee;color:#214e29;font-size:13px;font-weight:750;white-space:pre-wrap}
+    #galleryStatus[data-error="true"]{background:#fff1ee;color:#9b3020}
+    #galleryList .saved-post{margin-top:12px}
   </style>
 </head>
 <body>
@@ -65,11 +71,31 @@
         <div class="actions"><button id="publishBtn" type="submit">പോസ്റ്റ് പ്രസിദ്ധീകരിക്കുക</button><button class="secondary" type="button" id="cancelEdit" hidden>തിരുത്തൽ ഒഴിവാക്കുക</button></div>
       </form>
     </section>
+    <!-- Separate festival gallery publisher; ordinary News/Sponsor posts untouched. -->
+    <section class="panel" id="tfcGalleryPanel" hidden>
+      <h2>📸 Fest Memories — Slideshow Post</h2>
+      <p class="muted">ഇത് <strong>Latest News-ലേക്കല്ല</strong>. ഹോം പേജിലെ പ്രത്യേക <strong>Fest Memories</strong> വിഭാഗത്തിലേക്ക് മാത്രമാണ് പ്രസിദ്ധീകരിക്കുന്നത്.</p>
+      <form id="galleryForm">
+        <label for="galleryTitle">ഫെസ്റ്റിന്റെ പേര് *</label>
+        <input id="galleryTitle" type="text" maxlength="110" placeholder="ഉദാ: TFC BANDIYOD FEST 2025" required>
+        <label for="galleryBody">വിവരണം</label>
+        <textarea id="galleryBody" maxlength="600" placeholder="മുൻ വർഷത്തെ ഫെസ്റ്റിന്റെ വിശേഷങ്ങൾ"></textarea>
+        <label for="galleryPhotos">ഫോട്ടോകൾ ഒരുമിച്ച് തിരഞ്ഞെടുക്കുക (പരമാവധി 30)</label>
+        <input class="gallery-files" id="galleryPhotos" type="file" accept="image/*" multiple>
+        <p id="galleryPhotoHelp" class="gallery-form-note">ഒരു തവണ ഒന്നിലധികം ഫോട്ടോകൾ തിരഞ്ഞെടുക്കാം. ഓരോന്നും 3 സെക്കൻഡ് വീതം മാറും.</p>
+        <p id="galleryEditNote" class="warning" hidden>പഴയ ഫോട്ടോകൾ നിലനിർത്തിക്കൊണ്ട് പുതിയവ കൂടി ചേർക്കാം. നിലവിലുള്ള മുഴുവൻ പോസ്റ്റും ഇല്ലാതാക്കാൻ താഴെയുള്ള Delete ഉപയോഗിക്കുക.</p>
+        <div class="actions"><button id="gallerySave" type="submit">📸 Slideshow Publish</button><button id="galleryCancel" class="secondary" type="button" hidden>തിരുത്തൽ ഒഴിവാക്കുക</button></div>
+      </form>
+      <div id="galleryStatus" role="status" aria-live="polite">Admin Login ചെയ്ത ശേഷം Gallery തയ്യാറാക്കാം.</div>
+      <h3 style="margin-top:24px">പഴയ ഫെസ്റ്റ് Gallery Posts</h3>
+      <div id="galleryList"><p class="muted">Gallery post ഒന്നുമില്ല.</p></div>
+    </section>
     <section class="panel" id="listPanel">
       <div class="welcome"><h2>പ്രസിദ്ധീകരിച്ച പോസ്റ്റുകൾ</h2><strong id="postTotal">0 പോസ്റ്റുകൾ</strong></div>
       <div id="postList"><p class="muted">Admin Login ആവശ്യമാണ്.</p></div>
     </section>
   </main>
   <script type="module" src="./tfc-admin-posts.js"></script>
+  <script type="module" src="./tfc-admin-fest-gallery.js"></script>
 </body>
 </html>
