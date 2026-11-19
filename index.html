@@ -413,6 +413,13 @@
     .tfc-post-item>.title-sponsor-feature,.tfc-post-item>.fest-shell,.tfc-post-item>.news-feature{margin-top:0}
     .tfc-post-item::after{content:"";display:block;height:1px;margin-top:12px;background:#dfdeda}
     .tfc-post-item:last-child::after{display:none}
+    /* Only applies to posts uploaded later by the admin. */
+    .tfc-live-photo{min-height:285px;display:grid;place-items:center;aspect-ratio:4/5}
+    .tfc-live-photo>a{display:block;width:100%;height:100%;text-align:center}
+    .tfc-live-photo>a>img{width:100%;height:100%;object-fit:contain}
+    .tfc-live-placeholder{font-size:14px;font-weight:700;color:#d6e3f7;padding:20px;text-align:center}
+    .tfc-live-date{font-weight:800;font-size:12px;color:#687a80}
+
     @media(max-width:760px){
       .tfc-post-feed{height:70svh;min-height:380px;max-height:680px;padding:8px;border-radius:16px}
       .tfc-feed-button{width:36px;height:37px}
@@ -814,7 +821,7 @@
     // TFC Fest post feed: newest-first, automatic rotation until Jan 12, 2027 (Indian time).
     (function initTfcPostFeed(){
       const feed=document.getElementById('tfcPostFeed');
-      const posts=[...feed.querySelectorAll('.tfc-post-item')];
+      let posts=[...feed.querySelectorAll('.tfc-post-item')];
       const count=document.getElementById('tfcFeedCount');
       const previous=document.getElementById('tfcFeedPrev');
       const next=document.getElementById('tfcFeedNext');
@@ -869,9 +876,17 @@
         if(!inFestPeriod() || paused || hovered || motionQuery.matches || document.hidden || Date.now()<userActiveUntil)return;
         if(posts.length>1)showPost(current+1);
       },9000);
+      // Add Firebase admin posts to the same rotation without changing existing items.
+      feed.addEventListener('tfc:posts-updated',()=>{
+        posts=[...feed.querySelectorAll('.tfc-post-item')];
+        current=0;
+        if(posts.length)showPost(0,false);
+        else updateLabels();
+      });
       showPost(0,false);
     })();
     document.getElementById('year').textContent=new Date().getFullYear();
   </script>
+  <script type="module" src="./tfc-home-posts.js"></script>
 </body>
 </html>
