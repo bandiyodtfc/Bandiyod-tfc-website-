@@ -515,6 +515,9 @@
     /* Separate gallery for archived festival memories. Does not affect News/Sponsor. */
     .tfc-fest-memory[hidden]{display:none!important}
     .tfc-fest-memory{padding:clamp(38px,6vw,72px) 0;background:#eef2ee}
+    .tfc-fest-memory .section-title{color:#17251f}
+    .tfc-fest-memory .section-copy{color:#42544a}
+    .tfc-fest-memory .section-kicker{color:#81620e}
     .tfc-gallery-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:22px;margin-top:28px}
     .tfc-gallery-card{overflow:hidden;border-radius:22px;background:#fff;border:1px solid #dfe7df;box-shadow:0 10px 24px #12231b14;min-width:0}
     .tfc-gallery-card h3{font-size:clamp(19px,2.4vw,24px);line-height:1.3;margin:0 0 7px;color:#17251f}
@@ -785,13 +788,13 @@
       <div class="container">
         <div class="section-kicker">TFC BANDIYOD · PHOTO ARCHIVE</div>
         <h2 id="tfcFestMemoryTitle" class="section-title">📸 Fest Memories</h2>
-        <p class="section-copy">പഴയ ഫെസ്റ്റുകളുടെ മനോഹരമായ ഓർമ്മകൾ — ഓരോ 3 സെക്കൻഡിലും ഫോട്ടോകൾ സ്വയം മാറും.</p>
+        <p class="section-copy" data-i18n="festMemoriesIntro">പഴയ ഫെസ്റ്റുകളുടെ മനോഹരമായ ഓർമ്മകൾ — ഓരോ 3 സെക്കൻഡിലും ഫോട്ടോകൾ സ്വയം മാറും.</p>
         <div id="tfcFestGalleries" class="tfc-gallery-list" aria-live="off"></div>
       </div>
     </section>
     <dialog id="tfcGalleryModal" class="tfc-gallery-modal" aria-label="Festival photo fullscreen">
       <img id="tfcGalleryModalPhoto" alt="Festival memory">
-      <button id="tfcGalleryModalClose" type="button">അടയ്ക്കുക ✕</button>
+      <button id="tfcGalleryModalClose" type="button" data-i18n="galleryClose">അടയ്ക്കുക ✕</button>
     </dialog>
     <section id="contact" aria-labelledby="contactTitle">
       <div class="container contact-grid">
@@ -843,6 +846,7 @@
                 feedNote:'ഒരേസമയം 3 പോസ്റ്റുകൾ · ഓരോ 3 സെക്കൻഡിലും മാറും',updatesLabel:'ക്ലബ് വാർത്തകൾ',updatesTitle:'അറിയിപ്പുകൾ',updatesCardTitle:'ഔദ്യോഗിക അറിയിപ്പുകൾ',updatesCardBody:'പുതിയ വാർത്തകളും ക്ലബ് അറിയിപ്പുകളും ഇവിടെ ഉടൻ പ്രസിദ്ധീകരിക്കും.',
         tickerFest:'🏆 ബണ്ടിയോട് ഗെയിംസ് ഫെസ്റ്റ് 2027',tickerDate:'📅 2027 ജനുവരി 8 മുതൽ 12 വരെ',tickerUzi:'UZI Men\'s Boutique — ടൈറ്റിൽ സ്പോൺസർ',tickerUbbi:'🏆 UBBI Dubai — ചാമ്പ്യൻ ട്രോഫി സ്പോൺസർ',tickerMotto:'ONE TEAM ONE DREAM',
         championNewsTag:'🏆 ചാമ്പ്യൻ ട്രോഫി',championNewsTitle:'Champion Trophy സ്പോൺസർ — UBBI Dubai',championNewsBody:'Bandiyod Games Fest 2027-ന്റെ Champion Trophy സ്പോൺസർ ചെയ്യുന്ന UBBI Dubai (TFC UAE President)-ന് TFC Bandiyod-ന്റെ ഹൃദയം നിറഞ്ഞ നന്ദി.',championNewsOpen:'പോസ്റ്റർ കാണുക ↗',juniorChampionTag:'🏅 ജൂനിയർ ഫെസ്റ്റ്',juniorChampionTitle:'Junior Fest Champion Trophy — Haidu Karama',juniorChampionBody:'Bandiyod Games Fest 2027-ന്റെ Junior Fest Champion Trophy സ്പോൺസർ ചെയ്യുന്ന Haidu Karama-യ്ക്ക് TFC Bandiyod-ന്റെ ഹൃദയം നിറഞ്ഞ നന്ദി.',juniorChampionOpen:'പോസ്റ്റർ കാണുക ↗',
+        festMemoriesIntro:'പഴയ ഫെസ്റ്റുകളുടെ മനോഹരമായ ഓർമ്മകൾ — ഓരോ 3 സെക്കൻഡിലും ഫോട്ടോകൾ സ്വയം മാറും.',galleryClose:'അടയ്ക്കുക ✕',
         contactLabel:'ബന്ധപ്പെടുക',contactTitle:'ഞങ്ങളുമായി ബന്ധപ്പെടാം',contactBody:'TFC Bandiyod സംബന്ധിച്ച വിവരങ്ങൾക്കും അന്വേഷണങ്ങൾക്കും ഇമെയിൽ വഴിയോ Instagram വഴിയോ ബന്ധപ്പെടാം.',rights:'എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്തം.'
       },
       en: {
@@ -860,6 +864,7 @@
                 feedNote:'Three posts at once · changes every 3 seconds',updatesLabel:'Club news',updatesTitle:'Latest Updates',updatesCardTitle:'Official Announcements',updatesCardBody:'Club news and official announcements will be published here soon.',
         tickerFest:'🏆 Bandiyod Games Fest 2027',tickerDate:'📅 8–12 January 2027',tickerUzi:'UZI Men\'s Boutique — Title Sponsor',tickerUbbi:'🏆 UBBI Dubai — Champion Trophy Sponsor',tickerMotto:'ONE TEAM ONE DREAM',
         championNewsTag:'🏆 Champion Trophy',championNewsTitle:'Champion Trophy Sponsor — UBBI Dubai',championNewsBody:'Heartfelt thanks from TFC Bandiyod to UBBI Dubai (TFC UAE President) for sponsoring the Champion Trophy at Bandiyod Games Fest 2027.',championNewsOpen:'View poster ↗',juniorChampionTag:'🏅 Junior Fest',juniorChampionTitle:'Junior Fest Champion Trophy — Haidu Karama',juniorChampionBody:'Heartfelt thanks from TFC Bandiyod to Haidu Karama for sponsoring the Junior Fest Champion Trophy at Bandiyod Games Fest 2027.',juniorChampionOpen:'View poster ↗',
+        festMemoriesIntro:'Relive our past festivals — photos change automatically every 3 seconds.',galleryClose:'Close ✕',
         contactLabel:'Get in touch',contactTitle:'Contact Us',contactBody:'For club information and enquiries, connect with TFC Bandiyod by email or Instagram.',rights:'All rights reserved.'
       }
     };

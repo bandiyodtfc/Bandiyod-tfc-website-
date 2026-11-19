@@ -13,6 +13,13 @@ if(section){
   document.getElementById('tfcGalleryModalClose').addEventListener('click',()=>modal.close());
   modal.addEventListener('click',e=>{if(e.target===modal)modal.close();});
   const sessions=[];
+  const galleryText={
+    en:{loading:'📷 Loading photo…',prev:'‹ Previous',next:'Next ›',pause:'Ⅱ Pause',play:'▶ Play',expand:'⛶ Fullscreen',unavailable:'Photo unavailable. Try another.',missing:'Photo unavailable.'},
+    ml:{loading:'📷 ഫോട്ടോ ലോഡ് ചെയ്യുന്നു…',prev:'‹ മുമ്പത്തെ',next:'അടുത്തത് ›',pause:'Ⅱ Pause',play:'▶ Play',expand:'⛶ Fullscreen',unavailable:'ചിത്രം ലഭ്യമല്ല. അടുത്തത് നോക്കുക.',missing:'ചിത്രം ലഭ്യമല്ല.'}
+  };
+  const msg=key=>galleryText[document.documentElement.lang==='en'?'en':'ml'][key];
+  const languageObserver=new MutationObserver(()=>{for(const s of sessions)s.updateText?.();});
+  languageObserver.observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
   const idsOf = p => Array.isArray(p.photoIds)?p.photoIds.filter(v=>typeof v==='string'):
     p.photoIds&&typeof p.photoIds==='object' ? Object.keys(p.photoIds).sort((a,b)=>Number(a)-Number(b)).map(k=>p.photoIds[k]).filter(v=>typeof v==='string'):[];
   const node=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
@@ -21,17 +28,22 @@ if(section){
     const ids=idsOf(p);if(!ids.length)return null;
     const card=node('article','tfc-gallery-card');
     const stage=node('div','tfc-gallery-photo-stage');
-    const label=node('div','tfc-gallery-placeholder','📷 ഫോട്ടോ ലോഡ് ചെയ്യുന്നു…');
+    const label=node('div','tfc-gallery-placeholder',msg('loading'));
     const img=node('img');img.alt=p.title||'TFC Fest Memories';img.loading='lazy';img.hidden=true;
     stage.append(label,img);
     const info=node('div','tfc-gallery-card-content');
     info.append(node('h3','',p.title||'Fest Memories'));
     if(p.body)info.append(node('p','',p.body));
     const bar=node('div','tfc-gallery-controls');
-    const prev=node('button','','‹ മുമ്പത്തെ'),next=node('button','','അടുത്തത് ›'),pause=node('button','','Ⅱ Pause'),expand=node('button','','⛶ Fullscreen');
+    const prev=node('button','',msg('prev')),next=node('button','',msg('next')),pause=node('button','',msg('pause')),expand=node('button','',msg('expand'));
     for(const btn of [prev,next,pause,expand])btn.type='button';
     const count=node('span','tfc-gallery-count');bar.append(prev,next,pause,expand,count);info.append(bar);card.append(stage,info);
-    const state={id,ids,index:0,paused:false,visible:false,hover:false,timer:null,observer:null,cache:new Map(),sequence:0};
+    const state={id,ids,index:0,paused:false,visible:false,hover:false,timer:null,observer:null,cache:new Map(),sequence:0,labelKind:'loading'};
+    state.updateText=()=>{
+      prev.textContent=msg('prev');next.textContent=msg('next');
+      pause.textContent=msg(state.paused?'play':'pause');expand.textContent=msg('expand');
+      if(!label.hidden)label.textContent=msg(state.labelKind);
+    };
     function displayCount(){count.textContent=`${state.index+1} / ${ids.length}`;}
     async function fetchPhoto(photoId){
       if(state.cache.has(photoId))return state.cache.get(photoId);
@@ -43,21 +55,21 @@ if(section){
     async function show(position){
       state.index=(position+ids.length)%ids.length;
       displayCount();const version=++state.sequence;
-      label.textContent='📷 ഫോട്ടോ ലോഡ് ചെയ്യുന്നു…';label.hidden=false;img.hidden=true;
+      state.labelKind='loading';label.textContent=msg('loading');label.hidden=false;img.hidden=true;
       try{
         const src=await fetchPhoto(ids[state.index]);
         if(version!==state.sequence||!card.isConnected)return;
         img.src=src;img.hidden=false;label.hidden=true;
         // Preload the next frame on demand without downloading the full gallery.
         if(ids.length>1)fetchPhoto(ids[(state.index+1)%ids.length]).catch(()=>{});
-      }catch(e){if(version===state.sequence)label.textContent='ചിത്രം ലഭ്യമല്ല. അടുത്തത് നോക്കുക.';}
+      }catch(e){if(version===state.sequence){state.labelKind='unavailable';label.textContent=msg('unavailable');}}
     }
     prev.addEventListener('click',()=>show(state.index-1));
     next.addEventListener('click',()=>show(state.index+1));
-    pause.addEventListener('click',()=>{state.paused=!state.paused;pause.textContent=state.paused?'▶ Play':'Ⅱ Pause';});
+    pause.addEventListener('click',()=>{state.paused=!state.paused;state.updateText();});
     expand.addEventListener('click',async()=>{
       try {modalImg.src=await fetchPhoto(ids[state.index]);modalImg.alt=p.title||'Festival photo';if(!modal.open)modal.showModal();}
-      catch(e){label.textContent='ചിത്രം ലഭ്യമല്ല.';label.hidden=false;}
+      catch(e){state.labelKind='missing';label.textContent=msg('missing');label.hidden=false;}
     });
     card.addEventListener('mouseenter',()=>state.hover=true);
     card.addEventListener('mouseleave',()=>state.hover=false);
@@ -88,5 +100,5 @@ if(section){
     for(const [id,p] of rows){const card=create(id,p);if(card)fragment.append(card);}
     list.append(fragment);section.hidden=!rows.length;
   },error=>console.warn('TFC Gallery not available:',error.code||error.message));
-  window.addEventListener('pagehide',dispose);
+  window.addEventListener('pagehide',()=>{dispose();languageObserver.disconnect();});
 }
