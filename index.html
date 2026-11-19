@@ -425,6 +425,92 @@
       .tfc-feed-button{width:36px;height:37px}
       .tfc-feed-status{font-size:12px}
     }
+
+    /* TFC News Carousel v2.0 — fixed animated title sponsor + 3 cards / 3 seconds.
+       Existing hero/emblem/letters/ticker/committee CSS is preserved. */
+    #tfcPinnedSponsor{margin-top:24px;margin-bottom:23px}
+    #tfcPinnedSponsor .tfc-post-item{margin:0}
+    #tfcPinnedSponsor .tfc-post-item::after{display:none}
+    #tfcPinnedSponsor .title-sponsor-feature{margin:0;grid-template-columns:minmax(0,.78fr) minmax(0,1.22fr);min-height:235px;overflow:hidden}
+    #tfcPinnedSponsor .title-sponsor-photo{height:300px}
+    #tfcPinnedSponsor .title-sponsor-photo img{height:100%;max-height:300px;object-fit:contain}
+    #tfcPinnedSponsor .title-sponsor-copy{padding:22px 28px;gap:10px}
+    #tfcPinnedSponsor .title-sponsor-copy h3{font-size:clamp(25px,3.8vw,44px)}
+    #tfcPinnedSponsor .title-sponsor-label{font-size:clamp(13px,1.9vw,19px)}
+    #tfcPinnedSponsor .title-sponsor-copy p{font-size:14px}
+    #tfcPinnedSponsor .title-sponsor-button{padding:9px 14px;font-size:12px}
+    .tfc-post-feed{
+      height:auto!important;min-height:440px;max-height:none!important;
+      overflow:hidden!important;scroll-snap-type:none!important;
+      display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;
+      padding:13px;align-items:stretch;scroll-behavior:auto!important;
+    }
+    .tfc-post-feed>.tfc-post-item{min-width:0;min-height:0;height:420px;margin:0;overflow:hidden;scroll-snap-align:none}
+    .tfc-post-feed>.tfc-post-item:not(.tfc-carousel-visible){display:none!important}
+    .tfc-post-feed>.tfc-post-item.tfc-carousel-visible{display:block!important;animation:tfcCarouselEnter .4s ease both}
+    .tfc-post-feed .tfc-post-item::after{display:none}
+    @keyframes tfcCarouselEnter{from{opacity:.1;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .tfc-post-feed .news-feature,.tfc-post-feed .fest-shell{
+      width:100%;height:100%;min-width:0;min-height:0;margin:0;
+      display:flex;flex-direction:column;overflow:hidden;border-radius:16px;
+    }
+    .tfc-post-feed .news-feature-photo,.tfc-post-feed .fest-poster-main{
+      width:100%;height:238px;min-height:238px;max-height:238px;
+      display:flex;align-items:center;justify-content:center;flex:0 0 238px;
+      overflow:hidden;background:#081b50;
+    }
+    .tfc-post-feed .tfc-live-photo{aspect-ratio:auto;display:flex;align-items:center;justify-content:center;min-height:238px!important}
+    .tfc-post-feed .news-feature-photo>a{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+    .tfc-post-feed .news-feature-photo img,.tfc-post-feed .fest-poster-main img{
+      width:100%;height:100%;max-height:none;object-fit:contain;
+    }
+    .tfc-post-feed .news-feature-copy,.tfc-post-feed .fest-details{
+      min-width:0;min-height:0;flex:1;display:flex;flex-direction:column;
+      justify-content:flex-start;gap:7px;padding:13px 14px;overflow:hidden;
+    }
+    .tfc-post-feed .news-feature-tag,.tfc-post-feed .fest-badge{
+      max-width:100%;padding:3px 8px;font-size:10px;line-height:1.3;
+    }
+    .tfc-post-feed .news-feature-copy h3,.tfc-post-feed .fest-details h3{
+      font-size:clamp(14px,1.7vw,18px);line-height:1.25;
+      display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;
+    }
+    .tfc-post-feed .news-feature-copy p,.tfc-post-feed .fest-details>p{
+      font-size:11px;line-height:1.45;display:-webkit-box;
+      -webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;
+    }
+    .tfc-post-feed .news-feature-action{font-size:11px;padding:5px 9px;margin-top:0}
+    .tfc-post-feed .tfc-live-date{font-size:10px}
+    .tfc-post-feed .fest-layout{display:flex;flex-direction:column;height:100%}
+    .tfc-post-feed .fest-facts{display:none}
+    .tfc-post-feed .fest-sponsor{display:none} /* Title sponsor always shown prominently above. */
+    .tfc-post-feed .tfc-live-placeholder{font-size:11px;padding:9px}
+    #tfcPostFeed:focus-visible{outline:3px solid #ffe578}
+    @media(max-width:760px){
+      #tfcPinnedSponsor .title-sponsor-feature{grid-template-columns:minmax(0,.78fr) minmax(0,1.22fr);min-height:195px}
+      #tfcPinnedSponsor .title-sponsor-photo{height:205px}
+      #tfcPinnedSponsor .title-sponsor-photo img{max-height:205px}
+      #tfcPinnedSponsor .title-sponsor-copy{padding:12px;gap:7px}
+      #tfcPinnedSponsor .title-sponsor-label{font-size:11px;padding:5px 8px}
+      #tfcPinnedSponsor .title-sponsor-copy h3{font-size:clamp(18px,4.9vw,26px)}
+      #tfcPinnedSponsor .title-sponsor-copy p{font-size:11px}
+      #tfcPinnedSponsor .title-sponsor-button{font-size:10px;padding:6px 8px}
+      .tfc-post-feed{grid-template-columns:1fr;min-height:0;gap:8px;padding:9px}
+      .tfc-post-feed>.tfc-post-item{height:133px}
+      .tfc-post-feed .news-feature,.tfc-post-feed .fest-shell{display:grid;grid-template-columns:112px minmax(0,1fr);height:100%;border-radius:12px}
+      .tfc-post-feed .news-feature-photo,.tfc-post-feed .fest-poster-main{width:112px;height:133px;min-height:133px!important;max-height:133px;flex:none}
+      .tfc-post-feed .tfc-live-photo{aspect-ratio:auto}
+      .tfc-post-feed .news-feature-copy,.tfc-post-feed .fest-details{padding:9px 10px;gap:5px}
+      .tfc-post-feed .news-feature-copy h3,.tfc-post-feed .fest-details h3{font-size:13px;line-height:1.2}
+      .tfc-post-feed .news-feature-copy p,.tfc-post-feed .fest-details>p{font-size:10px;-webkit-line-clamp:2}
+      .tfc-post-feed .news-feature-tag,.tfc-post-feed .fest-badge{font-size:9px;padding:3px 6px}
+      .tfc-post-feed .fest-layout{display:contents}
+      .tfc-feed-status{font-size:11px}
+      .tfc-feed-toolbar{gap:8px}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .tfc-post-feed>.tfc-post-item.tfc-carousel-visible{animation:none!important}
+    }
   </style>
 </head>
 <body>
@@ -582,10 +668,11 @@
       <div class="container">
         <div class="section-kicker" data-i18n="updatesLabel">Club news</div>
         <h2 id="updatesTitle" class="section-title" data-i18n="updatesTitle">അറിയിപ്പുകൾ</h2>
+        <div id="tfcPinnedSponsor" class="tfc-pinned-sponsor" aria-label="Featured title sponsor"></div>
         <!-- TFC Fest Feed: newest post appears first; internal autoplay until 12 January 2027. -->
         <div class="tfc-feed-toolbar" aria-label="TFC posts controls">
           <div>
-            <p class="tfc-feed-status" data-i18n="feedNote">പോസ്റ്റുകൾ ഈ ഭാഗത്ത് മാത്രം മാറിമാറി കാണും · 2027 ജനുവരി 12 വരെ</p>
+            <p class="tfc-feed-status" data-i18n="feedNote">ഒരേസമയം 3 പോസ്റ്റുകൾ · ഓരോ 3 സെക്കൻഡിലും മാറും</p>
             <span class="tfc-feed-count" id="tfcFeedCount" aria-live="polite">1 / 4</span>
           </div>
           <div class="tfc-feed-actions">
@@ -594,7 +681,7 @@
             <button type="button" id="tfcFeedNext" class="tfc-feed-button" aria-label="Next post">›</button>
           </div>
         </div>
-        <div class="tfc-post-feed" id="tfcPostFeed" aria-label="TFC latest updates. Scroll inside this panel to view older posts." tabindex="0">
+        <div class="tfc-post-feed" id="tfcPostFeed" aria-label="TFC latest updates. Three cards rotate every three seconds." tabindex="0">
           <!-- Add a future post as the FIRST .tfc-post-item to make it newest. -->
           <div class="tfc-post-item" data-post-title="Junior Fest Champion Trophy — Haidu Karama" data-post-order="4">
             <article class="news-feature" aria-labelledby="juniorChampionTitle">
@@ -715,7 +802,7 @@
         shortcutProfile:'എന്റെ പ്രൊഫൈൽ',shortcutHistory:'പേയ്‌മെന്റ് ചരിത്രം',shortcutPay:'മെമ്പർഷിപ്പ് പേയ്‌മെന്റ്',shortcutAccounts:'ക്ലബ് അക്കൗണ്ട്സ്',loginRequired:'ലോഗിൻ ആവശ്യമാണ്',memberPrivacy:'🔒 എല്ലാ ഷോർട്ട്കട്ടുകളും നിലവിലുള്ള സുരക്ഷിത ലോഗിൻ പേജിലേക്കാണ് പോകുന്നത്. അനുമതിയുള്ളവർക്ക് മാത്രം വിവരങ്ങൾ കാണാം.',
         membersLabel:'അംഗങ്ങൾക്കായി',membersTitle:'നിങ്ങളുടെ മെമ്പർഷിപ്പ് വിവരങ്ങൾ ഇവിടെ',membersBody:'Google അക്കൗണ്ട് ഉപയോഗിച്ച് ലോഗിൻ ചെയ്യാം. അഡ്മിൻ അംഗീകരിച്ച അംഗങ്ങൾക്ക് പ്രൊഫൈലും പേയ്‌മെന്റ് ചരിത്രവും കാണാം.',fees:'അംഗത്വ ഫീസ്: ₹50 / മാസം · ₹600 / വർഷം',payMembership:'💳 മെമ്പർഷിപ്പ് അടയ്ക്കുക',openPortal:'മെമ്പർ ലോഗിൻ തുറക്കുക',
         festBadge:'🏆 12-ാം പതിപ്പ് · ഉടൻ വരുന്നു',festIntro:'TFC Arts & Sports Club Bandiyod അവതരിപ്പിക്കുന്ന അഞ്ചുദിവസത്തെ കായികമേള.',festDate:'ജനുവരി 8, 9, 10, 11, 12 — 2027',festDateLabel:'പരിപാടി നടക്കുന്ന ദിവസങ്ങൾ',festVenueLabel:'വേദി',festSports:'ഫുട്ബോൾ · ക്രിക്കറ്റ് · വോളിബോൾ · വടംവലി',festSportsLabel:'മത്സര ഇനങ്ങൾ',titleSponsor:'ടൈറ്റിൽ സ്പോൺസർ',seePoster:'സ്പോൺസർ പോസ്റ്റർ കാണുക',festTimeNote:'മത്സരങ്ങളുടെ കൃത്യമായ സമയക്രമം പിന്നീട് അറിയിക്കും.',
-                feedNote:'പോസ്റ്റുകൾ ഈ ഭാഗത്ത് മാത്രം മാറിമാറി കാണും · 2027 ജനുവരി 12 വരെ',updatesLabel:'ക്ലബ് വാർത്തകൾ',updatesTitle:'അറിയിപ്പുകൾ',updatesCardTitle:'ഔദ്യോഗിക അറിയിപ്പുകൾ',updatesCardBody:'പുതിയ വാർത്തകളും ക്ലബ് അറിയിപ്പുകളും ഇവിടെ ഉടൻ പ്രസിദ്ധീകരിക്കും.',
+                feedNote:'ഒരേസമയം 3 പോസ്റ്റുകൾ · ഓരോ 3 സെക്കൻഡിലും മാറും',updatesLabel:'ക്ലബ് വാർത്തകൾ',updatesTitle:'അറിയിപ്പുകൾ',updatesCardTitle:'ഔദ്യോഗിക അറിയിപ്പുകൾ',updatesCardBody:'പുതിയ വാർത്തകളും ക്ലബ് അറിയിപ്പുകളും ഇവിടെ ഉടൻ പ്രസിദ്ധീകരിക്കും.',
         tickerFest:'🏆 ബണ്ടിയോട് ഗെയിംസ് ഫെസ്റ്റ് 2027',tickerDate:'📅 2027 ജനുവരി 8 മുതൽ 12 വരെ',tickerUzi:'UZI Men\'s Boutique — ടൈറ്റിൽ സ്പോൺസർ',tickerUbbi:'🏆 UBBI Dubai — ചാമ്പ്യൻ ട്രോഫി സ്പോൺസർ',tickerMotto:'ONE TEAM ONE DREAM',
         championNewsTag:'🏆 ചാമ്പ്യൻ ട്രോഫി',championNewsTitle:'Champion Trophy സ്പോൺസർ — UBBI Dubai',championNewsBody:'Bandiyod Games Fest 2027-ന്റെ Champion Trophy സ്പോൺസർ ചെയ്യുന്ന UBBI Dubai (TFC UAE President)-ന് TFC Bandiyod-ന്റെ ഹൃദയം നിറഞ്ഞ നന്ദി.',championNewsOpen:'പോസ്റ്റർ കാണുക ↗',juniorChampionTag:'🏅 ജൂനിയർ ഫെസ്റ്റ്',juniorChampionTitle:'Junior Fest Champion Trophy — Haidu Karama',juniorChampionBody:'Bandiyod Games Fest 2027-ന്റെ Junior Fest Champion Trophy സ്പോൺസർ ചെയ്യുന്ന Haidu Karama-യ്ക്ക് TFC Bandiyod-ന്റെ ഹൃദയം നിറഞ്ഞ നന്ദി.',juniorChampionOpen:'പോസ്റ്റർ കാണുക ↗',
         contactLabel:'ബന്ധപ്പെടുക',contactTitle:'ഞങ്ങളുമായി ബന്ധപ്പെടാം',contactBody:'TFC Bandiyod സംബന്ധിച്ച വിവരങ്ങൾക്കും അന്വേഷണങ്ങൾക്കും ഇമെയിൽ വഴിയോ Instagram വഴിയോ ബന്ധപ്പെടാം.',rights:'എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്തം.'
@@ -732,7 +819,7 @@
         shortcutProfile:'My Profile',shortcutHistory:'Payment History',shortcutPay:'Membership Payment',shortcutAccounts:'Club Accounts',loginRequired:'Login required',memberPrivacy:'🔒 All shortcuts open the existing secure login page. Only authorized members can view protected information.',
         membersLabel:'For members',membersTitle:'Your membership, in one place',membersBody:'Sign in with Google. Admin-approved members can access their profile and payment history.',fees:'Membership fee: ₹50 / month · ₹600 / year',payMembership:'💳 Pay Membership',openPortal:'Open Member Login',
         festBadge:'🏆 12th Edition · Coming Soon',festIntro:'Five days of sports presented by TFC Arts & Sports Club Bandiyod.',festDate:'January 8, 9, 10, 11 & 12, 2027',festDateLabel:'Fest dates',festVenueLabel:'Venue',festSports:'Football · Cricket · Volleyball · Tug of War',festSportsLabel:'Sports',titleSponsor:'Title Sponsor',seePoster:'View sponsor poster',festTimeNote:'Detailed match timings will be announced later.',
-                feedNote:'Posts rotate inside this panel until 12 January 2027',updatesLabel:'Club news',updatesTitle:'Latest Updates',updatesCardTitle:'Official Announcements',updatesCardBody:'Club news and official announcements will be published here soon.',
+                feedNote:'Three posts at once · changes every 3 seconds',updatesLabel:'Club news',updatesTitle:'Latest Updates',updatesCardTitle:'Official Announcements',updatesCardBody:'Club news and official announcements will be published here soon.',
         tickerFest:'🏆 Bandiyod Games Fest 2027',tickerDate:'📅 8–12 January 2027',tickerUzi:'UZI Men\'s Boutique — Title Sponsor',tickerUbbi:'🏆 UBBI Dubai — Champion Trophy Sponsor',tickerMotto:'ONE TEAM ONE DREAM',
         championNewsTag:'🏆 Champion Trophy',championNewsTitle:'Champion Trophy Sponsor — UBBI Dubai',championNewsBody:'Heartfelt thanks from TFC Bandiyod to UBBI Dubai (TFC UAE President) for sponsoring the Champion Trophy at Bandiyod Games Fest 2027.',championNewsOpen:'View poster ↗',juniorChampionTag:'🏅 Junior Fest',juniorChampionTitle:'Junior Fest Champion Trophy — Haidu Karama',juniorChampionBody:'Heartfelt thanks from TFC Bandiyod to Haidu Karama for sponsoring the Junior Fest Champion Trophy at Bandiyod Games Fest 2027.',juniorChampionOpen:'View poster ↗',
         contactLabel:'Get in touch',contactTitle:'Contact Us',contactBody:'For club information and enquiries, connect with TFC Bandiyod by email or Instagram.',rights:'All rights reserved.'
@@ -822,72 +909,84 @@
       menuBtn.textContent='☰';
     }));
 
-    // TFC Fest post feed: newest-first, automatic rotation until Jan 12, 2027 (Indian time).
+    // TFC News Carousel v2.0: the animated title sponsor stays fixed on top.
+    // Other static and Firebase admin posts rotate in groups of three, every 3 seconds.
     (function initTfcPostFeed(){
       const feed=document.getElementById('tfcPostFeed');
-      let posts=[...feed.querySelectorAll('.tfc-post-item')];
+      const sponsorSlot=document.getElementById('tfcPinnedSponsor');
       const count=document.getElementById('tfcFeedCount');
       const previous=document.getElementById('tfcFeedPrev');
       const next=document.getElementById('tfcFeedNext');
       const pause=document.getElementById('tfcFeedPause');
-      if(!posts.length)return;
-      const festEnd=Date.parse('2027-01-13T00:00:00+05:30');
+      if(!feed || !sponsorSlot || !count || !previous || !next || !pause)return;
+
+      // Move the ORIGINAL sponsor poster, not a clone. Animations and links stay intact.
+      const sponsorFeature=feed.querySelector('.title-sponsor-feature');
+      const sponsorWrapper=sponsorFeature?.closest('.tfc-post-item');
+      if(sponsorWrapper){
+        sponsorSlot.append(sponsorWrapper);
+        const sponsorImage=sponsorWrapper.querySelector('img');
+        if(sponsorImage) sponsorImage.loading='eager';
+      }
+
       const motionQuery=window.matchMedia('(prefers-reduced-motion: reduce)');
-      let current=0;
+      const pageSize=3;
+      let posts=[];
+      let currentGroup=0;
       let paused=false;
-      let hovered=false;
-      let userActiveUntil=0;
-      const inFestPeriod=()=>Date.now()<festEnd;
-      function updateLabels(){
+      let hover=false;
+      let activeUntil=0;
+
+      const groupCount=()=>Math.ceil(posts.length/pageSize);
+      function labels(){
         const ml=document.documentElement.lang!=='en';
-        previous.setAttribute('aria-label',ml?'മുൻപത്തെ പോസ്റ്റ്':'Previous post');
-        next.setAttribute('aria-label',ml?'അടുത്ത പോസ്റ്റ്':'Next post');
-        const canRotate=inFestPeriod()&&!motionQuery.matches;
+        previous.setAttribute('aria-label',ml?'മുൻപത്തെ 3 പോസ്റ്റുകൾ':'Previous three posts');
+        next.setAttribute('aria-label',ml?'അടുത്ത 3 പോസ്റ്റുകൾ':'Next three posts');
+        const canRotate=groupCount()>1 && !motionQuery.matches;
         pause.disabled=!canRotate;
         pause.textContent=paused?'▶':'Ⅱ';
-        pause.setAttribute('aria-label',ml?(paused?'ഓട്ടോമാറ്റിക് പോസ്റ്റുകൾ കാണിക്കൽ തുടങ്ങുക':'ഓട്ടോമാറ്റിക് മാറ്റം നിർത്തുക'):(paused?'Resume automatic rotation':'Pause automatic rotation'));
-        pause.title=ml?(paused?'തുടരുക':'നിർത്തുക'):(paused?'Play':'Pause');
-        count.textContent=(current+1)+' / '+posts.length;
+        pause.setAttribute('aria-label',ml?(paused?'പോസ്റ്റുകൾ മാറുന്നത് തുടരുക':'പോസ്റ്റുകൾ മാറുന്നത് നിർത്തുക'):(paused?'Resume rotation':'Pause rotation'));
+        pause.title=paused?'Play':'Pause';
+        count.textContent=posts.length ? `${currentGroup+1} / ${groupCount()} · ${posts.length} posts` : '0 posts';
       }
-      function showPost(index,smooth=true){
-        current=(index+posts.length)%posts.length;
-        feed.scrollTo({top:posts[current].offsetTop-posts[0].offsetTop,behavior:smooth&&!motionQuery.matches?'smooth':'instant'});
-        updateLabels();
+      function showGroup(index){
+        const total=groupCount();
+        if(!total){labels();return;}
+        currentGroup=((index%total)+total)%total;
+        // Hide all first, then show exactly 3 distinct posts (or fewer if fewer exist).
+        posts.forEach(post=>{post.hidden=true;post.classList.remove('tfc-carousel-visible');});
+        const visible=Math.min(pageSize,posts.length);
+        for(let i=0;i<visible;i++){
+          const post=posts[(currentGroup*pageSize+i)%posts.length];
+          post.hidden=false;
+          post.classList.add('tfc-carousel-visible');
+          // Existing image reader uses IntersectionObserver, which sees visible cards.
+          const image=post.querySelector('img');
+          if(image && !post.classList.contains('tfc-live-post'))image.loading='eager';
+        }
+        labels();
       }
-      previous.addEventListener('click',()=>{userActiveUntil=Date.now()+14000;showPost(current-1)});
-      next.addEventListener('click',()=>{userActiveUntil=Date.now()+14000;showPost(current+1)});
-      pause.addEventListener('click',()=>{paused=!paused;updateLabels()});
-      function markUserActive(){userActiveUntil=Date.now()+18000}
-      feed.addEventListener('wheel',markUserActive,{passive:true});
-      feed.addEventListener('touchstart',markUserActive,{passive:true});
-      feed.addEventListener('keydown',markUserActive);
-      feed.addEventListener('focusin',markUserActive);
-      feed.addEventListener('mouseenter',()=>{hovered=true});
-      feed.addEventListener('mouseleave',()=>{hovered=false});
-      feed.addEventListener('scroll',()=>{
-        const top=feed.scrollTop;
-        let closest=0,dist=Infinity;
-        posts.forEach((post,i)=>{
-          const d=Math.abs(top-(post.offsetTop-posts[0].offsetTop));
-          if(d<dist){closest=i;dist=d}
-        });
-        current=closest;
-        count.textContent=(current+1)+' / '+posts.length;
-      },{passive:true});
-      langBtn.addEventListener('click',updateLabels);
-      if(motionQuery.addEventListener)motionQuery.addEventListener('change',updateLabels);
+      function refresh(){
+        posts=[...feed.querySelectorAll(':scope > .tfc-post-item')];
+        currentGroup=0;
+        showGroup(0);
+      }
+      previous.addEventListener('click',()=>{activeUntil=Date.now()+6000;showGroup(currentGroup-1)});
+      next.addEventListener('click',()=>{activeUntil=Date.now()+6000;showGroup(currentGroup+1)});
+      pause.addEventListener('click',()=>{paused=!paused;labels()});
+      feed.addEventListener('mouseenter',()=>{hover=true});
+      feed.addEventListener('mouseleave',()=>{hover=false});
+      feed.addEventListener('focusin',()=>{hover=true});
+      feed.addEventListener('focusout',()=>{hover=false});
+      feed.addEventListener('touchstart',()=>{activeUntil=Date.now()+6000},{passive:true});
+      feed.addEventListener('tfc:posts-updated',refresh);
+      langBtn.addEventListener('click',labels);
+      if(motionQuery.addEventListener)motionQuery.addEventListener('change',labels);
+      refresh();
       setInterval(()=>{
-        if(!inFestPeriod() || paused || hovered || motionQuery.matches || document.hidden || Date.now()<userActiveUntil)return;
-        if(posts.length>1)showPost(current+1);
-      },9000);
-      // Add Firebase admin posts to the same rotation without changing existing items.
-      feed.addEventListener('tfc:posts-updated',()=>{
-        posts=[...feed.querySelectorAll('.tfc-post-item')];
-        current=0;
-        if(posts.length)showPost(0,false);
-        else updateLabels();
-      });
-      showPost(0,false);
+        if(groupCount()<2 || paused || hover || motionQuery.matches || document.hidden || Date.now()<activeUntil)return;
+        showGroup(currentGroup+1);
+      },3000);
     })();
     // Dynamic RUNNING NEWS: read the public post cards already supplied by
     // tfc-home-posts.js. The UAE committee section is NOT touched.
