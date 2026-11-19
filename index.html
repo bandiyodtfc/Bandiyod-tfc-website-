@@ -397,6 +397,27 @@
       .news-ticker-copy{white-space:normal;flex-wrap:wrap;gap:7px;padding:8px 12px}
       .news-ticker-copy[aria-hidden="true"]{display:none}
     }
+
+    /* Updates become a fixed-height, independently scrolling post feed.
+       The existing poster animations/committee/header are not modified. */
+    .tfc-feed-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:22px;margin-bottom:12px}
+    .tfc-feed-toolbar>div:first-child{min-width:0}
+    .tfc-feed-status{margin:0 0 5px;font-size:13px;font-weight:700;color:#516160;line-height:1.55}
+    .tfc-feed-count{font-size:13px;font-weight:800;color:#263e47;font-variant-numeric:tabular-nums}
+    .tfc-feed-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+    .tfc-feed-button{appearance:none;width:42px;height:40px;border-radius:12px;border:1px solid #d7c478;background:#fff7d9;color:#152831;font-size:24px;font-weight:900;line-height:1;cursor:pointer;touch-action:manipulation}
+    .tfc-feed-button:hover,.tfc-feed-button:focus-visible{background:#ffe18d;outline:2px solid #9a7921;outline-offset:2px}
+    .tfc-post-feed{position:relative;height:clamp(400px,73svh,770px);max-height:770px;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;scroll-snap-type:y proximity;scrollbar-width:thin;scrollbar-color:#c59c32 #f1ede3;border-radius:22px;border:1px solid #e2e6e3;background:#f9faf9;padding:12px;outline-offset:3px;-webkit-overflow-scrolling:touch}
+    .tfc-post-item{position:relative;scroll-snap-align:start;margin:0 0 16px;}
+    .tfc-post-item:last-child{margin-bottom:0}
+    .tfc-post-item>.title-sponsor-feature,.tfc-post-item>.fest-shell,.tfc-post-item>.news-feature{margin-top:0}
+    .tfc-post-item::after{content:"";display:block;height:1px;margin-top:12px;background:#dfdeda}
+    .tfc-post-item:last-child::after{display:none}
+    @media(max-width:760px){
+      .tfc-post-feed{height:70svh;min-height:380px;max-height:680px;padding:8px;border-radius:16px}
+      .tfc-feed-button{width:36px;height:37px}
+      .tfc-feed-status{font-size:12px}
+    }
   </style>
 </head>
 <body>
@@ -550,57 +571,77 @@
       <div class="container">
         <div class="section-kicker" data-i18n="updatesLabel">Club news</div>
         <h2 id="updatesTitle" class="section-title" data-i18n="updatesTitle">അറിയിപ്പുകൾ</h2>
-        <!-- New: title sponsor poster prominently displayed, using the already-hosted poster filename. -->
-        <article class="title-sponsor-feature" aria-labelledby="bigSponsorTitle">
-          <a class="title-sponsor-photo" href="./games-fest-2027-sponsor.jpg" target="_blank" rel="noopener" aria-label="Open full Title Sponsor poster">
-            <img src="./games-fest-2027-sponsor.jpg" loading="lazy" alt="Bandiyod Games Fest 2027 Title Sponsor — UZI Men's Boutique, Karama, Dubai" width="1100" height="1372">
-          </a>
-          <div class="title-sponsor-copy">
-            <span class="title-sponsor-label" data-i18n="titleSponsor">ടൈറ്റിൽ സ്പോൺസർ</span>
-            <h3 id="bigSponsorTitle">UZI Men's Boutique</h3>
-            <p>Karama, Dubai</p>
-            <a class="title-sponsor-button" href="./games-fest-2027-sponsor.jpg" target="_blank" rel="noopener" data-i18n="seePoster">സ്പോൺസർ പോസ്റ്റർ കാണുക</a>
+        <!-- TFC Fest Feed: newest post appears first; internal autoplay until 12 January 2027. -->
+        <div class="tfc-feed-toolbar" aria-label="TFC posts controls">
+          <div>
+            <p class="tfc-feed-status" data-i18n="feedNote">പോസ്റ്റുകൾ ഈ ഭാഗത്ത് മാത്രം മാറിമാറി കാണും · 2027 ജനുവരി 12 വരെ</p>
+            <span class="tfc-feed-count" id="tfcFeedCount" aria-live="polite">1 / 3</span>
           </div>
-        </article>
-        <div class="fest-shell">
-          <div class="fest-layout">
-            <div class="fest-poster-main">
-              <img src="./games-fest-2027.jpg" loading="lazy" alt="Bandiyod Games Fest 2027, January 8 to 12 at TFC Ground Bandiyod. Football, Cricket, Volleyball and Tug of War." width="1024" height="1536">
-            </div>
-            <div class="fest-details">
-              <div class="fest-badge" data-i18n="festBadge">🏆 12-ാം പതിപ്പ് · ഉടൻ വരുന്നു</div>
-              <h3>BANDIYOD<br><span>GAMES FEST 2027</span></h3>
-              <p data-i18n="festIntro">TFC Arts & Sports Club Bandiyod അവതരിപ്പിക്കുന്ന അഞ്ചുദിവസത്തെ കായികമേള.</p>
-              <div class="fest-facts">
-                <div class="fest-fact"><span class="fest-fact-icon" aria-hidden="true">📅</span><div><strong data-i18n="festDate">ജനുവരി 8, 9, 10, 11, 12 — 2027</strong><small data-i18n="festDateLabel">പരിപാടി നടക്കുന്ന ദിവസങ്ങൾ</small></div></div>
-                <div class="fest-fact"><span class="fest-fact-icon" aria-hidden="true">📍</span><div><strong>TFC Ground, Bandiyod</strong><small data-i18n="festVenueLabel">വേദി</small></div></div>
-                <div class="fest-fact"><span class="fest-fact-icon" aria-hidden="true">⚽</span><div><strong data-i18n="festSports">Football · Cricket · Volleyball · Tug of War</strong><small data-i18n="festSportsLabel">മത്സര ഇനങ്ങൾ</small></div></div>
-              </div>
-              <div class="fest-sponsor">
-                <a href="./games-fest-2027-sponsor.jpg" target="_blank" rel="noopener" aria-label="View Games Fest sponsor poster">
-                  <img src="./games-fest-2027-sponsor.jpg" alt="Bandiyod Games Fest 2027 title sponsor poster" loading="lazy" width="1100" height="1372">
-                </a>
-                <div>
-                  <strong data-i18n="titleSponsor">Title Sponsor</strong>
-                  <p><strong>UZI Men's Boutique</strong>Karama, Dubai</p>
-                  <a href="./games-fest-2027-sponsor.jpg" target="_blank" rel="noopener" data-i18n="seePoster">സ്പോൺസർ പോസ്റ്റർ കാണുക</a>
-                </div>
-              </div>
-              <p data-i18n="festTimeNote">മത്സരങ്ങളുടെ കൃത്യമായ സമയക്രമം പിന്നീട് അറിയിക്കും.</p>
-            </div>
+          <div class="tfc-feed-actions">
+            <button type="button" id="tfcFeedPrev" class="tfc-feed-button" aria-label="Previous post">‹</button>
+            <button type="button" id="tfcFeedPause" class="tfc-feed-button" aria-label="Pause automatic rotation">Ⅱ</button>
+            <button type="button" id="tfcFeedNext" class="tfc-feed-button" aria-label="Next post">›</button>
           </div>
         </div>
-        <article class="news-feature" aria-labelledby="championSponsorTitle">
-          <a class="news-feature-photo" href="./champion-trophy-ubbi-dubai.jpg" target="_blank" rel="noopener" aria-label="Open UBBI Dubai Champion Trophy sponsor poster">
-            <img src="./champion-trophy-ubbi-dubai.jpg" loading="lazy" alt="Bandiyod Games Fest 2027 Champion Trophy sponsored by UBBI Dubai, TFC UAE President, with a trophy and thank-you poster" width="1404" height="1536">
-          </a>
-          <div class="news-feature-copy">
-            <span class="news-feature-tag" data-i18n="championNewsTag">🏆 ചാമ്പ്യൻ ട്രോഫി</span>
-            <h3 id="championSponsorTitle" data-i18n="championNewsTitle">Champion Trophy സ്പോൺസർ — UBBI Dubai</h3>
-            <p data-i18n="championNewsBody">Bandiyod Games Fest 2027-ന്റെ Champion Trophy സ്പോൺസർ ചെയ്യുന്ന UBBI Dubai (TFC UAE President)-ന് TFC Bandiyod-ന്റെ ഹൃദയം നിറഞ്ഞ നന്ദി.</p>
-            <a class="news-feature-action" href="./champion-trophy-ubbi-dubai.jpg" target="_blank" rel="noopener" data-i18n="championNewsOpen">പോസ്റ്റർ കാണുക ↗</a>
+        <div class="tfc-post-feed" id="tfcPostFeed" aria-label="TFC latest updates. Scroll inside this panel to view older posts." tabindex="0">
+          <!-- Add a future post as the FIRST .tfc-post-item to make it newest. -->
+          <div class="tfc-post-item" data-post-title="UBBI Dubai — Champion Trophy" data-post-order="3">
+            <article class="news-feature" aria-labelledby="championSponsorTitle">
+                      <a class="news-feature-photo" href="./champion-trophy-ubbi-dubai.jpg" target="_blank" rel="noopener" aria-label="Open UBBI Dubai Champion Trophy sponsor poster">
+                        <img src="./champion-trophy-ubbi-dubai.jpg" loading="lazy" alt="Bandiyod Games Fest 2027 Champion Trophy sponsored by UBBI Dubai, TFC UAE President, with a trophy and thank-you poster" width="1404" height="1536">
+                      </a>
+                      <div class="news-feature-copy">
+                        <span class="news-feature-tag" data-i18n="championNewsTag">🏆 ചാമ്പ്യൻ ട്രോഫി</span>
+                        <h3 id="championSponsorTitle" data-i18n="championNewsTitle">Champion Trophy സ്പോൺസർ — UBBI Dubai</h3>
+                        <p data-i18n="championNewsBody">Bandiyod Games Fest 2027-ന്റെ Champion Trophy സ്പോൺസർ ചെയ്യുന്ന UBBI Dubai (TFC UAE President)-ന് TFC Bandiyod-ന്റെ ഹൃദയം നിറഞ്ഞ നന്ദി.</p>
+                        <a class="news-feature-action" href="./champion-trophy-ubbi-dubai.jpg" target="_blank" rel="noopener" data-i18n="championNewsOpen">പോസ്റ്റർ കാണുക ↗</a>
+                      </div>
+                    </article>
           </div>
-        </article>
+          <div class="tfc-post-item" data-post-title="UZI Men's Boutique — Title Sponsor" data-post-order="2">
+            <article class="title-sponsor-feature" aria-labelledby="bigSponsorTitle">
+                      <a class="title-sponsor-photo" href="./games-fest-2027-sponsor.jpg" target="_blank" rel="noopener" aria-label="Open full Title Sponsor poster">
+                        <img src="./games-fest-2027-sponsor.jpg" loading="lazy" alt="Bandiyod Games Fest 2027 Title Sponsor — UZI Men's Boutique, Karama, Dubai" width="1100" height="1372">
+                      </a>
+                      <div class="title-sponsor-copy">
+                        <span class="title-sponsor-label" data-i18n="titleSponsor">ടൈറ്റിൽ സ്പോൺസർ</span>
+                        <h3 id="bigSponsorTitle">UZI Men's Boutique</h3>
+                        <p>Karama, Dubai</p>
+                        <a class="title-sponsor-button" href="./games-fest-2027-sponsor.jpg" target="_blank" rel="noopener" data-i18n="seePoster">സ്പോൺസർ പോസ്റ്റർ കാണുക</a>
+                      </div>
+                    </article>
+          </div>
+          <div class="tfc-post-item" data-post-title="Bandiyod Games Fest 2027" data-post-order="1">
+            <div class="fest-shell">
+                      <div class="fest-layout">
+                        <div class="fest-poster-main">
+                          <img src="./games-fest-2027.jpg" loading="lazy" alt="Bandiyod Games Fest 2027, January 8 to 12 at TFC Ground Bandiyod. Football, Cricket, Volleyball and Tug of War." width="1024" height="1536">
+                        </div>
+                        <div class="fest-details">
+                          <div class="fest-badge" data-i18n="festBadge">🏆 12-ാം പതിപ്പ് · ഉടൻ വരുന്നു</div>
+                          <h3>BANDIYOD<br><span>GAMES FEST 2027</span></h3>
+                          <p data-i18n="festIntro">TFC Arts & Sports Club Bandiyod അവതരിപ്പിക്കുന്ന അഞ്ചുദിവസത്തെ കായികമേള.</p>
+                          <div class="fest-facts">
+                            <div class="fest-fact"><span class="fest-fact-icon" aria-hidden="true">📅</span><div><strong data-i18n="festDate">ജനുവരി 8, 9, 10, 11, 12 — 2027</strong><small data-i18n="festDateLabel">പരിപാടി നടക്കുന്ന ദിവസങ്ങൾ</small></div></div>
+                            <div class="fest-fact"><span class="fest-fact-icon" aria-hidden="true">📍</span><div><strong>TFC Ground, Bandiyod</strong><small data-i18n="festVenueLabel">വേദി</small></div></div>
+                            <div class="fest-fact"><span class="fest-fact-icon" aria-hidden="true">⚽</span><div><strong data-i18n="festSports">Football · Cricket · Volleyball · Tug of War</strong><small data-i18n="festSportsLabel">മത്സര ഇനങ്ങൾ</small></div></div>
+                          </div>
+                          <div class="fest-sponsor">
+                            <a href="./games-fest-2027-sponsor.jpg" target="_blank" rel="noopener" aria-label="View Games Fest sponsor poster">
+                              <img src="./games-fest-2027-sponsor.jpg" alt="Bandiyod Games Fest 2027 title sponsor poster" loading="lazy" width="1100" height="1372">
+                            </a>
+                            <div>
+                              <strong data-i18n="titleSponsor">Title Sponsor</strong>
+                              <p><strong>UZI Men's Boutique</strong>Karama, Dubai</p>
+                              <a href="./games-fest-2027-sponsor.jpg" target="_blank" rel="noopener" data-i18n="seePoster">സ്പോൺസർ പോസ്റ്റർ കാണുക</a>
+                            </div>
+                          </div>
+                          <p data-i18n="festTimeNote">മത്സരങ്ങളുടെ കൃത്യമായ സമയക്രമം പിന്നീട് അറിയിക്കും.</p>
+                        </div>
+                      </div>
+                    </div>
+          </div>
+        </div>
       </div>
     </section>
     <section id="contact" aria-labelledby="contactTitle">
@@ -650,7 +691,7 @@
         shortcutProfile:'എന്റെ പ്രൊഫൈൽ',shortcutHistory:'പേയ്‌മെന്റ് ചരിത്രം',shortcutPay:'മെമ്പർഷിപ്പ് പേയ്‌മെന്റ്',shortcutAccounts:'ക്ലബ് അക്കൗണ്ട്സ്',loginRequired:'ലോഗിൻ ആവശ്യമാണ്',memberPrivacy:'🔒 എല്ലാ ഷോർട്ട്കട്ടുകളും നിലവിലുള്ള സുരക്ഷിത ലോഗിൻ പേജിലേക്കാണ് പോകുന്നത്. അനുമതിയുള്ളവർക്ക് മാത്രം വിവരങ്ങൾ കാണാം.',
         membersLabel:'അംഗങ്ങൾക്കായി',membersTitle:'നിങ്ങളുടെ മെമ്പർഷിപ്പ് വിവരങ്ങൾ ഇവിടെ',membersBody:'Google അക്കൗണ്ട് ഉപയോഗിച്ച് ലോഗിൻ ചെയ്യാം. അഡ്മിൻ അംഗീകരിച്ച അംഗങ്ങൾക്ക് പ്രൊഫൈലും പേയ്‌മെന്റ് ചരിത്രവും കാണാം.',fees:'അംഗത്വ ഫീസ്: ₹50 / മാസം · ₹600 / വർഷം',payMembership:'💳 മെമ്പർഷിപ്പ് അടയ്ക്കുക',openPortal:'മെമ്പർ ലോഗിൻ തുറക്കുക',
         festBadge:'🏆 12-ാം പതിപ്പ് · ഉടൻ വരുന്നു',festIntro:'TFC Arts & Sports Club Bandiyod അവതരിപ്പിക്കുന്ന അഞ്ചുദിവസത്തെ കായികമേള.',festDate:'ജനുവരി 8, 9, 10, 11, 12 — 2027',festDateLabel:'പരിപാടി നടക്കുന്ന ദിവസങ്ങൾ',festVenueLabel:'വേദി',festSports:'ഫുട്ബോൾ · ക്രിക്കറ്റ് · വോളിബോൾ · വടംവലി',festSportsLabel:'മത്സര ഇനങ്ങൾ',titleSponsor:'ടൈറ്റിൽ സ്പോൺസർ',seePoster:'സ്പോൺസർ പോസ്റ്റർ കാണുക',festTimeNote:'മത്സരങ്ങളുടെ കൃത്യമായ സമയക്രമം പിന്നീട് അറിയിക്കും.',
-                updatesLabel:'ക്ലബ് വാർത്തകൾ',updatesTitle:'അറിയിപ്പുകൾ',updatesCardTitle:'ഔദ്യോഗിക അറിയിപ്പുകൾ',updatesCardBody:'പുതിയ വാർത്തകളും ക്ലബ് അറിയിപ്പുകളും ഇവിടെ ഉടൻ പ്രസിദ്ധീകരിക്കും.',
+                feedNote:'പോസ്റ്റുകൾ ഈ ഭാഗത്ത് മാത്രം മാറിമാറി കാണും · 2027 ജനുവരി 12 വരെ',updatesLabel:'ക്ലബ് വാർത്തകൾ',updatesTitle:'അറിയിപ്പുകൾ',updatesCardTitle:'ഔദ്യോഗിക അറിയിപ്പുകൾ',updatesCardBody:'പുതിയ വാർത്തകളും ക്ലബ് അറിയിപ്പുകളും ഇവിടെ ഉടൻ പ്രസിദ്ധീകരിക്കും.',
         tickerFest:'🏆 ബണ്ടിയോട് ഗെയിംസ് ഫെസ്റ്റ് 2027',tickerDate:'📅 2027 ജനുവരി 8 മുതൽ 12 വരെ',tickerUzi:'UZI Men\'s Boutique — ടൈറ്റിൽ സ്പോൺസർ',tickerUbbi:'🏆 UBBI Dubai — ചാമ്പ്യൻ ട്രോഫി സ്പോൺസർ',tickerUae:'🇦🇪 TFC UAE കമ്മിറ്റി',tickerMotto:'ONE TEAM ONE DREAM',
         championNewsTag:'🏆 ചാമ്പ്യൻ ട്രോഫി',championNewsTitle:'Champion Trophy സ്പോൺസർ — UBBI Dubai',championNewsBody:'Bandiyod Games Fest 2027-ന്റെ Champion Trophy സ്പോൺസർ ചെയ്യുന്ന UBBI Dubai (TFC UAE President)-ന് TFC Bandiyod-ന്റെ ഹൃദയം നിറഞ്ഞ നന്ദി.',championNewsOpen:'പോസ്റ്റർ കാണുക ↗',
         contactLabel:'ബന്ധപ്പെടുക',contactTitle:'ഞങ്ങളുമായി ബന്ധപ്പെടാം',contactBody:'TFC Bandiyod സംബന്ധിച്ച വിവരങ്ങൾക്കും അന്വേഷണങ്ങൾക്കും ഇമെയിൽ വഴിയോ Instagram വഴിയോ ബന്ധപ്പെടാം.',rights:'എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്തം.'
@@ -667,7 +708,7 @@
         shortcutProfile:'My Profile',shortcutHistory:'Payment History',shortcutPay:'Membership Payment',shortcutAccounts:'Club Accounts',loginRequired:'Login required',memberPrivacy:'🔒 All shortcuts open the existing secure login page. Only authorized members can view protected information.',
         membersLabel:'For members',membersTitle:'Your membership, in one place',membersBody:'Sign in with Google. Admin-approved members can access their profile and payment history.',fees:'Membership fee: ₹50 / month · ₹600 / year',payMembership:'💳 Pay Membership',openPortal:'Open Member Login',
         festBadge:'🏆 12th Edition · Coming Soon',festIntro:'Five days of sports presented by TFC Arts & Sports Club Bandiyod.',festDate:'January 8, 9, 10, 11 & 12, 2027',festDateLabel:'Fest dates',festVenueLabel:'Venue',festSports:'Football · Cricket · Volleyball · Tug of War',festSportsLabel:'Sports',titleSponsor:'Title Sponsor',seePoster:'View sponsor poster',festTimeNote:'Detailed match timings will be announced later.',
-                updatesLabel:'Club news',updatesTitle:'Latest Updates',updatesCardTitle:'Official Announcements',updatesCardBody:'Club news and official announcements will be published here soon.',
+                feedNote:'Posts rotate inside this panel until 12 January 2027',updatesLabel:'Club news',updatesTitle:'Latest Updates',updatesCardTitle:'Official Announcements',updatesCardBody:'Club news and official announcements will be published here soon.',
         tickerFest:'🏆 Bandiyod Games Fest 2027',tickerDate:'📅 8–12 January 2027',tickerUzi:'UZI Men\'s Boutique — Title Sponsor',tickerUbbi:'🏆 UBBI Dubai — Champion Trophy Sponsor',tickerUae:'🇦🇪 TFC UAE Committee',tickerMotto:'ONE TEAM ONE DREAM',
         championNewsTag:'🏆 Champion Trophy',championNewsTitle:'Champion Trophy Sponsor — UBBI Dubai',championNewsBody:'Heartfelt thanks from TFC Bandiyod to UBBI Dubai (TFC UAE President) for sponsoring the Champion Trophy at Bandiyod Games Fest 2027.',championNewsOpen:'View poster ↗',
         contactLabel:'Get in touch',contactTitle:'Contact Us',contactBody:'For club information and enquiries, connect with TFC Bandiyod by email or Instagram.',rights:'All rights reserved.'
@@ -756,6 +797,67 @@
       menuBtn.setAttribute('aria-expanded','false');
       menuBtn.textContent='☰';
     }));
+
+    // TFC Fest post feed: newest-first, automatic rotation until Jan 12, 2027 (Indian time).
+    (function initTfcPostFeed(){
+      const feed=document.getElementById('tfcPostFeed');
+      const posts=[...feed.querySelectorAll('.tfc-post-item')];
+      const count=document.getElementById('tfcFeedCount');
+      const previous=document.getElementById('tfcFeedPrev');
+      const next=document.getElementById('tfcFeedNext');
+      const pause=document.getElementById('tfcFeedPause');
+      if(!posts.length)return;
+      const festEnd=Date.parse('2027-01-13T00:00:00+05:30');
+      const motionQuery=window.matchMedia('(prefers-reduced-motion: reduce)');
+      let current=0;
+      let paused=false;
+      let hovered=false;
+      let userActiveUntil=0;
+      const inFestPeriod=()=>Date.now()<festEnd;
+      function updateLabels(){
+        const ml=document.documentElement.lang!=='en';
+        previous.setAttribute('aria-label',ml?'മുൻപത്തെ പോസ്റ്റ്':'Previous post');
+        next.setAttribute('aria-label',ml?'അടുത്ത പോസ്റ്റ്':'Next post');
+        const canRotate=inFestPeriod()&&!motionQuery.matches;
+        pause.disabled=!canRotate;
+        pause.textContent=paused?'▶':'Ⅱ';
+        pause.setAttribute('aria-label',ml?(paused?'ഓട്ടോമാറ്റിക് പോസ്റ്റുകൾ കാണിക്കൽ തുടങ്ങുക':'ഓട്ടോമാറ്റിക് മാറ്റം നിർത്തുക'):(paused?'Resume automatic rotation':'Pause automatic rotation'));
+        pause.title=ml?(paused?'തുടരുക':'നിർത്തുക'):(paused?'Play':'Pause');
+        count.textContent=(current+1)+' / '+posts.length;
+      }
+      function showPost(index,smooth=true){
+        current=(index+posts.length)%posts.length;
+        feed.scrollTo({top:posts[current].offsetTop-posts[0].offsetTop,behavior:smooth&&!motionQuery.matches?'smooth':'instant'});
+        updateLabels();
+      }
+      previous.addEventListener('click',()=>{userActiveUntil=Date.now()+14000;showPost(current-1)});
+      next.addEventListener('click',()=>{userActiveUntil=Date.now()+14000;showPost(current+1)});
+      pause.addEventListener('click',()=>{paused=!paused;updateLabels()});
+      function markUserActive(){userActiveUntil=Date.now()+18000}
+      feed.addEventListener('wheel',markUserActive,{passive:true});
+      feed.addEventListener('touchstart',markUserActive,{passive:true});
+      feed.addEventListener('keydown',markUserActive);
+      feed.addEventListener('focusin',markUserActive);
+      feed.addEventListener('mouseenter',()=>{hovered=true});
+      feed.addEventListener('mouseleave',()=>{hovered=false});
+      feed.addEventListener('scroll',()=>{
+        const top=feed.scrollTop;
+        let closest=0,dist=Infinity;
+        posts.forEach((post,i)=>{
+          const d=Math.abs(top-(post.offsetTop-posts[0].offsetTop));
+          if(d<dist){closest=i;dist=d}
+        });
+        current=closest;
+        count.textContent=(current+1)+' / '+posts.length;
+      },{passive:true});
+      langBtn.addEventListener('click',updateLabels);
+      if(motionQuery.addEventListener)motionQuery.addEventListener('change',updateLabels);
+      setInterval(()=>{
+        if(!inFestPeriod() || paused || hovered || motionQuery.matches || document.hidden || Date.now()<userActiveUntil)return;
+        if(posts.length>1)showPost(current+1);
+      },9000);
+      showPost(0,false);
+    })();
     document.getElementById('year').textContent=new Date().getFullYear();
   </script>
 </body>
