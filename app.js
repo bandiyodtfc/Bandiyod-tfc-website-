@@ -6333,5 +6333,283 @@ console.info('TFC v88.5 loaded');
     'TFC WhatsApp Receipt add-on v89.0 loaded (read-only).'
   );
 })();
+/* TFC BANDIYOD v90.0 — Admin Gmail Change */
+
+(() => {
+  let gmailBusy = false;
+
+  const pending = $('pending');
+  const membersRoot = $('membersList');
+
+  if (!pending || !membersRoot) return;
+
+  // New Google account verification request
+
+  const claimButton = button(
+    'Request Gmail Change',
+    async () => {
+      if (!current || admin || gmailBusy) return;
+
+      const number = Number($('claimNumber').value);
+
+      if (!validNumber(number)) {
+        return notify('Enter valid member number.', true);
+      }
+
+      if (!current.email || !current.emailVerified) {
+        return notify('Verified Google account required.', true);
+      }
+
+      if (!confirm(
+        `Request Gmail change for member #${number}?\n` +
+        `New Gmail: ${current.email}`
+      )) return;
+
+      gmailBusy = true;
+
+      try {
+        await set(
+          ref(db, `gmailChangeClaims/${current.uid}`),
+          {
+            email: current.email,
+            memberNumber: number,
+            status: 'pending',
+            createdAt: Date.now()
+          }
+        );
+
+        notify('Gmail change request submitted. Contact admin.');
+
+      } catch (e) {
+        notify(e.message, true);
+      } finally {
+        gmailBusy = false;
+      }
+    },
+    'secondary'
+  );
+
+  claimButton.id = 'requestGmailChange';
+  pending.append(claimButton);
+
+  // Admin Gmail change
+
+  async function changeMemberGmail(number) {
+    if (!isAdmin() || gmailBusy || approvalBusy || paymentBusy) return;
+
+    gmailBusy = true;
+    approvalBusy = true;
+
+    const adminUid = current.uid;
+
+    try {
+      const member = (
+        await get(ref(db, `members/${number}`))
+      ).val();
+
+      if (!member || member.status !== 'active' || !member.uid) {
+        throw Error('Active linked member required.');
+      }
+
+      const oldUid = member.uid;
+
+      if ((await get(ref(db, `admins/${oldUid}`))).val() === true) {
+        throw Error('Admin account cannot be changed here.');
+      }
+
+      const oldUser = (
+        await get(ref(db, `users/${oldUid}`))
+      ).val();
+
+      if (
+        oldUser?.status !== 'approved' ||
+        Number(oldUser.memberNumber) !== Number(number)
+      ) {
+        throw Error('Existing account mapping mismatch.');
+      }
+
+      const input = prompt(
+        `Member #${number} — ${member.name}\n` +
+        `Current Gmail: ${oldUser.email || 'Unavailable'}\n\n` +
+        'Enter new Gmail address:'
+      );
+
+      if (input === null) return;
+
+      const email = input.trim().toLowerCase();
+
+      if (!/^[^\s@]+@gmail\.com$/i.test(email)) {
+        throw Error('Enter a valid Gmail address.');
+      }
+
+      const claims = (
+        await get(ref(db, 'gmailChangeClaims'))
+      ).val() || {};
+
+      const matches = Object.entries(claims).filter(
+        ([uid, claim]) =>
+          uid !== oldUid &&
+          claim.status === 'pending' &&
+          Number(claim.memberNumber) === Number(number) &&
+          String(claim.email).toLowerCase() === email
+      );
+
+      if (matches.length !== 1) {
+        throw Error(
+          'New Gmail must sign in and submit Request Gmail Change first.'
+        );
+      }
+
+      const [newUid, claim] = matches[0];
+
+      if ((await get(ref(db, `admins/${newUid}`))).val() === true) {
+        throw Error('Admin Gmail cannot be linked.');
+      }
+
+      if ((await get(ref(db, `users/${newUid}`))).exists()) {
+        throw Error('New Gmail is already linked.');
+      }
+
+      const allMembers = (
+        await get(ref(db, 'members'))
+      ).val() || {};
+
+      if (Object.values(allMembers).some(m => m?.uid === newUid)) {
+        throw Error('New account already belongs to a member.');
+      }
+
+      if (!confirm(
+        `CHANGE MEMBER GMAIL?\n\n` +
+        `Member: #${number} — ${member.name}\n` +
+        `Old: ${oldUser.email || 'Unavailable'}\n` +
+        `New: ${claim.email}\n\n` +
+        'Confirm that you have verified the member identity.\n' +
+        'Old membership access will be removed.'
+      )) return;
+
+      const requests = (
+        await get(ref(db, 'paymentRequests'))
+      ).val() || {};
+
+      if (
+        unresolvedRequests(number, requests).length ||
+        findPartialPaymentRequests(number, member, requests).length
+      ) {
+        throw Error('Resolve pending payment requests first.');
+      }
+
+      const freshMember = (
+        await get(ref(db, `members/${number}`))
+      ).val();
+
+      const freshClaim = (
+        await get(ref(db, `gmailChangeClaims/${newUid}`))
+      ).val();
+
+      if (
+        freshMember?.uid !== oldUid ||
+        freshMember?.status !== 'active' ||
+        freshClaim?.status !== 'pending' ||
+        freshClaim?.email !== claim.email ||
+        Number(freshClaim?.memberNumber) !== Number(number) ||
+        auth.currentUser?.uid !== adminUid ||
+        !isAdmin()
+      ) {
+        throw Error('Account details changed. Try again.');
+      }
+
+      const auditId = push(ref(db, 'gmailChangeAudit')).key;
+      const timestamp = Date.now();
+
+      await update(ref(db), {
+        [`members/${number}/uid`]: newUid,
+
+        [`users/${oldUid}`]: null,
+
+        [`users/${newUid}`]: {
+          status: 'approved',
+          memberNumber: Number(number),
+          email: claim.email
+        },
+
+        [`gmailChangeClaims/${newUid}/status`]: 'approved',
+
+        [`gmailChangeAudit/${auditId}`]: {
+          memberNumber: Number(number),
+          oldUid,
+          newUid,
+          oldEmail: oldUser.email || '',
+          newEmail: claim.email,
+          changedAt: timestamp,
+          changedBy: adminUid
+        }
+      });
+
+      notify(`Member #${number}: Gmail changed successfully.`);
+
+      alert(
+        'Gmail changed successfully.\n' +
+        'New Gmail: ' + claim.email
+      );
+
+    } catch (e) {
+      notify('Gmail change failed: ' + e.message, true);
+      alert(e.message);
+
+    } finally {
+      gmailBusy = false;
+      approvalBusy = false;
+      renderApprovalRequests(requestsCache);
+    }
+  }
+
+  // Add Change Gmail button to Admin Members table
+
+  function addGmailButtons() {
+    if (!isAdmin()) return;
+
+    for (const row of membersRoot.querySelectorAll('tbody tr')) {
+      if (row.cells.length !== 8) continue;
+
+      const number = row.cells[0].textContent.trim();
+
+      if (!validNumber(number)) continue;
+
+      const actions = row.cells[7];
+
+      if (actions.querySelector('[data-tfc-gmail-change]')) {
+        continue;
+      }
+
+      const action = button(
+        'Change Gmail',
+        () => changeMemberGmail(number),
+        'secondary'
+      );
+
+      action.dataset.tfcGmailChange = '1';
+
+      action.disabled =
+        !memberList[number]?.uid ||
+        memberList[number]?.status !== 'active';
+
+      actions.append(
+        document.createTextNode(' '),
+        action
+      );
+    }
+  }
+
+  const observer = new MutationObserver(addGmailButtons);
+
+  observer.observe(membersRoot, {
+    childList: true,
+    subtree: true
+  });
+
+  addGmailButtons();
+
+  console.info('TFC v90.0 Gmail Change loaded.');
+})();
 
 
