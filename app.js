@@ -4964,9 +4964,11 @@ async function autoSubmitPayment() {
       monthMap[period] = true;
     }
 
-    await set(
-      push(ref(db, 'paymentRequests')),
-      {
+        const referenceKey = transactionId.toLowerCase();
+    const requestId = push(ref(db, 'paymentRequests')).key;
+
+    await update(ref(db), {
+      [`paymentRequests/${requestId}`]: {
         uid,
         memberNumber: Number(number),
         plan: 'auto',
@@ -4974,11 +4976,12 @@ async function autoSubmitPayment() {
         period: months[0],
         monthCount: count,
         months: monthMap,
-        transactionId,
+        transactionId: referenceKey,
         status: 'pending',
         createdAt: Date.now()
-      }
-    );
+      },
+      [`upiReferenceIndex/${referenceKey}`]: requestId
+    });
 
     $('transactionId').value = '';
 
