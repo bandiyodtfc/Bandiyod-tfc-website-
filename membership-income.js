@@ -182,7 +182,7 @@ function incomeRequestPeriods(request) {
     const periods = Object.keys(map).sort();
     if (
       !periods.length ||
-      periods.length > 12 ||
+      periods.length > 60 ||
       periods.length !== Number(request.monthCount) ||
       periods.some(p => !validPeriod(p) || map[p] !== true) ||
       request.period !== periods[0] ||
