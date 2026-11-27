@@ -6614,5 +6614,41 @@ console.info('TFC v88.5 loaded');
 
   console.info('TFC v90.0 Gmail Change loaded.');
 })();
+/* TFC v90.1 — Payment Error Message Fix */
+
+(() => {
+  const originalNotify = notify;
+
+  const msg = $('msg');
+  if (!msg) return;
+
+  const observer = new MutationObserver(() => {
+    const message = msg.textContent || '';
+    const ml = $('lang')?.value === 'ml';
+
+    if (
+      /transaction reference.*already submitted/i.test(message)
+    ) {
+      msg.textContent = ml
+        ? 'ഈ UPI റഫറൻസ് നമ്പർ ഇതിനകം ഉപയോഗിച്ചിട്ടുണ്ട്.'
+        : 'This UPI Reference Number has already been used.';
+
+    } else if (
+      /Payment submission failed:.*PERMISSION_DENIED/i.test(message)
+    ) {
+      msg.textContent = ml
+        ? 'പേയ്മെന്റ് സ്വീകരിച്ചില്ല. ഈ UPI റഫറൻസ് നമ്പർ നേരത്തെ ഉപയോഗിച്ചതാകാം. പരിശോധിക്കുക അല്ലെങ്കിൽ അഡ്മിനെ ബന്ധപ്പെടുക.'
+        : 'Payment blocked. This UPI Reference Number may already be used. Please verify or contact admin.';
+    }
+  });
+
+  observer.observe(msg, {
+    childList: true,
+    characterData: true,
+    subtree: true
+  });
+
+  console.info('TFC v90.1 Payment Error Fix loaded.');
+})();
 
 
