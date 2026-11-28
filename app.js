@@ -4495,7 +4495,7 @@ function autoRequestMonths(request) {
 
   if (
     !periods.length ||
-    periods.length > 12 ||
+    periods.length > 60 ||
     periods.length !== request.monthCount ||
     request.amount !== periods.length * MONTHLY_FEE ||
     request.period !== periods[0] ||
@@ -4964,7 +4964,7 @@ async function autoSubmitPayment() {
       monthMap[period] = true;
     }
 
-        const referenceKey = transactionId.toLowerCase();
+    const referenceKey = transactionId.toLowerCase();
     const requestId = push(ref(db, 'paymentRequests')).key;
 
     await update(ref(db), {
@@ -5265,90 +5265,25 @@ verifyPayment = async function(
       return;
     }
 
+    // One atomic write. The matching rules reject an already reviewed
+    // request or a conflicting paid tick; no partial approval is committed.
     const verifiedAt = Date.now();
     const reviewer = current.uid;
-
-    const result = await runTransaction(
-      memberRef,
-      value => {
-        if (
-          !value ||
-          value.status !== 'active' ||
-          value.uid !== fresh.uid
-        ) return;
-
-        const existing = value.payments || {};
-
-        if (
-          months.some(period =>
-            existing[period] != null ||
-            isHistoricalPaid(
-              history,
-              Number(period.slice(0, 4)),
-              Number(period.slice(5, 7))
-            )
-          )
-        ) {
-          return;
-        }
-
-        const next = {
-          ...value,
-          payments: {
-            ...existing
-          }
-        };
-
-        for (const period of months) {
-          next.payments[period] = {
-            status: 'paid',
-            amount: MONTHLY_FEE,
-            method: 'upi',
-            transactionId:
-              fresh.transactionId,
-            requestId: id,
-            verifiedAt,
-            verifiedBy: reviewer
-          };
-        }
-
-        return next;
-      },
-      { applyLocally: false }
-    );
-
-    if (!result.committed) {
-      throw Error(
-        'Paid month conflict. ' +
-        'Check Cash and Historical records.'
-      );
+    const changes = {};
+    for (const period of months) {
+      if (member.payments?.[period] != null || isHistoricalPaid(
+        history, Number(period.slice(0, 4)), Number(period.slice(5, 7))
+      )) throw Error('Paid month conflict. Check Cash and Historical records.');
+      changes[`members/${number}/payments/${period}`] = {
+        status: 'paid', amount: MONTHLY_FEE, method: 'upi',
+        transactionId: fresh.transactionId, requestId: id,
+        verifiedAt, verifiedBy: reviewer
+      };
     }
-
-    const completed = await runTransaction(
-      requestRef,
-      value => {
-        if (
-          !value ||
-          value.status !== 'pending'
-        ) return;
-
-        return {
-          ...value,
-          status: 'approved',
-          reviewedAt: verifiedAt,
-          reviewedBy: reviewer
-        };
-      },
-      { applyLocally: false }
-    );
-
-    if (!completed.committed) {
-      throw Error(
-        'Paid months may be recorded but ' +
-        'request status is incomplete. ' +
-        'Review the same request again.'
-      );
-    }
+    changes[`paymentRequests/${id}/status`] = 'approved';
+    changes[`paymentRequests/${id}/reviewedAt`] = verifiedAt;
+    changes[`paymentRequests/${id}/reviewedBy`] = reviewer;
+    await update(ref(db), changes);
 
     notify(
       'Payment approved. Paid months recorded.'
@@ -5898,6 +5833,9 @@ autoSelectMonths = function(
       !paid.has(period) &&
       !reserved.has(period)
     ) {
+      if (corrections?.[period]?.state === 'cancelled') {
+        throw Error(`Month ${period} needs admin reconciliation before payment.`);
+      }
       selected.push(period);
     }
 
@@ -6652,3 +6590,91 @@ console.info('TFC v88.5 loaded');
 })();
 
 
+
+console.info("TFC portal v91.0 loaded — matching v91 database rules required.");
+
+// v91.0 — administrator-only UPI reference index inspection and safe backfill.
+(() => {
+  const panel = $('paymentsPanel');
+  if (!panel) return;
+  const root = document.createElement('div');
+  root.className = 'panel';
+  const heading = document.createElement('h3');
+  heading.textContent = 'UPI Reference Index Check';
+  const report = document.createElement('pre');
+  report.style.whiteSpace = 'pre-wrap';
+  report.style.overflowWrap = 'anywhere';
+  const scan = document.createElement('button');
+  scan.type = 'button';
+  scan.textContent = 'Check Reference Index';
+  const repair = document.createElement('button');
+  repair.type = 'button';
+  repair.textContent = 'Add Missing Unique References';
+  repair.disabled = true;
+  let busy = false;
+  async function inspect() {
+    const [reqSnap, indexSnap] = await Promise.all([
+      get(ref(db, 'paymentRequests')), get(ref(db, 'upiReferenceIndex'))
+    ]);
+    const requests = reqSnap.val() || {};
+    const index = indexSnap.val() || {};
+    const groups = new Map();
+    let invalid = 0;
+    for (const [id, item] of Object.entries(requests)) {
+      const key = String(item?.transactionId || '').trim().toLowerCase();
+      if (!/^[a-z0-9-]{6,100}$/.test(key)) { invalid++; continue; }
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(id);
+    }
+    const missing = {}, duplicates = [], mismatches = [];
+    for (const [key, ids] of groups) {
+      if (ids.length !== 1) { duplicates.push(`${key}: ${ids.length} requests`); continue; }
+      if (!Object.prototype.hasOwnProperty.call(index, key)) missing[key] = ids[0];
+      else if (index[key] !== ids[0]) mismatches.push(key);
+    }
+    const orphaned = Object.keys(index).filter(k => !requests[index[k]] || !groups.get(k)?.includes(index[k]));
+    return { missing, duplicates, mismatches, orphaned, invalid, requestCount: Object.keys(requests).length };
+  }
+  function display(result) {
+    report.textContent = [
+      `Requests checked: ${result.requestCount}`,
+      `Missing unique references: ${Object.keys(result.missing).length}`,
+      `Duplicate historical references: ${result.duplicates.length}`,
+      `Index mismatches: ${result.mismatches.length}`,
+      `Orphaned or incorrect index keys: ${result.orphaned.length}`,
+      `Invalid or missing references: ${result.invalid}`,
+      ...result.duplicates.slice(0, 25).map(x => 'Duplicate: ' + x),
+      ...result.mismatches.slice(0, 25).map(x => 'Mismatch: ' + x),
+      'Existing index entries and payment records will not be changed.'
+    ].join('\n');
+    repair.disabled = !Object.keys(result.missing).length;
+  }
+  async function run(write) {
+    if (!isAdmin() || busy) return;
+    busy = true; scan.disabled = true; repair.disabled = true;
+    const uid = current.uid;
+    try {
+      let result = await inspect();
+      if (!isAdmin() || current.uid !== uid) return;
+      display(result);
+      if (write && Object.keys(result.missing).length && confirm(
+        `Add ${Object.keys(result.missing).length} missing unique references? Existing records will not be modified. Use only after taking a database backup.`
+      )) {
+        const changes = {};
+        for (const [key, id] of Object.entries(result.missing)) changes[`upiReferenceIndex/${key}`] = id;
+        await update(ref(db), changes);
+        result = await inspect();
+        if (!isAdmin() || current.uid !== uid) return;
+        display(result);
+      }
+    } catch (error) {
+      report.textContent = 'Reference index check failed: ' + error.message;
+      repair.disabled = true;
+    } finally { busy = false; scan.disabled = false; }
+  }
+  scan.onclick = () => run(false);
+  repair.onclick = () => run(true);
+  root.append(heading, scan, document.createTextNode(' '), repair, report);
+  panel.insertBefore(root, $('adminPaymentList'));
+  onAuthStateChanged(auth, () => { report.textContent = ''; repair.disabled = true; });
+})();

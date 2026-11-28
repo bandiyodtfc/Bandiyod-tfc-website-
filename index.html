@@ -519,6 +519,13 @@
     .tfc-fest-memory .section-copy{color:#42544a}
     .tfc-fest-memory .section-kicker{color:#81620e}
     .tfc-gallery-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:22px;margin-top:28px}
+    #tfcArchivedPosts[hidden],#tfcPinnedSponsor[hidden]{display:none!important}
+    #tfcArchivedPosts .tfc-post-item{display:block!important;min-width:0;overflow:hidden;border-radius:16px}
+    #tfcArchivedPosts .tfc-post-item .news-feature,#tfcArchivedPosts .fest-shell,#tfcArchivedPosts .title-sponsor-feature{margin:0;max-width:100%}
+    #tfcArchivedPosts .tfc-live-photo{min-height:230px}
+    #tfcArchivedPosts .fest-layout,#tfcArchivedPosts .news-feature,#tfcArchivedPosts .title-sponsor-feature{display:flex;flex-direction:column}
+    #tfcArchivedPosts .news-feature-photo,#tfcArchivedPosts .fest-poster-main,#tfcArchivedPosts .title-sponsor-photo{height:300px;max-height:300px;width:100%}
+    #tfcArchivedPosts img{object-fit:contain;max-height:300px;max-width:100%}
     .tfc-gallery-card{overflow:hidden;border-radius:22px;background:#fff;border:1px solid #dfe7df;box-shadow:0 10px 24px #12231b14;min-width:0}
     .tfc-gallery-card h3{font-size:clamp(19px,2.4vw,24px);line-height:1.3;margin:0 0 7px;color:#17251f}
     .tfc-gallery-card p{color:#495950;margin:0 0 12px;white-space:pre-wrap;font-size:14px;line-height:1.65}
@@ -731,7 +738,7 @@
         </div>
         <div class="tfc-post-feed" id="tfcPostFeed" aria-label="TFC latest updates. Three cards rotate every three seconds." tabindex="0">
           <!-- Add a future post as the FIRST .tfc-post-item to make it newest. -->
-          <div class="tfc-post-item" data-post-title="Junior Fest Champion Trophy — Haidu Karama" data-post-order="4">
+          <div class="tfc-post-item" data-post-title="Junior Fest Champion Trophy — Haidu Karama" data-post-order="4" data-fest-2027="true">
             <article class="news-feature" aria-labelledby="juniorChampionTitle">
               <a class="news-feature-photo" href="./junior-fest-champion-haidu-karama.jpg" target="_blank" rel="noopener" aria-label="Open Junior Fest Champion Trophy sponsor poster">
                 <img src="./junior-fest-champion-haidu-karama.jpg" loading="lazy" alt="Bandiyod Games Fest 2027 Junior Fest Champion Trophy sponsored by Haidu Karama, thank you poster" width="1179" height="1536">
@@ -744,7 +751,7 @@
               </div>
             </article>
           </div>
-          <div class="tfc-post-item" data-post-title="UBBI Dubai — Champion Trophy" data-post-order="3">
+          <div class="tfc-post-item" data-post-title="UBBI Dubai — Champion Trophy" data-post-order="3" data-fest-2027="true">
             <article class="news-feature" aria-labelledby="championSponsorTitle">
                       <a class="news-feature-photo" href="./champion-trophy-ubbi-dubai.jpg" target="_blank" rel="noopener" aria-label="Open UBBI Dubai Champion Trophy sponsor poster">
                         <img src="./champion-trophy-ubbi-dubai.jpg" loading="lazy" alt="Bandiyod Games Fest 2027 Champion Trophy sponsored by UBBI Dubai, TFC UAE President, with a trophy and thank-you poster" width="1404" height="1536">
@@ -757,7 +764,7 @@
                       </div>
                     </article>
           </div>
-          <div class="tfc-post-item" data-post-title="UZI Men's Boutique — Title Sponsor" data-post-order="2">
+          <div class="tfc-post-item" data-post-title="UZI Men's Boutique — Title Sponsor" data-post-order="2" data-fest-2027="true">
             <article class="title-sponsor-feature" aria-labelledby="bigSponsorTitle">
                       <a class="title-sponsor-photo" href="./games-fest-2027-sponsor.jpg" target="_blank" rel="noopener" aria-label="Open full Title Sponsor poster">
                         <img src="./games-fest-2027-sponsor.jpg" loading="lazy" alt="Bandiyod Games Fest 2027 Title Sponsor — UZI Men's Boutique, Karama, Dubai" width="1100" height="1372">
@@ -770,7 +777,7 @@
                       </div>
                     </article>
           </div>
-          <div class="tfc-post-item" data-post-title="Bandiyod Games Fest 2027" data-post-order="1">
+          <div class="tfc-post-item" data-post-title="Bandiyod Games Fest 2027" data-post-order="1" data-fest-2027="true">
             <div class="fest-shell">
                       <div class="fest-layout">
                         <div class="fest-poster-main">
@@ -807,8 +814,9 @@
     <section id="tfcFestMemorySection" class="tfc-fest-memory" aria-labelledby="tfcFestMemoryTitle" hidden>
       <div class="container">
         <div class="section-kicker">TFC BANDIYOD · PHOTO ARCHIVE</div>
-        <h2 id="tfcFestMemoryTitle" class="section-title">📸 Fest Memories</h2>
+        <h2 id="tfcFestMemoryTitle" class="section-title">📸 Best Memories</h2>
         <p class="section-copy" data-i18n="festMemoriesIntro">പഴയ ഫെസ്റ്റുകളുടെ മനോഹരമായ ഓർമ്മകൾ — ഓരോ 3 സെക്കൻഡിലും ഫോട്ടോകൾ സ്വയം മാറും.</p>
+        <div id="tfcArchivedPosts" class="tfc-gallery-list" aria-live="off" hidden></div>
         <div id="tfcFestGalleries" class="tfc-gallery-list" aria-live="off"></div>
       </div>
     </section>
@@ -1062,6 +1070,7 @@
       function renderNews(){
         const lang=document.documentElement.lang==='en'?'en':'ml';
         const t=translations[lang];
+        const festActive=!!document.querySelector('#tfcPinnedSponsor [data-fest-2027]');
         const sponsor=t.tickerUzi;
         const newLabel=lang==='ml'?'📢 പുതിയ പോസ്റ്റ്: ':'📢 New post: ';
         const normalize=value=>String(value||'').replace(/\s+/g,' ').trim();
@@ -1073,15 +1082,10 @@
             if(!title)return '';
             return newLabel+shorten(title,100)+(description?' — '+shorten(description,120):'');
           }).filter(Boolean);
-        const base=[
-          t.tickerFest+' · '+t.tickerDate,
-          t.juniorChampionTitle,
-          t.championNewsTitle,
-          t.tickerMotto
-        ];
+        const base=festActive?[t.tickerFest+' · '+t.tickerDate,t.juniorChampionTitle,t.championNewsTitle,t.tickerMotto]:[t.tickerMotto];
         // Sponsor appears before the first item and after every item in the loop.
-        const announcements=[sponsor];
-        for(const story of [...fresh,...base])announcements.push(story,sponsor);
+        const announcements=festActive?[sponsor]:[];
+        for(const story of [...fresh,...base]) {announcements.push(story);if(festActive)announcements.push(sponsor);}
         const fragment=document.createDocumentFragment();
         for(let copy=0;copy<2;copy++){
           const group=document.createElement('div');
@@ -1104,7 +1108,7 @@
     })();
     document.getElementById('year').textContent=new Date().getFullYear();
   </script>
-  <script type="module" src="./tfc-home-posts.js"></script>
-  <script type="module" src="./tfc-fest-gallery.js"></script>
+  <script type="module" src="./tfc-home-posts.js?v=92.0"></script>
+  <script type="module" src="./tfc-fest-gallery.js?v=92.0"></script>
 </body>
 </html>

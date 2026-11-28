@@ -11,6 +11,7 @@ import {
   getDatabase, ref, get, onValue, push, update, serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js';
 import { firebaseConfig } from './firebase-config.js';
+import { archiveAt, archiveDate, isArchived } from './tfc-fest-archive.js?v=92.0';
 
 const app = getApps()[0] || initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -80,8 +81,9 @@ function render() {
     const title = document.createElement('strong'); title.textContent = data.title || 'Untitled';
     const badge = document.createElement('span');
     badge.className = data.status === 'published' ? 'state live' : 'state';
-    badge.textContent = data.status === 'published' ? 'പ്രസിദ്ധീകരിച്ചു' : 'മറച്ചിരിക്കുന്നു';
+    badge.textContent = data.status === 'published' ? (isArchived(data,Date.now()) ? 'Best Memories' : 'പ്രസിദ്ധീകരിച്ചു') : 'മറച്ചിരിക്കുന്നു';
     header.append(title, badge);
+    if (data.archiveAt) { const end = document.createElement('small'); end.textContent = 'Fest ends (IST): ' + archiveDate(data.archiveAt); header.append(end); }
     const desc = document.createElement('p'); desc.textContent = data.body || 'വിവരണം നൽകിയിട്ടില്ല';
     const date = document.createElement('small');
     date.textContent = data.createdAt ?
@@ -102,6 +104,7 @@ function edit(id) {
   picker.value = '';
   $('postTitle').value = posts[id].title || '';
   $('postBody').value = posts[id].body || '';
+  $('festEndDate').value = archiveDate(posts[id].archiveAt);
   $('editNote').hidden = false;
   $('cancelEdit').hidden = false;
   showImage(null);
@@ -171,6 +174,9 @@ form.addEventListener('submit', async event => {
   if (!ready || busy) return;
   const title = $('postTitle').value.trim();
   const body = $('postBody').value.trim();
+  const endDate = $('festEndDate').value;
+  const archiveTime = archiveAt(endDate);
+  if (endDate && (!archiveTime || endDate < '2000-01-01' || endDate > '2100-12-31')) return message('ഫെസ്റ്റ് അവസാന തീയതി ശരിയല്ല.',true);
   if (!title || title.length > 110 || body.length > 600) return message('പേരോ വിവരണത്തിന്റെ നീളമോ ശരിയല്ല.',true);
   if (!editingId && !selectedFile) return message('പുതിയ പോസ്റ്റിന് ഫോട്ടോ ആവശ്യമാണ്.',true);
   if (editingId && !posts[editingId]) return message('ഈ പോസ്റ്റ് ഇപ്പോൾ നിലവിലില്ല.',true);
@@ -186,11 +192,12 @@ form.addEventListener('submit', async event => {
       createdAt: previous?.createdAt || serverTimestamp(),
       updatedAt: serverTimestamp()
     };
+    if (archiveTime) payload.archiveAt = archiveTime;
     const changes = {[`tfcSitePosts/meta/${id}`]: payload};
     if (imageData) changes[`tfcSitePosts/images/${id}`] = imageData;
     await update(ref(db),changes);
     resetForm();
-    message('✅ പോസ്റ്റ് സേവ് ചെയ്തു! ഹോം പേജിൽ ഉടനെ കാണാം.');
+    message(archiveTime && Date.now() >= archiveTime ? '✅ Best Memories-ൽ പോസ്റ്റ് സേവ് ചെയ്തു!' : '✅ പോസ്റ്റ് സേവ് ചെയ്തു! ഹോം പേജിൽ ഉടനെ കാണാം.');
   } catch (error) {
     message(`പോസ്റ്റ് സേവ് ചെയ്യാനായില്ല: ${error.message}`,true);
   } finally { setBusy(false); }

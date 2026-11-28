@@ -3,11 +3,11 @@ import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/
 import { getDatabase, ref, get, set, remove, onValue } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js';
 import { firebaseConfig } from './firebase-config.js';
 
-// TFC BANDIYOD — MEMBER PHOTOS v1.0
+// TFC BANDIYOD — MEMBER PHOTOS v1.1
 // Firebase Realtime Database, no Storage billing.
 // Admin: manage any active member photo.
 // Approved active member: manage own photo.
-// Approved active members can view all photos.
+// Approved active members can view only their own photo.
 
 const app = getApps()[0] || initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -250,7 +250,8 @@ function renderOwnPhoto() {
 
 function renderAdminPhotos() {
   const root = el('photoMembersList');
-  if (!root || !admin || !user) return;
+  if (!root) return;
+  if (!admin || !user) { root.replaceChildren(); return; }
 
   root.replaceChildren();
 
@@ -383,9 +384,10 @@ onAuthStateChanged(auth, async signedIn => {
     }
 
     stopPhotos = onValue(
-      ref(db, 'memberPhotos'),
+      ref(db, admin ? 'memberPhotos' : `memberPhotos/${ownNumber}`),
       snapshot => {
-        photos = snapshot.val() || {};
+        if (generation !== session) return;
+        photos = admin ? (snapshot.val() || {}) : (snapshot.exists() ? { [ownNumber]: snapshot.val() } : {});
         renderOwnPhoto();
         renderAdminPhotos();
       },

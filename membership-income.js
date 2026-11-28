@@ -1,7 +1,7 @@
 
 /*
  TFC BANDIYOD
- MEMBERSHIP INCOME v90.0 — ORDER FIX
+ MEMBERSHIP INCOME v91.0 — ORDER FIX
 
  - Cash collections
  - Approved UPI monthly/yearly/auto payments
@@ -473,7 +473,7 @@ function publicEntries(entries) {
       hash = Math.imul(hash, 16777619);
     }
 
-    const key = "collection_" + (hash >>> 0).toString(16);
+    const key = "collection_" + (hash >>> 0).toString(16) + "_" + Object.keys(result).length;
     result[key] = {
       date: entry.date,
       method: entry.method,
@@ -520,20 +520,15 @@ async function publishSummary(entries, id) {
 
     updateAdminStatus("Publishing to Firebase...");
 
-    if (!Object.keys(publicRows).length) {
-      updateAdminStatus("No verified collections to publish.");
-      return;
-    }
-
     await set(ref(db, PUBLIC_PATH), {
-      entries: publicRows,
+      entries: Object.keys(publicRows).length ? publicRows : null,
       updatedAt: Date.now(),
       publishedBy: uid
     });
 
     if (id === generation) {
       publishedSignature = signature;
-      updateAdminStatus("Published successfully to Firebase.");
+      updateAdminStatus(Object.keys(publicRows).length ? "Published successfully to Firebase." : "Published zero verified collections.");
     }
   } catch (error) {
     if (id === generation) {
@@ -633,6 +628,7 @@ onAuthStateChanged(auth, async account => {
           },
           error => {
             if (id !== generation) return;
+            loaded[key] = false;
             updateAdminStatus(
               `${path} read failed: ${error.message}`,
               true
@@ -685,5 +681,5 @@ onAuthStateChanged(auth, async account => {
 });
 
 setupUI();
-console.info("TFC Bandiyod Membership Income v90.0 loaded.");
-/* END MEMBERSHIP INCOME v90.0 */
+console.info("TFC Bandiyod Membership Income v91.0 loaded.");
+/* END MEMBERSHIP INCOME v91.0 */

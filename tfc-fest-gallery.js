@@ -1,7 +1,7 @@
 /* TFC BANDIYOD | Separate Fest Memories reader v1.0
    Does NOT insert posts into Latest Updates, Sponsor or running NEWS. */
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
-import { getDatabase, ref, get, onValue } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js';
+import { getDatabase, ref, get, onValue, query, orderByChild, equalTo } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js';
 import { firebaseConfig } from './firebase-config.js';
 
 const section=document.getElementById('tfcFestMemorySection');
@@ -91,14 +91,14 @@ if(section){
     sessions.push(state);
     return card;
   }
-  onValue(ref(db,'tfcFestGalleries/meta'),snapshot=>{
+  onValue(query(ref(db,'tfcFestGalleries/meta'),orderByChild('status'),equalTo('published')),snapshot=>{
     dispose();list.replaceChildren();
     const rows=Object.entries(snapshot.val()||{})
       .filter(([id,p])=>id&&p&&p.status==='published'&&typeof p.title==='string'&&idsOf(p).length)
       .sort((a,b)=>(Number(b[1].createdAt)||0)-(Number(a[1].createdAt)||0));
     const fragment=document.createDocumentFragment();
     for(const [id,p] of rows){const card=create(id,p);if(card)fragment.append(card);}
-    list.append(fragment);section.hidden=!rows.length;
+    list.append(fragment);section.hidden=!rows.length && !document.getElementById('tfcArchivedPosts')?.childElementCount;
   },error=>console.warn('TFC Gallery not available:',error.code||error.message));
   window.addEventListener('pagehide',()=>{dispose();languageObserver.disconnect();});
 }

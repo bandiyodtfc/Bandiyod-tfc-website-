@@ -62,6 +62,9 @@
         <input id="postTitle" type="text" maxlength="110" autocomplete="off" required placeholder="ഉദാ: Junior Fest Champion Trophy">
         <label for="postBody">വിവരണം</label>
         <textarea id="postBody" maxlength="600" placeholder="ഉദാ: സ്പോൺസറിന് TFC Bandiyod-ന്റെ നന്ദി"></textarea>
+        <label for="festEndDate">Fest end date (optional)</label>
+        <input id="festEndDate" type="date" min="2000-01-01" max="2100-12-31" style="display:block;width:100%;padding:12px;border:1px solid #b8c3c4;border-radius:11px">
+        <p class="muted">ഫെസ്റ്റ് പോസ്റ്റ് ആണെങ്കിൽ അവസാന തീയതി തിരഞ്ഞെടുക്കുക. ആ ദിവസം കഴിഞ്ഞാൽ Best Memories-ലേക്ക് സ്വയം മാറും (IST). സാധാരണ പോസ്റ്റിന് തീയതി നൽകേണ്ടതില്ല.</p>
         <label for="postPhoto">പോസ്റ്ററിന്റെ ഫോട്ടോ *</label>
         <div class="filebox">
           <input id="postPhoto" type="file" accept="image/*">
@@ -95,7 +98,7 @@
       <div id="postList"><p class="muted">Admin Login ആവശ്യമാണ്.</p></div>
     </section>
   </main>
-  <script type="module" src="./tfc-admin-posts.js"></script>
-  <script type="module" src="./tfc-admin-fest-gallery.js"></script>
+  <script type="module" src="./tfc-admin-posts.js?v=92.0"></script>
+  <script type="module" src="./tfc-admin-fest-gallery.js?v=91.0"></script>
 </body>
 </html>

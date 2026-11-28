@@ -2,23 +2,334 @@
   "rules": {
     ".read": false,
     ".write": false,
+    "gmailChangeClaims": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "(auth != null && root.child('admins').child(auth.uid).val() === true) || (auth != null && auth.uid === $uid && auth.token.email_verified === true && newData.exists() && newData.child('email').val() === auth.token.email && newData.child('status').val() === 'pending')",
+        ".validate": "newData.hasChildren(['email', 'memberNumber', 'status', 'createdAt']) && newData.child('email').isString() && newData.child('memberNumber').isNumber() && newData.child('memberNumber').val() >= 1 && newData.child('memberNumber').val() <= 99999 && newData.child('createdAt').isNumber() && (newData.child('status').val() === 'pending' || newData.child('status').val() === 'approved' || newData.child('status').val() === 'rejected')"
+      }
+    },
+    "gmailChangeAudit": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$id": {
+        ".write": "auth != null && root.child('admins').child(auth.uid).val() === true && !data.exists() && newData.exists()",
+        ".validate": "newData.hasChildren(['memberNumber', 'oldUid', 'newUid', 'oldEmail', 'newEmail', 'changedAt', 'changedBy']) && newData.child('changedBy').val() === auth.uid && newData.child('changedAt').isNumber()"
+      }
+    },
     "admins": {
-      "$uid": {".read": "auth != null && auth.uid === $uid", ".write": false}
+      "$uid": {
+        ".read": "(auth != null && root.child('admins').child(auth.uid).val() === true) || (auth != null && auth.uid === $uid)",
+        ".write": false
+      }
     },
     "users": {
-      "$uid": {".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true)", ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"}
+      "$uid": {
+        ".read": "(auth != null && root.child('admins').child(auth.uid).val() === true) || (auth != null && auth.uid === $uid)",
+        ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+        ".validate": "newData.hasChildren(['status', 'memberNumber']) && newData.child('status').val() === 'approved' && newData.child('memberNumber').isNumber() && newData.child('memberNumber').val() >= 1 && newData.child('memberNumber').val() <= 99999"
+      }
     },
     "requests": {
       ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || (auth.uid === $uid && !root.child('users').child(auth.uid).child('status').val() && newData.child('uid').val() === auth.uid && newData.child('status').val() === 'pending' && newData.child('requestedNumber').isNumber() && newData.child('requestedNumber').val() > 0 && newData.child('requestedNumber').val() < 10000 && newData.child('email').val() === auth.token.email))"
+        ".write": "(auth != null && root.child('admins').child(auth.uid).val() === true) || (auth != null && auth.uid === $uid && auth.token.email_verified === true && newData.child('email').val() === auth.token.email && newData.exists() && newData.child('uid').val() === auth.uid && newData.child('status').val() === 'pending' && newData.child('requestedNumber').isNumber() && newData.child('requestedNumber').val() >= 1 && newData.child('requestedNumber').val() <= 99999 && newData.child('createdAt').isNumber() && (!data.exists() || data.child('status').val() === 'rejected'))",
+        ".validate": "newData.hasChildren(['uid', 'requestedNumber', 'status', 'createdAt']) && newData.child('uid').isString() && newData.child('requestedNumber').isNumber() && newData.child('requestedNumber').val() >= 1 && newData.child('requestedNumber').val() <= 99999 && newData.child('createdAt').isNumber() && (newData.child('status').val() === 'pending' || newData.child('status').val() === 'approved' || newData.child('status').val() === 'rejected')"
       }
     },
     "members": {
       ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
-      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
-      "$number": {".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || (data.child('uid').val() === auth.uid && root.child('users').child(auth.uid).child('memberNumber').val() === $number && root.child('users').child(auth.uid).child('status').val() === 'approved'))"}
+      "$number": {
+        ".read": "(auth != null && root.child('admins').child(auth.uid).val() === true) || (auth != null && root.child('users').child(auth.uid).child('status').val() === 'approved' && root.child('users').child(auth.uid).child('memberNumber').val() + '' === $number && root.child('members').child($number).child('uid').val() === auth.uid && data.child('number').val() + '' === $number)",
+        ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+        ".validate": "newData.hasChildren(['number', 'name', 'status']) && newData.child('number').isNumber() && newData.child('number').val() >= 1 && newData.child('number').val() <= 99999 && newData.child('name').isString() && (newData.child('status').val() === 'active' || newData.child('status').val() === 'inactive' || newData.child('status').val() === 'suspended' || newData.child('status').val() === 'archiving' || newData.child('status').val() === 'archived')",
+        "phone": {
+          ".write": "(auth != null && root.child('admins').child(auth.uid).val() === true) || (auth != null && root.child('users').child(auth.uid).child('status').val() === 'approved' && root.child('users').child(auth.uid).child('memberNumber').val() + '' === $number && root.child('members').child($number).child('uid').val() === auth.uid && root.child('members').child($number).child('status').val() === 'active')",
+          ".validate": "newData.isString() && (newData.val() === '' || newData.val().length >= 7 && newData.val().length <= 15)"
+        },
+        "payments": {
+          "$period": {
+            ".validate": "newData.hasChildren(['status', 'amount']) && newData.child('status').val() === 'paid' && newData.child('amount').val() === 50 && ((data.exists() && newData.child('status').val() === data.child('status').val() && newData.child('amount').val() === data.child('amount').val() && newData.child('method').val() === data.child('method').val() && newData.child('requestId').val() === data.child('requestId').val() && newData.child('transactionId').val() === data.child('transactionId').val() && newData.child('verifiedAt').val() === data.child('verifiedAt').val() && newData.child('verifiedBy').val() === data.child('verifiedBy').val() && newData.child('plan').val() === data.child('plan').val() && newData.child('receivedDate').val() === data.child('receivedDate').val()) || (!data.exists() && $period.matches(/^\\d{4}-(0[1-9]|1[0-2])$/) && newData.parent().parent().child('status').val() === 'active' && root.child('paymentCorrections').child($number).child($period).child('state').val() !== 'cancelled' && newData.child('verifiedAt').isNumber() && newData.child('verifiedAt').val() >= now - 300000 && newData.child('verifiedAt').val() <= now + 300000 && newData.child('verifiedBy').val() === auth.uid && ((newData.child('method').val() === 'cash') || (newData.child('method').val() === 'upi' && newData.child('requestId').isString() && root.child('paymentRequests').child(newData.child('requestId').val()).child('status').val() === 'pending' && newData.parent().parent().parent().parent().child('paymentRequests').child(newData.child('requestId').val()).child('status').val() === 'approved' && newData.parent().parent().parent().parent().child('paymentRequests').child(newData.child('requestId').val()).child('memberNumber').val() + '' === $number && newData.parent().parent().parent().parent().child('paymentRequests').child(newData.child('requestId').val()).child('uid').val() === newData.parent().parent().child('uid').val() && newData.parent().parent().parent().parent().child('paymentRequests').child(newData.child('requestId').val()).child('transactionId').val() === newData.child('transactionId').val() && newData.parent().parent().parent().parent().child('paymentRequests').child(newData.child('requestId').val()).child('reviewedAt').val() === newData.child('verifiedAt').val() && newData.parent().parent().parent().parent().child('paymentRequests').child(newData.child('requestId').val()).child('reviewedBy').val() === auth.uid && (newData.parent().parent().parent().parent().child('paymentRequests').child(newData.child('requestId').val()).child('plan').val() !== 'auto' || newData.parent().parent().parent().parent().child('paymentRequests').child(newData.child('requestId').val()).child('months').child($period).val() === true)))))"
+          }
+        }
+      }
+    },
+    "paymentHistory": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      ".write": false,
+      "$number": {
+        ".read": "(auth != null && root.child('admins').child(auth.uid).val() === true) || (auth != null && root.child('users').child(auth.uid).child('status').val() === 'approved' && root.child('users').child(auth.uid).child('memberNumber').val() + '' === $number && root.child('members').child($number).child('uid').val() === auth.uid)"
+      }
+    },
+    "paymentCorrections": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$number": {
+        ".read": "(auth != null && root.child('admins').child(auth.uid).val() === true) || (auth != null && root.child('users').child(auth.uid).child('status').val() === 'approved' && root.child('users').child(auth.uid).child('memberNumber').val() + '' === $number && root.child('members').child($number).child('uid').val() === auth.uid)",
+        "$period": {
+          ".write": "auth != null && root.child('admins').child(auth.uid).val() === true && newData.exists() && newData.child('updatedBy').val() === auth.uid && newData.child('updatedAt').isNumber() && newData.child('updatedAt').val() >= now - 300000 && newData.child('updatedAt').val() <= now + 300000",
+          ".validate": "newData.hasChildren(['state', 'updatedBy', 'updatedAt', 'events']) && (newData.child('state').val() === 'cancelled' || newData.child('state').val() === 'restored') && newData.child('events').hasChildren()",
+          "events": {
+            "$eventId": {
+              ".validate": "newData.hasChildren(['action', 'reason', 'adminUid', 'at']) && (newData.child('action').val() === 'cancel' || newData.child('action').val() === 'restore') && newData.child('reason').isString() && newData.child('reason').val().length >= 5 && newData.child('reason').val().length <= 500 && newData.child('adminUid').isString() && newData.child('at').isNumber()"
+            }
+          }
+        }
+      }
+    },
+    "archivedMembers": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      ".write": false
+    },
+    "paymentRequests": {
+      ".indexOn": [
+        "uid"
+      ],
+      ".read": "(auth != null && root.child('admins').child(auth.uid).val() === true) || (auth != null && query.orderByChild === 'uid' && query.equalTo === auth.uid && root.child('users').child(auth.uid).child('status').val() === 'approved')",
+      "$requestId": {
+        ".read": "(auth != null && root.child('admins').child(auth.uid).val() === true) || (auth != null && data.child('uid').val() === auth.uid && root.child('users').child(auth.uid).child('status').val() === 'approved' && root.child('members').child(data.child('memberNumber').val() + '').child('uid').val() === auth.uid)",
+        ".write": "(auth != null && root.child('admins').child(auth.uid).val() === true && data.exists() && newData.exists() && data.child('status').val() === 'pending' && newData.child('uid').val() === data.child('uid').val() && newData.child('memberNumber').val() === data.child('memberNumber').val() && newData.child('plan').val() === data.child('plan').val() && newData.child('amount').val() === data.child('amount').val() && newData.child('period').val() === data.child('period').val() && newData.child('transactionId').val() === data.child('transactionId').val() && newData.child('createdAt').val() === data.child('createdAt').val() && newData.child('monthCount').val() === data.child('monthCount').val() && newData.child('reviewedBy').val() === auth.uid && newData.child('reviewedAt').isNumber() && newData.child('reviewedAt').val() >= now - 300000 && newData.child('reviewedAt').val() <= now + 300000 && ((newData.child('status').val() === 'approved' && newData.parent().parent().child('members').child(data.child('memberNumber').val() + '').child('payments').child(data.child('period').val()).child('requestId').val() === $requestId && newData.parent().parent().child('members').child(data.child('memberNumber').val() + '').child('payments').child(data.child('period').val()).child('status').val() === 'paid') || (newData.child('status').val() === 'rejected' && root.child('members').child(data.child('memberNumber').val() + '').child('payments').child(data.child('period').val()).child('requestId').val() !== $requestId))) || (auth != null && !data.exists() && newData.exists() && auth.uid === newData.child('uid').val() && root.child('users').child(auth.uid).child('status').val() === 'approved' && newData.child('memberNumber').isNumber() && root.child('users').child(auth.uid).child('memberNumber').val() === newData.child('memberNumber').val() && root.child('members').child(newData.child('memberNumber').val() + '').child('uid').val() === auth.uid && root.child('members').child(newData.child('memberNumber').val() + '').child('status').val() === 'active' && newData.child('status').val() === 'pending' && newData.child('createdAt').isNumber() && newData.child('createdAt').val() <= now && newData.child('createdAt').val() >= now - 300000 && newData.child('transactionId').isString() && newData.child('transactionId').val().matches(/^[a-z0-9-]{6,100}$/) && !root.child('upiReferenceIndex').child(newData.child('transactionId').val()).exists() && newData.parent().parent().child('upiReferenceIndex').child(newData.child('transactionId').val()).val() === $requestId && newData.child('period').isString() && !newData.child('reviewedAt').exists() && !newData.child('reviewedBy').exists() && !newData.child('recovered').exists() && ((newData.child('plan').val() === 'monthly' && newData.child('amount').val() === 50) || (newData.child('plan').val() === 'yearly' && newData.child('amount').val() === 600) || (newData.child('plan').val() === 'auto' && newData.child('amount').isNumber() && newData.child('amount').val() >= 50 && newData.child('amount').val() <= 3000 && newData.child('monthCount').isNumber() && newData.child('monthCount').val() >= 1 && newData.child('monthCount').val() <= 60 && newData.child('amount').val() === newData.child('monthCount').val() * 50 && newData.child('months').exists() && newData.child('months').child(newData.child('period').val()).val() === true)))",
+        ".validate": "newData.hasChildren(['uid', 'memberNumber', 'plan', 'amount', 'period', 'transactionId', 'status', 'createdAt']) && (newData.child('plan').val() !== 'auto' || newData.hasChildren(['monthCount', 'months']))",
+        "uid": {
+          ".validate": "newData.isString()"
+        },
+        "memberNumber": {
+          ".validate": "newData.isNumber()"
+        },
+        "plan": {
+          ".validate": "newData.val() === 'monthly' || newData.val() === 'yearly' || newData.val() === 'auto'"
+        },
+        "amount": {
+          ".validate": "newData.isNumber() && newData.val() >= 50 && newData.val() <= 3000 && newData.val() % 50 === 0"
+        },
+        "period": {
+          ".validate": "newData.isString() && newData.val().matches(/^\\d{4}-(0[1-9]|1[0-2])$/)"
+        },
+        "monthCount": {
+          ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 60 && newData.parent().child('plan').val() === 'auto' && newData.parent().child('amount').val() === newData.val() * 50"
+        },
+        "months": {
+          ".validate": "newData.hasChildren()",
+          "$period": {
+            ".validate": "$period.matches(/^\\d{4}-(0[1-9]|1[0-2])$/) && newData.val() === true"
+          }
+        },
+        "transactionId": {
+          ".validate": "newData.isString() && newData.val().length >= 6 && newData.val().length <= 100"
+        },
+        "status": {
+          ".validate": "newData.val() === 'pending' || newData.val() === 'approved' || newData.val() === 'rejected'"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "reviewedAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "reviewedBy": {
+          ".validate": "newData.isString()"
+        },
+        "recovered": {
+          ".validate": "newData.isBoolean()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "upiReferenceIndex": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      ".write": false,
+      "$reference": {
+        ".write": "auth != null && !data.exists() && newData.isString() && $reference.matches(/^[a-z0-9-]{6,100}$/) && ((auth != null && root.child('admins').child(auth.uid).val() === true) || (!root.child('paymentRequests').child(newData.val()).exists() && newData.parent().parent().child('paymentRequests').child(newData.val()).child('uid').val() === auth.uid && newData.parent().parent().child('paymentRequests').child(newData.val()).child('transactionId').val() === $reference && newData.parent().parent().child('paymentRequests').child(newData.val()).child('status').val() === 'pending'))",
+        ".validate": "newData.isString() && $reference.matches(/^[a-z0-9-]{6,100}$/) && newData.parent().parent().child('paymentRequests').child(newData.val()).exists()"
+      }
+    },
+    "paymentCollections": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      ".write": false,
+      "$collectionId": {
+        ".write": "auth != null && root.child('admins').child(auth.uid).val() === true && !data.exists() && newData.exists() && newData.child('recordedBy').val() === auth.uid && newData.child('recordedAt').isNumber() && newData.child('recordedAt').val() >= now - 300000 && newData.child('recordedAt').val() <= now + 300000",
+        ".validate": "newData.hasChildren(['memberNumber', 'amount', 'method', 'periods', 'recordedAt', 'recordedBy', 'sourceId']) && newData.child('memberNumber').isNumber() && newData.child('memberNumber').val() >= 1 && newData.child('memberNumber').val() <= 99999 && newData.child('amount').isNumber() && newData.child('amount').val() >= 50 && newData.child('amount').val() <= 3000 && newData.child('amount').val() % 50 === 0 && newData.child('method').isString() && (newData.child('method').val() === 'upi' || newData.child('method').val() === 'cash') && newData.child('sourceId').isString() && newData.child('sourceId').val().length >= 1 && newData.child('sourceId').val().length <= 150",
+        "periods": {
+          ".validate": "newData.hasChildren()",
+          "$period": {
+            ".validate": "$period.matches(/^\\d{4}-(0[1-9]|1[0-2])$/) && newData.val() === true"
+          }
+        },
+        "recordedBy": {
+          ".validate": "newData.isString() && newData.val() === auth.uid"
+        },
+        "recordedAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "sourceId": {
+          ".validate": "newData.isString()"
+        },
+        "memberNumber": {
+          ".validate": "newData.isNumber()"
+        },
+        "amount": {
+          ".validate": "newData.isNumber()"
+        },
+        "method": {
+          ".validate": "newData.val() === 'upi' || newData.val() === 'cash'"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "cashAudit": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$auditId": {
+        ".write": "auth != null && root.child('admins').child(auth.uid).val() === true && !data.exists() && newData.exists()",
+        ".validate": "newData.hasChildren(['memberNumber', 'period', 'amount', 'createdAt', 'createdBy']) && newData.child('memberNumber').isNumber() && newData.child('amount').val() === 50 && newData.child('createdAt').isNumber() && newData.child('createdBy').val() === auth.uid"
+      }
+    },
+    "accounts": {
+      ".read": false,
+      ".write": false,
+      "entries": {
+        ".read": "(auth != null && root.child('admins').child(auth.uid).val() === true) || (auth != null && root.child('users').child(auth.uid).child('status').val() === 'approved')",
+        ".write": false,
+        "$entryId": {
+          ".write": "auth != null && root.child('admins').child(auth.uid).val() === true && newData.exists() && (newData.child('type').val() === 'income' || newData.child('type').val() === 'expense') && newData.child('amount').isNumber() && newData.child('amount').val() > 0 && newData.child('amount').val() <= 10000000 && newData.child('date').isString() && (!data.exists() || data.child('isOpeningBalance').val() !== true)",
+          ".validate": "newData.hasChildren(['type', 'amount', 'date', 'category', 'particulars', 'method']) && newData.child('category').isString() && newData.child('particulars').isString() && newData.child('method').isString()"
+        }
+      },
+      "audit": {
+        ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+        ".write": false,
+        "$auditId": {
+          ".write": "auth != null && root.child('admins').child(auth.uid).val() === true && !data.exists() && newData.exists() && newData.child('adminUid').val() === auth.uid && newData.child('at').isNumber() && newData.child('action').isString()",
+          ".validate": "newData.hasChildren(['action', 'at', 'adminUid', 'entryId', 'reason']) && newData.child('reason').isString()"
+        }
+      },
+      "publicMembershipIncome": {
+        ".read": "(auth != null && root.child('admins').child(auth.uid).val() === true) || (auth != null && root.child('users').child(auth.uid).child('status').val() === 'approved')",
+        ".write": "auth != null && root.child('admins').child(auth.uid).val() === true && newData.exists() && newData.child('publishedBy').val() === auth.uid && newData.child('updatedAt').isNumber() && newData.child('updatedAt').val() >= now - 300000 && newData.child('updatedAt').val() <= now + 300000",
+        ".validate": "newData.hasChildren(['updatedAt', 'publishedBy']) && (!newData.child('entries').exists() || newData.child('entries').hasChildren())",
+        "entries": {
+          "$id": {
+            ".validate": "newData.hasChildren(['date', 'method', 'amount', 'periods', 'timestamp']) && newData.child('date').isString() && (newData.child('method').val() === 'Cash' || newData.child('method').val() === 'UPI') && newData.child('amount').isNumber() && newData.child('amount').val() > 0 && newData.child('timestamp').isNumber()"
+          }
+        },
+        "updatedAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "publishedBy": {
+          ".validate": "newData.isString() && newData.val() === auth.uid"
+        }
+      }
+    },
+    "memberPhotos": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      ".write": false,
+      "$number": {
+        ".read": "(auth != null && root.child('admins').child(auth.uid).val() === true) || (auth != null && root.child('users').child(auth.uid).child('status').val() === 'approved' && root.child('users').child(auth.uid).child('memberNumber').val() + '' === $number && root.child('members').child($number).child('uid').val() === auth.uid && root.child('members').child($number).child('status').val() === 'active')",
+        ".write": "((auth != null && root.child('admins').child(auth.uid).val() === true) || (auth != null && root.child('users').child(auth.uid).child('status').val() === 'approved' && root.child('users').child(auth.uid).child('memberNumber').val() + '' === $number && root.child('members').child($number).child('uid').val() === auth.uid && root.child('members').child($number).child('status').val() === 'active')) && root.child('members').child($number).exists() && root.child('members').child($number).child('status').val() === 'active' && (!newData.exists() || (newData.hasChildren(['image', 'updatedAt', 'updatedBy']) && newData.child('updatedBy').val() === auth.uid && newData.child('updatedAt').isNumber() && newData.child('updatedAt').val() >= now - 300000 && newData.child('updatedAt').val() <= now + 300000))",
+        ".validate": "newData.hasChildren(['image', 'updatedAt', 'updatedBy'])",
+        "image": {
+          ".validate": "newData.isString() && newData.val().beginsWith('data:image/jpeg;base64,') && newData.val().length <= 100000"
+        },
+        "updatedAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "updatedBy": {
+          ".validate": "newData.isString() && newData.val() === auth.uid"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "tfcSitePosts": {
+      "meta": {
+        ".read": "(auth != null && root.child('admins').child(auth.uid).val() === true) || (query.orderByChild === 'status' && query.equalTo === 'published')",
+        ".indexOn": [
+          "status"
+        ],
+        "$postId": {
+          ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+          ".read": "(auth != null && root.child('admins').child(auth.uid).val() === true) || (data.child('status').val() === 'published')",
+          ".validate": "newData.hasChildren(['title', 'body', 'status', 'createdAt', 'updatedAt'])",
+          "title": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 110"
+          },
+          "body": {
+            ".validate": "newData.isString() && newData.val().length <= 600"
+          },
+          "status": {
+            ".validate": "newData.val() === 'published' || newData.val() === 'hidden'"
+          },
+          "createdAt": {
+            ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= now + 300000 && (!data.exists() || newData.val() === data.val())"
+          },
+          "updatedAt": {
+            ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= now + 300000"
+          },
+          "$other": {
+            ".validate": false
+          },
+          "archiveAt": {
+            ".validate": "newData.isNumber() && newData.val() >= 946684800000 && newData.val() <= 4133980800000"
+          }
+        }
+      },
+      "images": {
+        "$postId": {
+          ".read": "(auth != null && root.child('admins').child(auth.uid).val() === true) || (root.child('tfcSitePosts').child('meta').child($postId).child('status').val() === 'published')",
+          ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+          ".validate": "newData.isString() && newData.val().length <= 400000 && newData.val().beginsWith('data:image/jpeg;base64,')"
+        }
+      }
+    },
+    "tfcFestGalleries": {
+      "meta": {
+        ".read": "(auth != null && root.child('admins').child(auth.uid).val() === true) || (query.orderByChild === 'status' && query.equalTo === 'published')",
+        ".indexOn": [
+          "status"
+        ],
+        "$galleryId": {
+          ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+          ".read": "(auth != null && root.child('admins').child(auth.uid).val() === true) || (data.child('status').val() === 'published')",
+          ".validate": "newData.hasChildren(['title', 'body', 'status', 'createdAt', 'updatedAt', 'photoIds'])",
+          "title": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 110"
+          },
+          "body": {
+            ".validate": "newData.isString() && newData.val().length <= 600"
+          },
+          "status": {
+            ".validate": "newData.val() === 'published' || newData.val() === 'hidden'"
+          },
+          "createdAt": {
+            ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= now + 300000 && (!data.exists() || newData.val() === data.val())"
+          },
+          "updatedAt": {
+            ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= now + 300000"
+          },
+          "$other": {
+            ".validate": false
+          },
+          "photoIds": {
+            ".validate": "newData.hasChildren()",
+            "$index": {
+              ".validate": "newData.isString() && newData.val().length > 2 && newData.val().length <= 90"
+            }
+          }
+        }
+      },
+      "photos": {
+        "$galleryId": {
+          ".read": "(auth != null && root.child('admins').child(auth.uid).val() === true) || (root.child('tfcFestGalleries').child('meta').child($galleryId).child('status').val() === 'published')",
+          ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+          "$photoId": {
+            ".validate": "newData.isString() && newData.val().length <= 280000 && newData.val().beginsWith('data:image/jpeg;base64,')"
+          }
+        }
+      }
     }
   }
 }

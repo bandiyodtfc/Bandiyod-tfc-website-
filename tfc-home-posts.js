@@ -19,10 +19,11 @@ import {
   getDatabase,
   ref,
   get,
-  onValue
+  onValue, query, orderByChild, equalTo
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js';
 
 import { firebaseConfig } from './firebase-config.js';
+import { GAMES_FEST_END, isArchived } from './tfc-fest-archive.js?v=92.0';
 
 const feed = document.getElementById('tfcPostFeed');
 
@@ -30,6 +31,32 @@ if (feed) {
 
   const app = getApps()[0] || initializeApp(firebaseConfig);
   const db = getDatabase(app);
+  const archive = document.getElementById('tfcArchivedPosts');
+  const gallery = document.getElementById('tfcFestGalleries');
+  const memories = document.getElementById('tfcFestMemorySection');
+  const sponsorSlot = document.getElementById('tfcPinnedSponsor');
+  let offset = 0, latest = {}, previousBucket = '';
+  const clock = () => Date.now() + offset;
+  const cards = () => [...feed.querySelectorAll('.tfc-live-post'), ...archive.querySelectorAll('.tfc-live-post')];
+  function updateArchiveVisibility() {
+    archive.hidden = !archive.childElementCount;
+    memories.hidden = !archive.childElementCount && !gallery.childElementCount;
+  }
+  function moveStatic(now) {
+    if (now < GAMES_FEST_END) return;
+    for (const card of document.querySelectorAll('#tfcPostFeed [data-fest-2027], #tfcPinnedSponsor [data-fest-2027]')) {
+      card.hidden = false;
+      card.classList.remove('tfc-carousel-visible');
+      // Remove time-sensitive announcement wording, retain original poster and details.
+      const badge = card.querySelector('[data-i18n="festBadge"]');
+      if (badge) { badge.removeAttribute('data-i18n'); badge.textContent = '🏆 Games Fest 2027'; }
+      const note = card.querySelector('[data-i18n="festTimeNote"]');
+      if (note) note.hidden = true;
+      archive.append(card);
+    }
+    sponsorSlot.hidden = !sponsorSlot.childElementCount;
+  }
+
 
   const cachedImages = new Map();
   const lastVersions = new Map();
@@ -48,7 +75,7 @@ if (feed) {
     value.length < 400001 &&
     value.startsWith('data:image/jpeg;base64,');
 
-  let observer;
+  let observer, archiveObserver;
 
   window.addEventListener('pagehide', () => {
     for (const url of blobLinks.values()) {
@@ -100,8 +127,7 @@ if (feed) {
 
         cachedImages.set(key, data);
 
-        feed.querySelectorAll('.tfc-live-post')
-          .forEach(current => {
+        cards().forEach(current => {
 
             if (
               current.dataset.livePostId === key &&
@@ -130,9 +156,7 @@ if (feed) {
 
       if (retry) {
 
-        const current = [
-          ...feed.querySelectorAll('.tfc-live-post')
-        ].find(el => el.dataset.livePostId === key);
+        const current = cards().find(el => el.dataset.livePostId === key);
 
         if (current) loadPicture(current);
       }
@@ -267,7 +291,7 @@ if (feed) {
     copy.append(
       $('span',
         'news-feature-tag',
-        '📢 TFC BANDIYOD UPDATE'
+        isArchived(post,clock()) ? '📸 BEST MEMORIES' : '📢 TFC BANDIYOD UPDATE'
       )
     );
 
@@ -307,6 +331,12 @@ if (feed) {
   function installObserver() {
 
     if (observer) observer.disconnect();
+    if (archiveObserver) archiveObserver.disconnect();
+    if (!('IntersectionObserver' in window)) { cards().forEach(loadPicture); return; }
+    archiveObserver = new IntersectionObserver(entries => {
+      for (const entry of entries) if (entry.isIntersecting) loadPicture(entry.target);
+    }, {rootMargin:'280px 0px'});
+    archive.querySelectorAll('.tfc-live-post').forEach(el => archiveObserver.observe(el));
 
     observer = new IntersectionObserver(entries => {
 
@@ -328,13 +358,13 @@ if (feed) {
       .forEach(el => observer.observe(el));
   }
 
-  onValue(
-    ref(db, 'tfcSitePosts/meta'),
-
-    snapshot => {
-
-      const data = snapshot.val() || {};
-
+  function renderPosts(force = false) {
+      const data = latest;
+      const now = clock();
+      const bucket = JSON.stringify([now >= GAMES_FEST_END, Object.entries(data).filter(([,p])=>isArchived(p,now)).map(([id])=>id).sort()]);
+      if (!force && bucket === previousBucket) return;
+      previousBucket = bucket;
+      moveStatic(now);
       const published = Object.entries(data)
 
         .filter(([id, post]) =>
@@ -399,14 +429,16 @@ if (feed) {
         lastVersions.set(id, version);
       }
 
-      feed.querySelectorAll('.tfc-live-post')
-        .forEach(node => node.remove());
+      cards().forEach(node => node.remove());
 
       const fragment = document.createDocumentFragment();
 
+      const archived = document.createDocumentFragment();
       for (const [id, post] of published) {
-        fragment.append(makePost(id, post));
+        (isArchived(post, now) ? archived : fragment).append(makePost(id, post));
       }
+      archive.prepend(archived);
+      updateArchiveVisibility();
 
       feed.prepend(fragment);
 
@@ -415,8 +447,10 @@ if (feed) {
       feed.dispatchEvent(
         new CustomEvent('tfc:posts-updated')
       );
-    },
+  }
 
+  onValue(ref(db,'.info/serverTimeOffset'), snap => {offset = Number(snap.val()) || 0; renderPosts();});
+  onValue(query(ref(db,'tfcSitePosts/meta'),orderByChild('status'),equalTo('published')), snapshot => {latest = snapshot.val() || {};renderPosts(true);},
     error => {
 
       console.warn(
@@ -426,4 +460,8 @@ if (feed) {
 
     }
   );
+  renderPosts();
+  const archiveTimer = setInterval(renderPosts, 15000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)renderPosts();});
+  window.addEventListener('pagehide',event=>{if(!event.persisted)clearInterval(archiveTimer);});
 }
